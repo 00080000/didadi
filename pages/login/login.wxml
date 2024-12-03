@@ -2,10 +2,14 @@
 <view class="container">
   <!-- 上方的Logo与介绍部分 -->
   <view class="topArea">
-    <view class="logo"></view>
-    <view class="beta">(Beta版)</view>
-    <view class="subtitle">免费注册，无限续期使用！</view>
-    <view class="link">访问https://app.didadi.vip电脑端，拥有更多功能！</view>
+    <view>
+      <image src="/static/logo.png" class="logo"></image>
+      <view class="beta">(Beta版)</view>
+    </view>
+    <view>
+      <view class="subtitle">免费注册，无限续期使用！</view>
+      <view class="link">访问https://app.didadi.vip电脑端，拥有更多功能！</view>
+    </view>
   </view>
 
   <!-- 下方的登录部分 -->
@@ -17,7 +21,7 @@
     <button style="width: 500rpx;"  class="loginWithPhone" bind:tap="loginWithPassword">手机号密码登录</button>
     <view class="register">
       没有账号？
-      <navigator url="/pages/register/register" style="color: orange;">
+      <navigator url="/pages/register/register" style="color: #F9B712">
         立即注册！
       </navigator>
     </view>

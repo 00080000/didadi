@@ -5,20 +5,22 @@ page{
   background-color: white;
 }
 
-/* 上方区域 ，采用遮罩*/
+/* 上方区域 */
 .topArea {
   width: 100%;
   height: 25%;
-  background-color: rgba(190, 190, 190, 0.6);
+  background-color: #DDDDDD;
   padding: 20rpx 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 /* 上方区域的logo 与 文字*/
 .logo {
-  width: 500rpx;
-  height: 200rpx;
-  margin: 0 auto;
-  background-color: darkblue;
+  width: 400rpx;
+  height: 100rpx;
+  margin: 20rpx auto;
 }
 
 .beta {
@@ -38,6 +40,7 @@ page{
   color: gray;
   font-size: 25rpx;
   margin-top: 10rpx;
+  margin-bottom: 30rpx;
 }
 
 /* 下方区域 */
@@ -78,7 +81,7 @@ page{
   height: 70rpx;
   font-weight: lighter;
   border: rgb(65, 65, 65) 1rpx solid;
-  border-radius: 40px;
+  border-radius: 999rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -86,12 +89,12 @@ page{
 }
 
 .loginButton {
-  background-color: rgb(247, 183, 65);
+  background-color: #F9B712;
   color:white;
   font-size: 35rpx;
   font-weight:500;
   height: 90rpx;
-  border-radius: 40rpx;
+  border-radius: 999rpx;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -110,5 +113,5 @@ page{
 
 .agreement navigator {
   margin-left: 10rpx;
-  color: orange;
+  color: #F9B712;
 }
