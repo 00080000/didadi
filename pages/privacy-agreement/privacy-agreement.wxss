@@ -1,0 +1,62 @@
+page{
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+}
+
+/* 上方区域 ，采用遮罩*/
+.topArea {
+  width: 100%;
+  height: 25%;
+  background-color: rgba(190, 190, 190, 0.6);
+  padding: 20rpx 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* 上方区域的logo 与 文字*/
+.logoArea{
+  display: flex;
+  align-items: flex-end;
+  margin-left: 30rpx;
+}
+
+.logo {
+  width: 200rpx;
+  height: 75rpx;
+  background-color: green;
+}
+
+.address {
+  font-size: 25rpx;
+  color: rgb(4, 4, 36);
+  margin-bottom: 10rpx;
+  margin-left: 30rpx;
+  font-weight: 500;
+}
+
+.agreementName {
+  color: rgb(4, 4, 36);
+  font-size: 45rpx;
+  font-weight: bold;
+  text-align: left;
+  margin-left: 20rpx;
+}
+
+.tip {
+  color: rgb(4, 4, 36);
+  font-size: 25rpx;
+  text-align: left;
+  margin-left: 20rpx;
+  margin-top: 75rpx;
+}
+
+/* 下方区域 */
+.bottomArea{
+  height: 70%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}

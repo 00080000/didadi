@@ -1,0 +1,37 @@
+<!-- 选择登录方式，包含微信登录业务 -->
+<view class="container">
+  <!-- 上方的Logo与介绍部分 -->
+  <view class="topArea">
+    <view class="logo"></view>
+    <view class="beta">(Beta版)</view>
+    <view class="subtitle">免费注册，无限续期使用！</view>
+    <view class="link">访问https://app.didadi.vip电脑端，拥有更多功能！</view>
+  </view>
+
+  <!-- 下方的登录部分 -->
+  <view class="bottomArea">
+    <!-- 按钮组 -->
+   <view class="buttonGroup">
+    <button style="width: 500rpx;" class="loginWithWechat" bind:tap="loginWithWechat">微信登录</button>
+    <button style="width: 500rpx;"  class="loginWithPhone" bind:tap="loginWithPhone">短信验证码登录</button>
+    <button style="width: 500rpx;"  class="loginWithPhone" bind:tap="loginWithPassword">手机号密码登录</button>
+    <view class="register">
+      没有账号？
+      <navigator url="/pages/register/register" style="color: orange;">
+        立即注册！
+      </navigator>
+    </view>
+   </view>
+
+  <!-- 同意协议 -->
+   <view class="agreement">
+    <checkbox/>
+    <view style='display:flex;margin-left: 20rpx;'>
+      我已阅读并同意
+      <navigator url="/pages/privacy-agreement/privacy-agreement">《隐私政策》</navigator>
+      和
+      <navigator url="/pages/service-agreement/service-agreement">《服务协议》</navigator>
+    </view>
+   </view>
+  </view>
+</view>

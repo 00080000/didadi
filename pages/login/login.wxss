@@ -1,0 +1,99 @@
+page{
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+}
+
+/* 上方区域 ，采用遮罩*/
+.topArea {
+  width: 100%;
+  height: 25%;
+  background-color: rgba(190, 190, 190, 0.6);
+  padding: 20rpx 0;
+}
+
+/* 上方区域的logo 与 文字*/
+.logo {
+  width: 500rpx;
+  height: 200rpx;
+  margin: 0 auto;
+  background-color: darkblue;
+}
+
+.beta {
+  font-size: 35rpx;
+  color: black;
+  margin-top: 10rpx;
+  font-weight: 500;
+}
+
+.subtitle {
+  color: gray;
+  font-size: 25rpx;
+  margin-top: 30rpx;
+}
+
+.link {
+  color: gray;
+  font-size: 25rpx;
+  margin-top: 10rpx;
+}
+
+/* 下方区域 */
+.bottomArea{
+  height: 70%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* 按钮组 */
+.buttonGroup {
+  padding-top: 25%;
+}
+
+.loginWithWechat {
+  background-color: rgb(247, 183, 65);
+  color:white;
+  font-size: 35rpx;
+  font-weight:500;
+  height: 90rpx;
+  border-radius: 40rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loginWithPhone {
+  background-color: whitesmoke;
+  font-weight: lighter;
+  font-size: 35rpx;
+  height: 90rpx;
+  border-radius: 40rpx;
+  margin: 35rpx 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.register {
+  color: gray;
+  display: flex;
+  justify-content: center;
+}
+
+/* 同意协议 */
+.agreement {
+  padding-bottom: 30rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24rpx;
+  color: #333;
+}
+
+.agreement navigator {
+  margin-left: 10rpx;
+  color: orange;
+}

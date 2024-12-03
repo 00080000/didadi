@@ -1,0 +1,89 @@
+<!-- 注册界面 -->
+<view class="container">
+  <!-- 上方的Logo与介绍部分 -->
+  <view class="topArea">
+    <view class="logo"></view>
+    <view class="beta">(Beta版)</view>
+    <view class="subtitle">免费注册，无限续期使用！</view>
+    <view class="link">访问https://app.didadi.vip电脑端，拥有更多功能！</view>
+  </view>
+
+  <!-- 下方的注册部分 -->
+  <view class="bottomArea">
+
+  <!-- //输入手机号 -->
+  <view wx:if="{{step===1}}">
+    <view style="font-size: 40rpx;margin-top: 50rpx;">
+      新用户注册
+    </view>
+    <view class="form">
+      <view class="inputArea">
+        <input placeholder="请输入手机号码" 	class="input" model:value="{{phone}}" style="width: 500rpx;"/>
+        <view class="deleteIcon">×</view>
+      </view>
+      <button style="width:575rpx;" class="button" bind:tap="goToStep2">获取短信验证码</button>
+      <navigator url="/pages/login/login" class="backToLogin">
+        返回登录
+      </navigator>
+    </view>
+  </view>
+
+    <!-- //输入验证码 -->
+  <view wx:if="{{step===2}}">
+    <view style="font-size: 40rpx;margin-top: 50rpx;">
+      输入验证码
+    </view>
+    <view style="font-size: 30rpx;margin-top: 30rpx;">
+      验证码已发送至：{{phone}}
+    </view>
+    <view class="form">
+      <view class="inputArea">
+        <input placeholder="请输入验证码" 	class="input" model:value="{{code}}" style="width: 550rpx;"/>
+      </view>
+      <view class="notGetCode">
+        收不到验证码点这里
+      </view>
+      <button style="width:575rpx;" class="button" bind:tap="goToStep3">确定</button>
+      <navigator url="/pages/login/login" class="backToLogin">
+        返回登录
+      </navigator>
+    </view>
+  </view>
+  
+  <!-- 输入密码 -->
+  <view wx:if="{{step===3}}">
+    <view style="font-size: 40rpx;margin-top: 50rpx;">
+      设置登录密码
+    </view>
+    <view class="form">
+      <view class="inputArea">
+        <input placeholder="请输入登录密码" 	class="input" model:value="{{password}}" style="width: 550rpx;"/>
+      </view>
+      <view class="inputArea">
+        <input placeholder="请再次输入登录密码" 	class="input" model:value="{{passwordAgain}}" style="width: 550rpx;"/>
+      </view>
+      <view class="rememberMe">
+        <checkbox/>
+        <view style="margin-left: 15rpx;font-weight: lighter;">
+          记住我，下次自动登录
+        </view>
+      </view>
+      <button style="width:575rpx;" class="button" bind:tap="goToStep3">登录</button>
+      <navigator url="/pages/login/login" class="backToLogin">
+        返回登录
+      </navigator>
+    </view>
+  </view>
+
+  <!-- 同意协议 -->
+   <view class="agreement">
+    <checkbox/>
+    <view style='display:flex;margin-left: 20rpx;'>
+      我已阅读并同意
+      <navigator url="/pages/privacy-agreement/privacy-agreement">《隐私政策》</navigator>
+      和
+      <navigator url="/pages/service-agreement/service-agreement">《服务协议》</navigator>
+    </view>
+   </view>
+  </view>
+</view>

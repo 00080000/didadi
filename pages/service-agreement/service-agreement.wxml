@@ -1,0 +1,20 @@
+<!-- 隐私政策 -->
+<view class="container">
+  <!-- 上方的Logo与文字提示部分 -->
+  <view class="topArea">
+    <view class='logoArea'>
+      <view class="logo"></view>
+      <text class="address">https://app.didadi.vip</text>
+    </view>
+    <view>
+      <view class="agreementName">《用户服务协议》</view>
+      <view class="tip">请仔细阅读《小喇叭报价系统用户服务协议》的内容。</view>
+    </view>
+    <view></view>
+  </view>
+
+  <!-- 下方的内容部分 -->
+  <view class="bottomArea">
+  
+  </view>
+</view>%

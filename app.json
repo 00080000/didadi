@@ -1,0 +1,19 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/password-login/password-login",
+    "pages/phone-login/phone-login",
+    "pages/register/register",
+    "pages/privacy-agreement/privacy-agreement",
+    "pages/service-agreement/service-agreement"
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "小喇叭报价系统",
+    "navigationBarBackgroundColor": "#ffffff"
+  },
+  "style": "v2",
+  "componentFramework": "glass-easel",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}
