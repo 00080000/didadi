@@ -1,0 +1,8 @@
+<!--components/header/header.wxml-->
+<view class='header'>
+  <view style="display: flex;align-items: flex-end;">
+    <image src="/static/logo.png" class="logo"></image>
+    <text class="address">https://app.didadi.vip</text>
+  </view>
+  <image src="/static/search.png" class="search" bind:tap="search"></image>
+</view>

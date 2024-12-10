@@ -78,8 +78,7 @@ page{
 
 .input {
   height: 70rpx;
-  font-weight: lighter;
-  font-size: large;
+  font-size: 28rpx;
   text-align: left;
   padding: 10rpx 25rpx;
 }
@@ -87,7 +86,7 @@ page{
 .button {
   background-color:#F9B712;
   color:white;
-  font-size: 35rpx;
+  font-size: 30rpx;
   font-weight:500;
   height: 90rpx;
   border-radius: 999rpx;
@@ -98,15 +97,15 @@ page{
 }
 
 .backToLogin {
-  color: gray;
   font-weight: lighter;
-  font-size: 35rpx;
-  margin-top: 30rpx;
+  font-size: 25rpx;
+  margin-top: 50rpx;
 }
 
 .notGetCode {
   color: #F9B712;
   font-weight: lighter;
+  font-size: 27rpx;
   margin-top: 20rpx;
   display: flex;
   justify-content: left;
@@ -122,6 +121,7 @@ page{
   align-items: center;
   width: 100%;
   margin-left: 150rpx;
+  font-size: 27rpx;
 }
 
 /* 同意协议 */

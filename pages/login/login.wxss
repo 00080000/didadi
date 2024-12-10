@@ -59,7 +59,7 @@ page{
 .loginWithWechat {
   background-color: #F9B712;
   color:white;
-  font-size: 35rpx;
+  font-size: 30rpx;
   font-weight:500;
   height: 90rpx;
   border-radius: 999rpx;
@@ -71,7 +71,7 @@ page{
 .loginWithPhone {
   background-color: whitesmoke;
   font-weight: lighter;
-  font-size: 35rpx;
+  font-size: 30rpx;
   height: 90rpx;
   border-radius: 999rpx;
   margin: 35rpx 0;
@@ -84,6 +84,7 @@ page{
   color: gray;
   display: flex;
   justify-content: center;
+  font-size: 27rpx;
 }
 
 /* 同意协议 */

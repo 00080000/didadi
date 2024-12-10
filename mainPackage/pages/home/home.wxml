@@ -1,0 +1,128 @@
+<!--mainPackage/pages/home/home.wxml-->
+<view class="container">
+  <!-- 上方的Logo与文字提示部分 -->
+  <view class="topArea">
+    <header></header>
+    <view class='userArea'>
+      <view class="userInformation">
+        <view style="display: flex;align-items: center;">
+          <image class="avatar" src="/static/avatar.jpg" ></image>
+          <text style="font-size:40rpx;">{{name}}</text>
+        </view>
+        <view style="font-size: 25rpx;text-align: left;">
+          <view style="margin-top: 30rpx;">{{phone}}</view>
+          <view style="margin-top: 20rpx;">{{firm}}</view>
+        </view>
+      </view>
+      <view class="more">
+        <view class="newMessage" wx:if="{{ifHaveNewMessage}}">
+          有新通知消息
+        </view>
+        <image bind:tap="goToSystemManage" src="/static/rightArrow.png" class="rightArrow"></image>
+      </view>
+    </view>
+    <view></view>
+  </view>
+  <view class="add">
+    新建  
+  </view>
+  <view class="showData">
+    <view class="longCard">
+      <view class="longCardLeft">
+        <image src="/static/quotationAmount.png"></image>
+        万元
+      </view>
+      <view class="longCardMiddle">
+        <view style="margin-bottom: 20rpx;">报价单金额</view>
+        <view style="font-weight: bolder;font-size: 35rpx;">￥ {{quotationAmount}}</view>
+      </view>
+      <view class="longCardRight">
+        <image src="/static/quotationTendency.png"></image>
+      </view>
+    </view>
+    <view class="shortCardList">
+      <view class="shortCard">
+        <view class="shortCardLeft">
+        <image src="/static/quotationQuantity.png"></image>
+        单
+        </view>
+        <view class="shortCardRight">
+          <view style="margin-bottom: 20rpx;">报价单数量</view>
+          <view style="font-weight: bolder;font-size: 35rpx;">{{quotationQuantity}}</view>
+        </view>
+      </view>
+      <view class="shortCard">
+        <view class="shortCardLeft">
+        <image src="/static/inquiryQuantity.png"></image>
+        单
+        </view>
+        <view class="shortCardRight">
+          <view style="margin-bottom: 20rpx;">询价单数量</view>
+          <view style="font-weight: bolder;font-size: 35rpx;">{{inquiryQuantity}}</view>
+        </view>
+      </view>
+    </view>
+    <view class="shortCardList">
+      <view class="shortCard">
+        <view class="shortCardLeft">
+        <image src="/static/purchaserQuantity.png"></image>
+        个
+        </view>
+        <view class="shortCardRight">
+          <view style="margin-bottom: 20rpx;">采购方数量</view>
+          <view style="font-weight: bolder;font-size: 35rpx;">{{purchaserQuantity}}</view>
+        </view>
+      </view>
+      <view class="shortCard">
+        <view class="shortCardLeft">
+        <image src="/static/supplierQuantity.png"></image>
+        个
+        </view>
+        <view class="shortCardRight">
+          <view style="margin-bottom: 20rpx;">供应商数量</view>
+          <view style="font-weight: bolder;font-size: 35rpx;">{{supplierQuantity}}</view>
+        </view>
+      </view>
+    </view>
+    <view class="shortCardList">
+      <view class="shortCard">
+        <view class="shortCardLeft">
+        <image src="/static/singleGoodsSKU.png"></image>
+        个
+        </view>
+        <view class="shortCardRight">
+          <view style="margin-bottom: 20rpx;">单商品SKU</view>
+          <view style="font-weight: bolder;font-size: 35rpx;">{{singleGoodsSKU}}</view>
+        </view>
+      </view>
+      <view class="shortCard">
+        <view class="shortCardLeft">
+        <image src="/static/combinationGoodsSKU.png"></image>
+        个
+        </view>
+        <view class="shortCardRight">
+          <view style="margin-bottom: 20rpx;">组合商品SKU</view>
+          <view style="font-weight: bolder;font-size: 35rpx;">{{combinationGoodsSKU}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view class="tabBar">
+    <view class="selectedNavigateBar">
+      <image src="/static/home-blue.png"></image>
+      首页
+    </view>
+    <view class="notSelectedNavigateBar">
+      <image src="/static/price-gray.png"></image>
+      询报价
+    </view>
+    <view class="notSelectedNavigateBar">
+      <image src="/static/product-gray.png"></image>
+      商品
+    </view>
+    <view class="notSelectedNavigateBar">
+      <image src="/static/merchant-gray.png"></image>
+      商家
+    </view>
+  </view>
+</view>

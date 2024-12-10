@@ -37,7 +37,7 @@
     <view style="font-size: 40rpx;margin-top: 50rpx;">
       输入验证码
     </view>
-    <view style="font-size: 30rpx;margin-top: 30rpx;">
+    <view style="font-size: 25rpx;margin-top: 30rpx;">
       验证码已发送至：{{phone}}
     </view>
     <view class="form">

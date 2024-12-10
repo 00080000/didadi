@@ -1,0 +1,61 @@
+<!--mainPackage/pages/home/home.wxml-->
+<view class="container">
+  <!-- 上方的Logo与文字提示部分 -->
+  <view class="topArea">
+    <header></header>
+    <view class='userArea'>
+      <view class="userInformation">
+        <view class="avatarArea">
+          <image class="avatar" src="/static/avatar.jpg" ></image>
+          <image class="avatarEdit" src="/static/edit.png"></image>
+        </view>
+        <view class="wordArea">
+          <view style="font-size: 38rpx;margin-top: 10rpx;">{{name}}</view>
+          <view style="font-size: 28rpx;margin-bottom: 10rpx;">{{phone}}</view>
+        </view>
+      </view>
+      <image src="/static/rightArrow.png" class="rightArrow" bind:tap="goToPersonalInformation"></image>
+    </view>
+  </view>
+  <view class="cardList">
+      <view class="card" bind:tap="goToEdiFirmInformation">
+        <image src="/static/firmInformation.png">
+        </image>
+        <view class="title">企业信息</view>
+        <view class="content">
+          <view>修改名称、信用代码等</view>
+          <view>注册信息</view>
+        </view>
+      </view>
+      <view class="card" bind:tap="goToEditPassword">
+        <image src="/static/editPassword.png">
+        </image>
+        <view class="title">修改密码</view>
+        <view class="content">
+          <text>修改默认密码，保护登录安全</text>
+        </view>
+      </view>
+  </view>
+  <view class="cardList">
+      <view class="card" bind:tap="goToMessage">
+        <view class="message">
+          <image src="/static/message.png"></image>
+          <view class="newMessageAmount" wx:if="{{newMessageAmount>0}}">
+            {{newMessageAmount}}
+          </view>
+        </view>
+        <view class="title">通知消息</view>
+        <view class="content">
+          <text>查看历史通知和消息，及时处理</text>
+        </view>
+      </view>
+      <view class="card" bind:tap="exit">
+        <image src="/static/exitSystem.png">
+        </image>
+        <view class="title">退出系统</view>
+        <view class="content">
+          <text>退出当前账户并返回登录页面</text>
+        </view>
+      </view>
+  </view>
+</view>

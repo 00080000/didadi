@@ -1,0 +1,273 @@
+/* mainPackage/pages/home/home.wxss */
+page{
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  position: relative;
+}
+
+/* 上方区域 */
+.topArea {
+  width: 100%;
+  height: 25%;
+  background-color: #DDDDDD;
+  padding: 20rpx 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* 上方区域的logo 与 文字*/
+.logoArea{
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: 10rpx;
+}
+
+.logo {
+  width: 300rpx;
+  height: 75rpx;
+  margin-left: 30rpx;
+}
+
+.address {
+  font-size: 25rpx;
+  margin-bottom: 10rpx;
+  margin-left: 30rpx;
+  font-weight: 500;
+}
+
+.search {
+  width: 75rpx;
+  height: 75rpx;
+  margin-right: 20rpx;
+}
+
+.userArea {
+  margin-left: 30rpx;
+  display: flex;
+  justify-content: space-between;
+}
+
+.userInformation{
+  margin: 20rpx;
+}
+
+.avatar{
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 999px;
+  background-color: white;
+  margin-right: 30rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.avatar image {
+  width: 75%;
+  height: 75%;
+}
+
+.rightArrow {
+  width: 40rpx;
+  height: 40rpx;
+  margin-right: 5rpx;
+  margin-bottom: 20rpx;
+}
+
+.more {
+  margin: 20rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.newMessage {
+  font-size: 25rpx;
+  height: 50rpx;
+  padding: 0 30rpx;
+  background-color: white;
+  color: red;
+  border-radius: 999px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.add {
+  position: absolute;
+  left: 550rpx;
+  top: 23.3%;
+  height: 125rpx;
+  width: 125rpx;
+  background-color: #F9B712;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 30rpx;
+  border-radius: 99rpx;
+  box-shadow:0 1px 5px gray;
+}
+
+.showData {
+  width: 650rpx;
+  margin-left: 40rpx;
+  margin-top:70rpx;
+  max-height: 56%;
+  padding: 10rpx;
+  overflow: auto;
+}
+
+.longCard {
+  width: 100%;
+  height: 140rpx;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  -webkit-box-shadow: 0px 0px 10rpx 3rpx lightgray;
+  -moz-box-shadow: 0px 0px 10rpx 3rpx lightgray;
+  box-shadow: 0px 0px 10rpx 3rpx lightgray;
+}
+
+.longCardLeft {
+  width: 100rpx;
+  height: 100%;
+  background-color: #23394D;
+  color: white;
+  border-radius: 5px 0 0 5px;
+  font-weight: bolder;
+  font-size: 25rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.longCardLeft image {
+  height: 60rpx;
+  width: 60rpx;
+  margin-bottom: 15rpx;
+}
+
+.longCardMiddle {
+  color: #23394D;
+  font-size: 30rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-right: 220rpx;
+}
+
+.longCardRight {
+  display: flex;
+  align-items: center;
+  float: inline-end;
+  margin-right: 20rpx;
+}
+
+.longCardRight image {
+  width: 130rpx;
+  height: 120rpx;
+}
+
+.shortCardList {
+  margin-top: 35rpx;
+  display: flex;
+  justify-content: space-between;
+}  
+
+.shortCard {
+  width: 47%;
+  height: 140rpx;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  -webkit-box-shadow: 0px 0px 10rpx 3rpx lightgray;
+  -moz-box-shadow: 0px 0px 10rpx 3rpx lightgray;
+  box-shadow: 0px 0px 10rpx 3rpx lightgray;
+}
+
+.shortCard image{
+  height: 50rpx;
+  width: 50rpx;
+  margin-bottom: 15rpx;
+}
+
+.shortCardLeft {
+  width: 100rpx;
+  height: 100%;
+  background-color: #23394D;
+  color: white;
+  border-radius: 5px 0 0 5px;
+  font-weight: bolder;
+  font-size: 25rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.shortCardRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-left: 15rpx;
+  color: #23394D;
+  font-size: 27rpx;
+}
+
+.tabBar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100rpx;
+  border-top: 1px solid #23394D;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.selectedNavigateBar {
+  height: 100%;
+  color: #23394D;
+  font-size: 22rpx;
+  font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 10rpx;
+}
+
+.notSelectedNavigateBar {
+  height: 100%;
+  color: gray;
+  font-size: 22rpx;
+  font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 10rpx;
+}
+
+.selectedNavigateBar image {
+  width: 55rpx;
+  height: 55rpx;
+  margin-bottom: 2rpx;
+  margin-top: 5rpx;
+}
+
+.notSelectedNavigateBar image {
+  width: 40rpx;
+  height: 40rpx;
+  margin-bottom: 2rpx;
+  margin-top: 5rpx;
+}

@@ -1,0 +1,96 @@
+/* pages/search/search.wxss */
+page{
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  position: relative;
+}
+
+.header {
+  width: 100%;
+  height: 75rpx;
+  background-color: #DDDDDD;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+}
+
+.form {
+  margin-top: 20rpx;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form input{
+  height: 45rpx;
+  border: 1px solid lightgray;
+  border-radius: 5px;
+  text-align: left;
+  padding: 10rpx 15rpx;
+  margin-left: 30rpx;
+  font-size: 27rpx;
+  font-weight: lighter;
+}
+
+.form button {
+  padding: 5rpx 30rpx;
+  font-size: 25rpx;
+  color: white;
+  background-color: #23394D;
+}
+
+.result {
+  width: 90%;
+  margin-left: 5%;
+  margin-top: 15rpx;
+}
+
+.item {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid lightgray;
+}
+
+.itemHeader {
+  width: 100%;
+  height: 85rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5rpx;
+}
+
+.itemHeader .title {
+  font-size: 27rpx;
+  margin-left: 10rpx;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.itemHeader image {
+  width: 40rpx;
+  height: 40rpx;
+  margin-right: 10rpx;
+  margin-top: 5rpx;
+}
+
+.itemContent {
+  text-align: left;
+  padding: 5rpx 10rpx 25rpx 10rpx;
+  font-size: 25rpx;
+}
+
+.itemContent button {
+  margin-top: 25rpx;
+  float: right;
+  font-size: 25rpx;
+  padding: 5rpx 30rpx;
+}

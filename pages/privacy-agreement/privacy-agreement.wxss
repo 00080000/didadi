@@ -17,27 +17,27 @@ page{
 }
 
 /* 上方区域的logo 与 文字*/
-.logoArea{
+.header{
   display: flex;
   align-items: flex-end;
-  margin-left: 30rpx;
-  margin-top: 10rpx;
+  margin-top: 5rpx;
 }
 
 .logo {
-  width: 300rpx;
-  height: 75rpx;
+  width: 220rpx;
+  height: 55rpx;
+  margin-left: 30rpx;
 }
 
 .address {
   font-size: 25rpx;
-  margin-bottom: 10rpx;
+  margin-bottom: 5rpx;
   margin-left: 30rpx;
   font-weight: 500;
 }
 
 .agreementName {
-  font-size: 45rpx;
+  font-size: 40rpx;
   font-weight: bold;
   text-align: left;
   margin-left: 20rpx;
@@ -45,7 +45,7 @@ page{
 }
 
 .tip {
-  font-size: 25rpx;
+  font-size: 24rpx;
   text-align: left;
   margin-left: 20rpx;
   margin-top: 75rpx;

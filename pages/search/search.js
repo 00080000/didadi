@@ -1,0 +1,40 @@
+// pages/search/search.js
+Page({
+  data: {
+    result:[
+      {
+        type:'报价单',
+        city:'广州',
+        firm:'小喇叭信息科技有限公司',
+        number:202404170000612766,
+        showDetail:true
+      },
+      {
+        type:'询价单',
+        city:'长沙',
+        firm:'小喇叭信息科技有限公司',
+        number:202404170000612767,
+        showDetail:true
+      },
+      {
+        type:'报价单',
+        city:'上海',
+        firm:'小喇叭信息科技有限公司',
+        number:20202404170000612768,
+        showDetail:false
+      },    
+      {
+        type:'询价单',
+        city:'深圳',
+        firm:'小喇叭信息科技有限公司',
+        number:20202404170000612769,
+        showDetail:false
+      },
+    ]
+  },
+  changeShowDetail(e){
+    const { index } = e.currentTarget.dataset;
+    this.data.result[index].showDetail=!this.data.result[index].showDetail
+    this.setData(this.data)
+  }
+})

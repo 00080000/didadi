@@ -1,0 +1,28 @@
+<!--pages/search/search.wxml-->
+<view class="container">
+  <view class="header">
+    输入页面中搜索内容的关键字
+  </view>
+  <view class="form">
+    <input placeholder="输入关键字" style="width: 500rpx;"/>
+    <button size="mini">搜索</button>
+  </view>
+  <view class="result">
+    <view wx:for="{{result}}" 
+    wx:for-item="item"
+    wx:key="index"
+    class="item">
+      <view class="itemHeader" 
+      data-index="{{index}}"
+      bind:tap="changeShowDetail">
+        <view class="title">{{item.type}}-{{item.city}}-{{item.firm}}</view>
+        <image wx:if="{{item.showDetail==true}}" src="/static/upArrow-gray.png"></image>
+        <image wx:if="{{item.showDetail==false}}" src="/static/downArrow-gray.png"></image>
+      </view>
+      <view wx:if="{{item.showDetail==true}}" class="itemContent">
+        来自{{item.city}}{{item.firm}}的{{item.type}}{{item.number}}，可点击“查看”按钮进行下一步操作。
+        <button size="mini">查看</button>
+      </view>
+    </view>
+  </view>
+</view>

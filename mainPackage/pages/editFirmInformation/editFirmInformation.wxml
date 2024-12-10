@@ -1,0 +1,53 @@
+<!--mainPackage/pages/editFirmInformation/editFirmInformation.wxml-->
+<view class="container">
+  <view class="header">
+    以下信息将显示在您对外发送的文档中，请仔细填写！
+  </view>
+  <view class="form">
+    <view class="inputArea">
+      <view class="label">企业名称</view>
+      <input placeholder="请输入商户名称" class="input" style="width: 450rpx;"/>
+    </view>
+    <view class="pickerArea">
+      <view class="label">纳税人</view>
+      <picker bindchange="pickerChange" mode="selector" value="{{index}}" range="{{pickerValue}}"	 class="picker-area">
+        <view class="showPickerValue">
+          {{pickerValue[index]}}
+          <image src="/static/downArrow-gray.png"></image>
+        </view>
+      </picker>
+    </view>
+    <view class="inputArea">
+      <view class="label">官方网站</view>
+      <input placeholder="请输入网址" class="input" style="width: 450rpx;"/>
+    </view>
+    <view class="inputArea">
+      <view class="label">信用代码</view>
+      <input placeholder="请输入信用代码" class="input" style="width: 450rpx;"/>
+    </view>
+    <view class="inputArea">
+      <view class="label">注册电话</view>
+      <input placeholder="请输入注册电话" class="input" style="width: 450rpx;"/>
+    </view>
+    <view class="inputArea">
+      <view class="label">开户行</view>
+      <input placeholder="请输入开户行名称" class="input" style="width: 450rpx;"/>
+    </view>
+    <view class="inputArea">
+      <view class="label">银行账号</view>
+      <input placeholder="请输入银行账号" class="input" style="width: 450rpx;"/>
+    </view>
+    <view class="textArea">
+      <view class="label">注册地址</view>
+      <textarea placeholder="请输入注册地址" style="width: 450rpx;font-size: 27rpx;font-weight: lighter;"></textarea>
+    </view>
+  </view>
+  <view class="buttonGroup">
+    <view class="cancelButton" bind:tap="cancel">
+      取消
+    </view>
+    <view class="confirmButton" bind:tap="confirm">
+      确定
+    </view>
+  </view>
+</view>

@@ -68,8 +68,7 @@ page{
 
 .input {
   height: 70rpx;
-  font-weight: lighter;
-  font-size: large;
+  font-size: 28rpx;
   text-align: left;
   padding: 10rpx 25rpx;
 }
@@ -91,7 +90,7 @@ page{
 .loginButton {
   background-color: #F9B712;
   color:white;
-  font-size: 35rpx;
+  font-size: 30rpx;
   font-weight:500;
   height: 90rpx;
   border-radius: 999rpx;

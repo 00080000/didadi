@@ -5,12 +5,27 @@
     "pages/phone-login/phone-login",
     "pages/register/register",
     "pages/privacy-agreement/privacy-agreement",
-    "pages/service-agreement/service-agreement"
+    "pages/service-agreement/service-agreement",
+    "pages/search/search",
+    "components/header/header"
+  ],
+  "subPackages": [
+    {
+      "root": "mainPackage",
+      "pages": [
+        "pages/home/home",
+        "pages/systemManage/systemManage",
+        "pages/personalInformation/personalInformation",
+        "pages/editPassword/editPassword",
+        "pages/editFirmInformation/editFirmInformation",
+        "pages/message/message"
+      ]
+    }
   ],
   "window": {
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "小喇叭报价系统",
-    "navigationBarBackgroundColor": "#ffffff"
+    "navigationBarBackgroundColor": "#DDDDDD"
   },
   "style": "v2",
   "componentFramework": "glass-easel",

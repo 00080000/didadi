@@ -1,0 +1,26 @@
+/* components/header/header.wxss */
+.header{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 5rpx;
+}
+
+.logo {
+  width: 220rpx;
+  height: 55rpx;
+  margin-left: 30rpx;
+}
+
+.address {
+  font-size: 25rpx;
+  margin-bottom: 5rpx;
+  margin-left: 30rpx;
+  font-weight: 500;
+}
+
+.search {
+  width: 75rpx;
+  height: 75rpx;
+  margin-right: 20rpx;
+}

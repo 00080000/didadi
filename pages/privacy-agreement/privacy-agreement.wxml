@@ -2,7 +2,7 @@
 <view class="container">
   <!-- 上方的Logo与文字提示部分 -->
   <view class="topArea">
-    <view class='logoArea'>
+    <view class='header'>
       <image src="/static/logo.png" class="logo"></image>
       <text class="address">https://app.didadi.vip</text>
     </view>

@@ -1,0 +1,51 @@
+<!--mainPackage/pages/personalInformation/personalInformation.wxml-->
+<view class="container">
+  <!-- 上方的Logo与文字提示部分 -->
+  <view class="topArea">
+    <header></header>
+    <view class='userArea'>
+      <view class="userInformation">
+        <view class="avatarArea">
+          <image class="avatar" src="/static/avatar.jpg" ></image>
+        </view>
+        <view class="wordArea">
+          <view style="font-size: 38rpx;margin-top: 10rpx;">{{name}}</view>
+          <view style="font-size: 28rpx;margin-bottom: 10rpx;">{{phone}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view class="form">
+    <view class="inputArea">
+      <view class="label">联系人</view>
+      <input placeholder="请输入姓名" model:value="{{name}}"	class="input" style="width: 400rpx;"/>
+    </view>
+    <view class="inputArea">
+      <view class="label">性别</view>
+      <view class="selectSex">
+        <view bind:tap="setMale" class="{{sex==1 ? 'selectedSex' : 'notSelectedSex'}}">
+          先生
+        </view>
+        <view bind:tap="setFemale" style="margin-left: 30rpx;" class="{{sex==0 ? 'selectedSex' : 'notSelectedSex'}}">
+          女士
+        </view>
+      </view>
+    </view>
+    <view class="inputArea">
+      <view class="label">电话</view>
+      <input placeholder="请输入电话" model:value="{{phone}}"	class="input" style="width: 400rpx;"/>
+    </view>
+    <view class="inputArea">
+      <view class="label">邮箱</view>
+      <input placeholder="请输入邮箱" model:value="{{email}}" class="input" style="width: 400rpx;"/>
+    </view>
+  </view>
+  <view class="buttonGroup">
+    <view class="cancelButton" bind:tap="cancel">
+      取消
+    </view>
+    <view class="confirmButton" bind:tap="confirm">
+      确定
+    </view>
+  </view>
+</view>

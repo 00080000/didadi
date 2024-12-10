@@ -5,9 +5,9 @@ Page({
     const app = getApp();
     app.globalData.userInfo = {};
     app.globalData.authenticated = true;
-    // wx.navigateTo({
-  
-    // })
+    wx.redirectTo({
+      url:'/mainPackage/pages/home/home'
+    })
   },
   // 跳转至短信验证码登录界面
   loginWithPhone(){
