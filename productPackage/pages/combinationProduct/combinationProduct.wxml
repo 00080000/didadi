@@ -1,0 +1,51 @@
+<view class="container">
+  <!-- 上方的Logo与文字提示部分 -->
+  <view class="topArea">
+    <header></header>
+    <view class="options">
+      <view class="singleProoductOption" bind:tap="goToSingleProoduct">
+        单商品库
+      </view>
+      <view class="divide" style="margin-right: 20rpx;"></view>
+      <view class="chooseOption">
+        组合商品库
+      </view>
+      <view class="divide" style="margin-left: 20rpx;"></view>
+      <view class="temporaryProoductOption" bind:tap="goToTemporaryProoduct">
+        临时商品库
+      </view>
+    </view>
+  </view>
+  <view class="productList">
+    <view class="productCard" wx:for="{{products}}" wx:key="index" wx:for-item="item">
+      <view class="cardLeft">
+        <view class="sideBar"></view>
+        <view class="information">
+          <view style="font-size: 25rpx;">组合商品名称{{item.name}}</view>
+        </view>
+      </view>
+      <view class="operation">
+        <button size="mini" bind:tap="goToViewProduct">查看</button>
+        <image src="/static/delete.png" bind:tap="confirmDelete"></image>
+      </view>
+    </view>
+  </view>
+  <view class="tabBar">
+    <view class="notSelectedNavigateBar" bind:tap="navigateToMain">
+      <image mode="heightFix" src="/static/home-gray.png"></image>
+      首页
+    </view>
+    <view class="notSelectedNavigateBar" bind:tap="navigateToPrice">
+      <image mode="heightFix" src="/static/price-gray.png"></image>
+      询报价
+    </view>
+    <view class="selectedNavigateBar">
+      <image mode="heightFix" src="/static/product-blue.png"></image>
+      商品
+    </view>
+    <view class="notSelectedNavigateBar" bind:tap="navigateToMerchant">
+      <image mode="heightFix" src="/static/merchant-gray.png"></image>
+      商家
+    </view>
+  </view>
+</view>  

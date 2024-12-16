@@ -1,0 +1,16 @@
+<view class="container">
+  <view class="header">
+    如需编辑商品或添加商品，请登录电脑端操作！
+  </view>
+  <view class="productList">
+    <view class="productCard" wx:for="{{list}}" wx:key="index" wx:for-item="item">
+      <view class="cardLeft">
+        <view class="sideBar"></view>
+        <view class="information">
+          <view style="font-size: 25rpx;">商品名称{{item.name}}</view>
+          <view style="font-size: 22rpx;">数量：{{item.num}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

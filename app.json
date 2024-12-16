@@ -20,6 +20,26 @@
         "pages/editFirmInformation/editFirmInformation",
         "pages/message/message"
       ]
+    },
+    {
+      "root": "merchantPackage",
+      "pages": [
+        "pages/merchants/merchants",
+        "pages/editInformation/editInformation",
+        "pages/contacts/contacts",
+        "pages/addContact/addContact"
+      ]
+    },
+    {
+      "root": "productPackage",
+      "pages": [
+        "pages/singleProduct/singleProduct",
+        "pages/combinationProduct/combinationProduct",
+        "pages/temporaryProduct/temporaryProduct",
+        "pages/viewSingleProduct/viewSingleProduct",
+        "pages/viewCombinationProduct/viewCombinationProduct",
+        "pages/viewSingleProductInCombination/viewSingleProductInCombination"
+      ]
     }
   ],
   "window": {

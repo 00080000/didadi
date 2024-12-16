@@ -17,5 +17,18 @@ Page({
     wx.navigateTo({
       url: '/mainPackage/pages/systemManage/systemManage',
     })
+  },
+  navigateToPrice(){
+
+  },
+  navigateToProduct(){
+    wx.redirectTo({
+      url: '/productPackage/pages/singleProduct/singleProduct',
+    })
+  },
+  navigateToMerchant(){
+    wx.redirectTo({
+      url: '/merchantPackage/pages/merchants/merchants',
+    })
   }
 })

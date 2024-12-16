@@ -1,0 +1,52 @@
+<!--merchantPackage/pages/contacts/contacts.wxml-->
+<view class="container">
+  <!-- 上方的Logo与文字提示部分 -->
+  <view class="topArea">
+    <header></header>
+    <view class="options">
+      <view class="notChooseOption"  bind:tap="goToMerchant">
+        商家库
+      </view>
+      <view class="divide"></view>
+      <view class="chooseOption">
+        联系人库
+      </view>
+    </view>
+  </view>
+  <view class="add" bind:tap="goToAddContact">
+    新建  
+  </view>
+  <view class="contactList">
+    <view class="contactCard" wx:for="{{contacts}}" wx:key="index" wx:for-item="item">
+      <view class="cardLeft">
+        <view class="sideBar"></view>
+        <view class="information">
+          <view style="font-size: 25rpx;">{{item.name}}，{{item.phone}}</view>
+          <view style="font-size: 22rpx;">{{item.firm}}</view>
+        </view>
+      </view>
+      <view class="operation">
+        <button size="mini" bind:tap="goToEditMerchant">编辑</button>
+        <image src="/static/delete.png" bind:tap="confirmDelete"></image>
+      </view>
+    </view>
+  </view>
+  <view class="tabBar">
+    <view class="notSelectedNavigateBar" bind:tap="navigateToMain">
+      <image mode="heightFix" src="/static/home-gray.png"></image>
+      首页
+    </view>
+    <view class="notSelectedNavigateBar" bind:tap="navigateToPrice">
+      <image mode="heightFix" src="/static/price-gray.png"></image>
+      询报价
+    </view>
+    <view class="notSelectedNavigateBar" bind:tap="navigateToProduct">
+      <image mode="heightFix" src="/static/product-gray.png"></image>
+      商品
+    </view>
+    <view class="selectedNavigateBar">
+      <image mode="heightFix" src="/static/merchant-blue.png"></image>
+      商家
+    </view>
+  </view>
+</view>  

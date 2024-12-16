@@ -1,0 +1,47 @@
+<view class="container">
+  <view class="header">
+    如需编辑商品或添加商品，请登录电脑端操作！
+  </view>
+  <view class="form">
+    <view class="inputArea">
+      <view class="label">商品名称</view>
+      <input class="input" style="width: 450rpx;" disabled="true" value="{{product.name}}"/>
+    </view>
+    <view class="inputArea">
+      <view class="label">商品编号</view>
+      <input class="input" style="width: 450rpx;" disabled="true" value="{{product.number}}"/>
+    </view>
+    <view class="inputArea">
+      <view class="label">商品标签</view>
+      <input class="input" style="width: 450rpx;" disabled="true" value="{{product.tag}}"/>
+    </view>
+    <view class="textArea">
+      <view class="label">备注</view>
+      <textarea style="width: 450rpx;font-size: 27rpx;font-weight: lighter;color:black" value="{{product.remark}}" disabled="true"></textarea>
+    </view>
+    <view class="inputArea">
+      <view class="label">状态</view>
+      <input class="input" style="width: 450rpx;" disabled="true" value="{{product.status}}"/>
+    </view>
+    <view class="inputArea">
+      <view class="label">有效时间</view>
+      <input class="input" style="width: 450rpx;" disabled="true" value="{{product.time}}"/>
+    </view>
+    <view class="listArea">
+      <view class="label">商品列表</view>
+      <view class="list">
+        <view>共{{product.list.length}}个商品</view>
+        <view style="display: flex;align-items: center;" bind:tap="goToViewSingleProduct">
+          查看
+          <image src="/static/rightArrow-gray.png"></image>  
+        </view>
+      </view>
+    </view>
+    <view class="imageArea">
+      <view class="label">产品图片</view>
+      <view class="productImage">
+        <image src="{{product.image}}"></image>
+      </view>
+    </view>
+  </view>
+</view>

@@ -6,28 +6,28 @@ Page({
         type:'报价单',
         city:'广州',
         firm:'小喇叭信息科技有限公司',
-        number:202404170000612766,
+        number:'202404170000612766',
         showDetail:true
       },
       {
         type:'询价单',
         city:'长沙',
         firm:'小喇叭信息科技有限公司',
-        number:202404170000612767,
+        number:'202404170000612767',
         showDetail:true
       },
       {
         type:'报价单',
         city:'上海',
         firm:'小喇叭信息科技有限公司',
-        number:20202404170000612768,
+        number:'20202404170000612768',
         showDetail:false
       },    
       {
         type:'询价单',
         city:'深圳',
         firm:'小喇叭信息科技有限公司',
-        number:20202404170000612769,
+        number:'20202404170000612769',
         showDetail:false
       },
     ]

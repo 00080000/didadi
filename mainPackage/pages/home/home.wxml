@@ -109,19 +109,19 @@
   </view>
   <view class="tabBar">
     <view class="selectedNavigateBar">
-      <image src="/static/home-blue.png"></image>
+      <image mode="heightFix" src="/static/home-blue.png"></image>
       首页
     </view>
-    <view class="notSelectedNavigateBar">
-      <image src="/static/price-gray.png"></image>
+    <view class="notSelectedNavigateBar" bind:tap="navigateToPrice">
+      <image mode="heightFix" src="/static/price-gray.png"></image>
       询报价
     </view>
-    <view class="notSelectedNavigateBar">
-      <image src="/static/product-gray.png"></image>
+    <view class="notSelectedNavigateBar" bind:tap="navigateToProduct">
+      <image mode="heightFix" src="/static/product-gray.png"></image>
       商品
     </view>
-    <view class="notSelectedNavigateBar">
-      <image src="/static/merchant-gray.png"></image>
+    <view class="notSelectedNavigateBar" bind:tap="navigateToMerchant">
+      <image mode="heightFix" src="/static/merchant-gray.png"></image>
       商家
     </view>
   </view>

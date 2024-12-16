@@ -1,0 +1,53 @@
+<view class="container">
+  <view class="header">
+    如需编辑商品或添加商品，请登录电脑端操作！
+  </view>
+  <view class="form">
+    <view class="inputArea">
+      <view class="label">商品名称</view>
+      <input class="input" style="width: 450rpx;" disabled="true" value="{{product.name}}"/>
+    </view>
+    <view class="inputArea">
+      <view class="label">商品编号</view>
+      <input class="input" style="width: 450rpx;" disabled="true" value="{{product.number}}"/>
+    </view>
+    <view class="inputArea">
+      <view class="label">型号</view>
+      <input class="input" style="width: 450rpx;" disabled="true" value="{{product.type}}"/>
+    </view>
+    <view class="inputArea">
+      <view class="label">标签</view>
+      <input class="input" style="width: 450rpx;" disabled="true" value="{{product.tag}}"/>
+    </view>
+    <view class="inputArea">
+      <view class="label">单位</view>
+      <input class="input" style="width: 450rpx;" disabled="true" value="{{product.unit}}"/>
+    </view>
+    <view class="inputArea">
+      <view class="label">单价</view>
+      <input class="input" style="width: 450rpx;" disabled="true" value="{{product.price}}"/>
+    </view>
+    <view class="inputArea">
+      <view class="label">品牌</view>
+      <input class="input" style="width: 450rpx;" disabled="true" value="{{product.brand}}"/>
+    </view>
+    <view class="inputArea">
+      <view class="label">生产商</view>
+      <input class="input" style="width: 450rpx;" disabled="true" value="{{product.producer}}"/>
+    </view>
+    <view class="imageArea">
+      <view class="label">产品图片</view>
+      <view class="productImage">
+        <image src="{{product.image}}"></image>
+      </view>
+    </view>
+    <view class="inputArea">
+      <view class="label">有效时间</view>
+      <input class="input" style="width: 450rpx;" disabled="true" value="{{product.time}}"/>
+    </view>
+    <view class="inputArea">
+      <view class="label">状态</view>
+      <input class="input" style="width: 450rpx;" disabled="true" value="{{product.status}}"/>
+    </view>
+  </view>
+</view>
