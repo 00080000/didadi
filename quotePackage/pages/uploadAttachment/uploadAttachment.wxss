@@ -1,0 +1,80 @@
+page{
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  position: relative;
+}
+
+/* 上方区域 */
+.topArea {
+  width: 100%;
+  height: 25%;
+  background-color: #DDDDDD;
+  padding: 20rpx 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.content {
+  margin:40rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}  
+
+.information {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-around;
+  color: #23394D;
+}  
+
+.editButton {
+  float: right;
+}
+
+.editButton button {
+  padding: 7rpx 35rpx;
+  background-color: #DDDDDD;
+  border: 1px solid #23394D;
+  color: #23394D;
+  font-weight: lighter;
+  font-size: 23rpx;
+}
+
+.fileList {
+  width: 690rpx;
+  margin-left: 20rpx;
+  margin-top: 40rpx;
+}
+
+.fileCard {
+  width: 100%;
+  padding: 5rpx 10rpx;
+  margin-top: 20rpx;
+  height: 80rpx;
+  border-bottom: 1px solid lightgray;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fileCard image {
+  width: 50rpx;
+  height: 50rpx;
+  margin-right: 5rpx;
+}
+
+.fileInformation {
+  display: flex;
+  align-items: center;
+  margin-left: 5rpx;
+}
+
+.fileInformation view {
+  margin-left: 15rpx;
+  font-size: 25rpx;
+}

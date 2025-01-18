@@ -4,5 +4,4 @@
     <image src="/static/logo.png" class="logo"></image>
     <text class="address">https://app.didadi.vip</text>
   </view>
-  <image src="/static/search.png" class="search" bind:tap="search"></image>
 </view>

@@ -11,7 +11,8 @@ Page({
     purchaserQuantity:24,
     supplierQuantity:5,
     singleGoodsSKU:135,
-    combinationGoodsSKU:36
+    combinationGoodsSKU:36,
+    ifShow:false
   },
   goToSystemManage(){
     wx.navigateTo({
@@ -19,7 +20,9 @@ Page({
     })
   },
   navigateToPrice(){
-
+    wx.redirectTo({
+      url: '/quotePackage/pages/sendedQuotationForm/sendedQuotationForm',
+    })
   },
   navigateToProduct(){
     wx.redirectTo({
@@ -30,5 +33,28 @@ Page({
     wx.redirectTo({
       url: '/merchantPackage/pages/merchants/merchants',
     })
-  }
+  },
+  setIfShow(){
+    this.setData({
+      ifShow:!this.data.ifShow
+    })
+  },
+  goToAddQuotation(){
+    wx.navigateTo({
+      url: '/quotePackage/pages/addQuotation/addQuotation',
+    })
+  },
+  goToAddInquiry(){
+    
+  },
+  goToAddMerchant(){
+    wx.navigateTo({
+      url: '/merchantPackage/pages/editInformation/editInformation',
+    })
+  },
+  goToAddContact(){
+    wx.navigateTo({
+      url: '/merchantPackage/pages/addContact/addContact',
+    })
+  },
 })

@@ -1,0 +1,215 @@
+// quotePackage/pages/chooseMerchant/chooseMerchant.js
+Page({
+  data:{
+    merchants:[
+      {
+        name:"黄老板",
+        phone:"13900009999",
+        firm:"长沙好好信息科技有限公司1",
+        select:false,
+        id:1
+      },
+      {
+        name:"黄老板",
+        phone:"13900009999",
+        firm:"长沙好好信息科技有限公司2",
+        select:false,
+        id:2
+      },
+      {
+        name:"黄老板",
+        phone:"13900009999",
+        firm:"长沙好好信息科技有限公司3",
+        select:false,
+        id:3
+      },
+      {
+        name:"黄老板",
+        phone:"13900009999",
+        firm:"长沙好好信息科技有限公司",
+        select:false,
+        id:4
+      },
+      {
+        name:"黄老板",
+        phone:"13900009999",
+        firm:"长沙好好信息科技有限公司",
+        select:false,
+        id:5
+      },
+      {
+        name:"黄老板",
+        phone:"13900009999",
+        firm:"长沙好好信息科技有限公司",
+        select:false,
+        id:6
+      },
+      {
+        name:"黄老板",
+        phone:"13900009999",
+        firm:"长沙好好信息科技有限公司",
+        select:false,
+        id:7
+      },
+      {
+        name:"黄老板",
+        phone:"13900009999",
+        firm:"长沙好好信息科技有限公司",
+        select:false,
+        id:8
+      },
+      {
+        name:"黄老板",
+        phone:"13900009999",
+        firm:"长沙好好信息科技有限公司",
+        select:false,
+        id:9
+      },
+      {
+        name:"黄老板",
+        phone:"13900009999",
+        firm:"长沙好好信息科技有限公司",
+        select:false,
+        id:10
+      },
+    ],
+    contact:[
+      {
+        name:"黄老板1",
+        phone:"13900009999",
+        firm:"长沙好好信息科技有限公司",
+        select:false,
+        id:1
+      },
+      {
+        name:"黄老板2",
+        phone:"13900009999",
+        firm:"长沙好好信息科技有限公司",
+        select:false,
+        id:2
+      },
+      {
+        name:"黄老板3",
+        phone:"13900009999",
+        firm:"长沙好好信息科技有限公司",
+        select:false,
+        id:3
+      },
+      {
+        name:"黄老板",
+        phone:"13900009999",
+        firm:"长沙好好信息科技有限公司",
+        select:false,
+        id:4
+      },
+    ],
+    filterMerchant:[],
+    filterContact:[],
+    index:1,
+    merchantKeyword:'',
+    contactKeyword:''
+  },
+  onLoad(){
+    this.setData({
+      filterMerchant:this.data.merchants,
+      filterContact:this.data.contact,
+    })
+  },
+  switchToContact(){
+    this.setData({
+      index:2
+    })
+  },
+  switchToMerchant(){
+    this.setData({
+      index:1
+    })
+  },
+  inputMerchant(){
+    if(this.data.merchantKeyword==''){
+      this.setData({
+        filterMerchant:this.data.merchants
+      })
+    } else {
+      this.setData({
+        filterMerchant:this.data.merchants.filter(item => item.firm.includes(this.data.merchantKeyword))
+      })
+    }
+  },
+  inputContact(){
+    if(this.data.contactKeyword=='') {
+      this.setData({
+        filterContact:this.data.contact
+      })
+    } else {
+      this.setData({
+        filterContact:this.data.contact.filter(item => item.name.includes(this.data.contactKeyword))
+      })
+    }
+  },
+  chooseMerchant(e){
+    this.data.merchants.forEach(item=>{
+      item.select=false
+      if(this.data.index==1&&e.currentTarget.dataset.index==item.id) {
+        item.select=true
+      }
+    })
+    this.data.contact.forEach(item=>{
+      item.select=false
+      if(this.data.index==2&&e.currentTarget.dataset.index==item.id) {
+        item.select=true
+      }
+    })
+    if(this.data.merchantKeyword==''&&this.data.contactKeyword==''){
+        this.setData({
+          merchants:this.data.merchants,
+          contact:this.data.contact,
+          filterMerchant:this.data.merchants,
+          filterContact:this.data.contact
+        })
+    } else if(this.data.merchantKeyword!=''&&this.data.contactKeyword==''){
+      this.setData({
+        merchants:this.data.merchants,
+        contact:this.data.contact,
+        filterMerchant:this.data.merchants.filter(item => item.firm.includes(this.data.merchantKeyword)),
+        filterContact:this.data.contact
+      })
+    } else if(this.data.merchantKeyword==''&&this.data.contactKeyword!=''){
+      this.setData({
+        merchants:this.data.merchants,
+        contact:this.data.contact,
+        filterMerchant:this.data.merchants,
+        filterContact:this.data.contact.filter(item => item.name.includes(this.data.contactKeyword))
+      })
+    } else if(this.data.merchantKeyword!=''&&this.data.contactKeyword!=''){
+      this.setData({
+        merchants:this.data.merchants,
+        contact:this.data.contact,
+        filterMerchant:this.data.merchants.filter(item => item.firm.includes(this.data.merchantKeyword)),
+        filterContact:this.data.contact.filter(item => item.name.includes(this.data.contactKeyword))
+      })
+    }
+  },
+  goToChooseContact(){
+    wx.navigateTo({
+      url: '/quotePackage/pages/chooseContactOfMerchant/chooseContactOfMerchant',
+    })
+  },
+  addNew(){
+    if(this.data.index==1) {
+      wx.navigateTo({
+        url: '/merchantPackage/pages/editInformation/editInformation',
+      })
+    } else {
+      wx.navigateTo({
+        url: '/merchantPackage/pages/addContact/addContact',
+      })
+    }
+  },
+  cancel(){
+    wx.navigateBack()
+  },
+  confirm(){
+    wx.navigateBack()
+  }
+})

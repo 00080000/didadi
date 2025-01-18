@@ -1,0 +1,151 @@
+page{
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  position: relative;
+}
+
+/* 上方区域 */
+.topArea {
+  width: 100%;
+  height: 25%;
+  background-color: #DDDDDD;
+  padding: 20rpx 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.content {
+  margin:40rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}  
+
+.information {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-around;
+  color: #23394D;
+}  
+
+.editButton {
+  float: right;
+}
+
+.editButton button {
+  padding: 7rpx 35rpx;
+  background-color: #DDDDDD;
+  border: 1px solid #23394D;
+  color: #23394D;
+  font-weight: lighter;
+  font-size: 23rpx;
+}
+
+
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 50rpx;
+}
+
+.inputArea {
+  width: 700rpx;
+  height: 100rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.inputArea .label{
+  font-size: 27rpx;
+}
+
+.input {
+  height: 50rpx;
+  text-align: left;
+  padding: 10rpx 23rpx;
+  border: 2rpx solid lightgray;
+  border-radius: 5px;
+  font-size: 27rpx;
+  font-weight: lighter;
+}
+
+.inputArea image {
+  width: 50rpx;
+  height: 50rpx;
+}
+
+.pickerArea {
+  width: 700rpx;
+  height: 100rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pickerArea .label{
+  font-size: 27rpx;
+}
+
+.picker-area {
+  border: 2rpx solid lightgray;
+  border-radius: 5px;
+  width: 450rpx;
+  height: 50rpx;
+  padding: 10rpx 23rpx;
+  font-size: 27rpx;
+  font-weight: lighter;
+}
+
+.picker-area image {
+  width: 50rpx;
+  height: 50rpx;
+}
+
+.showPickerValue {
+  width: 100%;
+  height: 50rpx;
+  text-align: left;
+  border-radius: 5px;
+  display: flex; 
+  align-items: center;
+  justify-content: space-between;
+}
+
+.buttonGroup {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 90rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.cancelButton {
+  width: 50%;
+  height: 100%;
+  font-size: 30rpx;
+  background-color: whitesmoke;
+  color: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirmButton {
+  width: 50%;
+  height: 100%;
+  font-size: 30rpx;
+  background-color: #F9B712;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

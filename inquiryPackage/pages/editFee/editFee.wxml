@@ -1,0 +1,41 @@
+<view class="container">
+  <view class="header">
+    以下信息将显示在您对外发送的文档中，请仔细填写！
+  </view>
+  <view class="form">
+    <view class="card" wx:for="{{fee}}" wx:key="index" wx:for-item="item">
+      <view data-index="{{index}}" style="height:100%;width:100%;" wx:if="{{index!=selectedIndex}}" bind:tap="choose">
+        <view class="cardLeft">
+          <view class="graySideBar">
+            <view></view>
+          </view>
+          <view class="information" style="color: gray">
+            <view style="font-size: 25rpx;">{{item.name}}</view>
+            <view style="font-size: 22rpx;">类型：{{item.type}}，公式={{item.amount}}*{{item.weight}}</view>
+          </view>
+        </view>
+      </view>
+      <view data-index="{{index}}" style="height:100%;width:100%;" wx:if="{{index==selectedIndex}}" bind:tap="cancelChoice">
+        <view class="cardLeft">
+          <view class="blueSideBar">
+            <view>
+              ✔
+            </view>
+          </view>
+          <view class="information" style="color: #23394D;">
+            <view style="font-size: 25rpx;">{{item.name}}</view>
+            <view style="font-size: 22rpx;">类型：{{item.type}}，公式={{item.amount}}*{{item.weight}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view class="buttonGroup">
+    <view class="cancelButton" bind:tap="cancel">
+      取消
+    </view>
+    <view class="confirmButton" bind:tap="confirm">
+      确定
+    </view>
+  </view>
+</view>

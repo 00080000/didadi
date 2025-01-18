@@ -12,7 +12,7 @@
       <view class="label">纳税人</view>
       <picker bindchange="pickerChange" mode="selector" value="{{index}}" range="{{pickerValue}}"	 class="picker-area">
         <view class="showPickerValue">
-          {{pickerValue[index]}}
+          <view>{{pickerValue[index]}}</view>
           <image src="/static/downArrow-gray.png"></image>
         </view>
       </picker>

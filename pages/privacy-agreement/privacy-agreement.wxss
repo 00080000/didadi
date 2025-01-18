@@ -34,6 +34,7 @@ page{
   margin-bottom: 5rpx;
   margin-left: 30rpx;
   font-weight: 500;
+  color: #23394D;
 }
 
 .agreementName {
@@ -42,6 +43,7 @@ page{
   text-align: left;
   margin-left: 20rpx;
   margin-top: 50rpx;
+  color: #23394D;
 }
 
 .tip {
@@ -49,6 +51,7 @@ page{
   text-align: left;
   margin-left: 20rpx;
   margin-top: 75rpx;
+  color: #23394D;
 }
 
 /* 下方区域 */

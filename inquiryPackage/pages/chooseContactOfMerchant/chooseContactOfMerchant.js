@@ -1,0 +1,76 @@
+Page({
+  data:{
+    firm:'长沙好好信息科技有限公司',
+    contacts:[
+      {
+        name:"黄老板",
+        phone:"13900009999",
+        email:'13900009999@qq.com',
+        select:false,
+        id:1
+      },
+      {
+        name:"胡老板",
+        phone:"13900009999",
+        email:'13900009999@qq.com',
+        select:false,
+        id:2
+      },
+      {
+        name:"李老板",
+        phone:"13900009999",
+        email:'13900009999@qq.com',
+        select:false,
+        id:3
+      },
+    ],
+    filterContact:[],
+    contactKeyword:''
+  },
+  onLoad(){
+    this.setData({
+      filterContact:this.data.contacts
+    })
+  },
+  inputContact(){
+    if(this.data.contactKeyword==''){
+      this.setData({
+        filterContact:this.data.contacts
+      })
+    } else {
+      this.setData({
+        filterContact:this.data.contacts.filter(item => item.name.includes(this.data.contactKeyword))
+      })
+    }
+  },
+  chooseContact(e){
+    this.data.contacts.forEach(item=>{
+      item.select=false
+      if(e.currentTarget.dataset.index==item.id) {
+        item.select=true
+      }
+    })
+    if(this.data.contactKeyword==''){
+      this.setData({
+        contacts:this.data.contacts,
+        filterContact:this.data.contacts
+      })
+    } else {
+      this.setData({
+        contacts:this.data.contacts,
+        filterContact:this.data.contacts.filter(item => item.name.includes(this.data.contactKeyword))
+      })
+    }
+  },
+  goToEditContact(){
+    wx.navigateTo({
+      url: '/inquiryPackage/pages/editContactOfMerchant/editContactOfMerchant',
+    })
+  },
+  cancel(){
+    wx.navigateBack()
+  },
+  confirm(){
+    wx.navigateBack()
+  }
+})

@@ -15,14 +15,15 @@ page{
   padding: 20rpx 0;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
 }
 
 .add {
   position: absolute;
-  left: 550rpx;
-  top: 23.3%;
-  height: 125rpx;
-  width: 125rpx;
+  right: 30rpx;
+  top: 23.5%;
+  height: 120rpx;
+  width: 120rpx;
   background-color: #F9B712;
   display: flex;
   justify-content: center;
@@ -36,6 +37,7 @@ page{
 .options {
   display: flex;
   margin: 60rpx;
+  height: 60rpx;
   justify-content: space-between;
   align-items: center;
 }
@@ -65,6 +67,48 @@ page{
   display: flex;
   align-items: center;
   justify-content: flex-start;
+}
+
+
+.search {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 70rpx;
+  margin-left: 30rpx;
+  margin-bottom: 20rpx;
+}
+
+.searchText {
+  margin-left: 25rpx;
+  font-size: 30rpx;
+}
+
+.inputArea {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 60rpx;
+  padding: 5rpx 10rpx;
+  background-color: white;
+  border-radius: 5px;
+}
+
+.inputArea input {
+  font-size: 25rpx;
+  text-align: left;
+  padding: 0 10rpx;
+}
+
+.inputArea image {
+  width: 40rpx;
+  height: 40rpx;
+}
+
+form button {
+  background-color: #DDDDDD;
+  font-weight: lighter;
+  color: #23394D;
 }
 
 .contactList{
@@ -113,7 +157,7 @@ page{
 .operation {
   display: flex;
   align-items: center;
-  margin:15rpx
+  margin:15rpx;
 }
 
 .operation button {
@@ -145,6 +189,7 @@ page{
 }
 
 .selectedNavigateBar {
+  width: 25%;
   height: 100%;
   color: #23394D;
   font-size: 22rpx;
@@ -158,6 +203,7 @@ page{
 }
 
 .notSelectedNavigateBar {
+  width: 25%;
   height: 100%;
   color: gray;
   font-size: 22rpx;

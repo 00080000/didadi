@@ -1,0 +1,92 @@
+<view class="container">
+  <!-- 上方的Logo与文字提示部分 -->
+  <view class="topArea">
+    <view>
+      <view class='header' wx:if="{{!ifShowSearch}}">
+        <view style="display: flex;align-items: flex-end;">
+          <image src="/static/logo.png" class="logo"></image>
+          <text class="address">https://app.didadi.vip</text>
+        </view>
+        <view class="searchIcon" bind:tap="showSearch">
+          <image src='/static/search.png'></image>
+        </view>
+      </view>
+      <view class="searchArea" wx:if="{{ifShowSearch}}">
+        <form catchsubmit="inputQuotation" style="width: 100%;height: 100%">
+          <view style="display: flex;align-items: center;width: 100%;height: 100%;justify-content: space-around;">
+            <view class="inputArea">
+              <input style="width: 490rpx;" model:value="{{keyword}}" bindconfirm="inputQuotation"/>
+              <image src="/static/cancel.png" bind:tap="showSearch"></image>
+            </view>
+            <view style="display: flex;align-items: center;">
+              <button formType="submit" size="mini" style="font-size: 32rpx;">搜索</button>
+            </view>
+          </view>
+        </form>
+      </view>
+      <view class="options">
+        <view class="chooseOption">
+          报价单库
+        </view>
+        <view class="divide"></view>
+        <view class="notChooseOption" bind:tap="goToInquiry">
+          询价单库
+        </view>
+      </view>
+    </view>
+    <view class="quotationOption">
+      <view class="sendedQuotation">
+        发出的报价单
+      </view>
+      <view class="recievedQuotation" bind:tap="goToRecievedQuotation">
+        收到的报价单
+      </view>
+    </view>
+  </view>
+  <view class="add" bind:tap="goToAddQuotation">
+    新建  
+  </view>
+  <view class="cardList">
+    <view class="card" wx:for="{{filterQuotation}}" wx:key="index" wx:item="item">
+      <view class="cardLeft">
+        <view style="font-size: 22rpx;margin-top: 20rpx;">报价时间</view>
+        <view style="font-size: 20rpx;">{{item.date}}</view>
+        <view style="font-size: 20rpx;margin-bottom: 20rpx;">{{item.time}}</view>
+      </view>
+      <view class="cardRight">
+        <view class="title">
+          <view style="font-weight: bolder;font-size: 30rpx;margin-left: 15rpx;">￥{{item.amount}} 万元</view>
+          <view style="font-size: 23rpx;color: {{item.status==1?'blue':'orange'}};">{{item.status==1? '已提交':'已过期'}}</view>
+        </view>
+        <view class='quotationNumber'>
+          {{item.name}}
+        </view>
+        <view class="operation">
+          <button class="{{item.status==1? 'notDisabledButton':'disabledButton'}}" size="mini" disabled="{{item.status==0? true:false}}" bind:tap="goToViewRecievedQuotation">预览</button>
+          <button class="notDisabledButton" size="mini" bind:tap="edit">编辑</button>
+          <button class="notDisabledButton" size="mini" bind:tap="copy">复制</button>
+          <button class="{{item.status==1? 'notDisabledButton':'disabledButton'}}" size="mini"  bind:tap="share" disabled="{{item.status==0? true:false}}">分享</button>
+        <image src="/static/delete.png" bind:tap="confirmDelete"></image>
+      </view>
+      </view>
+    </view>
+  </view>
+  <view class="tabBar">
+    <view class="notSelectedNavigateBar" bind:tap="navigateToMain">
+      <image mode="heightFix" src="/static/home-gray.png"></image>
+      首页
+    </view>
+    <view class="selectedNavigateBar">
+      <image mode="heightFix" src="/static/price-blue.png"></image>
+      询报价
+    </view>
+    <view class="notSelectedNavigateBar" bind:tap="navigateToProduct">
+      <image mode="heightFix" src="/static/product-gray.png"></image>
+      商品
+    </view>
+    <view class="notSelectedNavigateBar" bind:tap="navigateToMerchant">
+      <image mode="heightFix" src="/static/merchant-gray.png"></image>
+      商家
+    </view>
+  </view>
+</view>  

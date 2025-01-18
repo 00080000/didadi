@@ -1,0 +1,23 @@
+<view class="container">
+  <!-- 上方的Logo与文字提示部分 -->
+  <view class="topArea">
+    <header></header>
+    <view class="information">
+      {{name}}
+    </view>
+    <view class="fileLength">
+      文档格式：{{file.length}} 种
+    </view>
+  </view>
+  <view class="fileList">
+    <view class="fileCard" wx:for="{{file}}" wx:for-item="item" wx:key="index" data-index="index">
+      <view class="fileInformation">
+        <image src="/static/word.png" wx:if="{{item.type=='doc'}}"></image>
+        <image src="/static/PDF.png" wx:if="{{item.type=='pdf'}}"></image>
+        <image src="/static/Excel.png" wx:if="{{item.type=='xls'}}"></image>
+        <view>{{item.name}}</view>
+      </view>
+      <image src="/static/download.png"></image>
+    </view>
+  </view>
+</view>

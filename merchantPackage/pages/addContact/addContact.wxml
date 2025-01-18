@@ -7,7 +7,7 @@
       <view class="label">商家名称</view>
       <picker bindchange="pickerChange" mode="selector" value="{{index}}" range="{{pickerValue}}"	 class="picker-area">
         <view class="showPickerValue">
-          {{index==null? "请选择商家":pickerValue[index]}}
+          <view>{{index==null? "请选择商家":pickerValue[index]}}</view>
           <image src="/static/downArrow-gray.png"></image>
         </view>
       </picker>

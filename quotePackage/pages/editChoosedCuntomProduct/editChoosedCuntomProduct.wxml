@@ -1,0 +1,42 @@
+<view class="container">
+  <view class="header">
+    以下信息将显示在您对外发送的文档中，请仔细填写！
+  </view>
+  <view class="form">
+    <view class="inputArea">
+      <view class="label">名称</view>
+      <input class="input" style="width: 450rpx;"/>
+    </view>
+    <view class="inputArea">
+      <view class="label">型号</view>
+      <input class="input" style="width: 450rpx;"/>
+    </view>
+    <view class="inputArea">
+      <view class="label">单价</view>
+      <view style="width: 500rpx;height: 70rpx;display: flex;align-items: center;">
+        <input type="digit" class="pickerInput" style="width: 225rpx;"/>
+        <view class="picker">
+          <view class="showPickerValue">
+             <view>选价格</view>
+             <image src="/static/downArrow-gray.png"></image>
+          </view>
+        </view>      
+      </view>
+    </view>
+    <view class="inputArea">
+      <view class="label">数量</view>
+      <input type="number" class="input" style="width: 450rpx;"/>
+    </view>
+    <view class="deleteButton">
+      删除商品
+    </view>
+  </view>
+  <view class="buttonGroup">
+    <view class="cancelButton" bind:tap="cancel">
+      取消
+    </view>
+    <view class="confirmButton" bind:tap="confirm">
+      确定
+    </view>
+  </view>
+</view>  

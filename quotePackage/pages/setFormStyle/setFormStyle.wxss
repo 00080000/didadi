@@ -1,0 +1,123 @@
+/* quotePackage/pages/setFormStyle/setFormStyle.wxss */
+page{
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  position: relative;
+}
+
+.header {
+  width: 100%;
+  height: 75rpx;
+  background-color: #DDDDDD;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 30rpx;
+}
+
+.inputArea {
+  width: 680rpx;
+  height: 100rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.inputArea .label{
+  font-size: 27rpx;
+}
+
+.inputArea image {
+  width: 50rpx;
+  height: 50rpx;
+  margin-right: 20rpx;
+}
+
+.input {
+  height: 50rpx;
+  text-align: left;
+  padding: 10rpx 23rpx;
+  border: 2rpx solid lightgray;
+  border-radius: 5px;
+  font-size: 27rpx;
+  font-weight: lighter;
+}
+
+.pickerArea {
+  width: 680rpx;
+  height: 100rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pickerArea .label{
+  font-size: 27rpx;
+}
+
+.picker-area {
+  border: 2rpx solid lightgray;
+  border-radius: 5px;
+  width: 450rpx;
+  height: 50rpx;
+  padding: 10rpx 23rpx;
+  font-size: 27rpx;
+  font-weight: lighter;
+}
+
+.picker-area image {
+  width: 50rpx;
+  height: 50rpx;
+}
+
+.showPickerValue {
+  width: 100%;
+  height: 50rpx;
+  text-align: left;
+  border-radius: 5px;
+  display: flex; 
+  align-items: center;
+  justify-content: space-between;
+}
+
+.buttonGroup {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 90rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.cancelButton {
+  width: 50%;
+  height: 100%;
+  font-size: 30rpx;
+  background-color: whitesmoke;
+  color: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirmButton {
+  width: 50%;
+  height: 100%;
+  font-size: 30rpx;
+  background-color: #F9B712;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

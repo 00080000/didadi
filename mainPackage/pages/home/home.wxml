@@ -23,8 +23,26 @@
     </view>
     <view></view>
   </view>
-  <view class="add">
+  <view class="add" bind:tap="setIfShow">
     新建  
+  </view>
+  <view class="addNewItem" wx:if="{{ifShow}}">
+    <view class='newItem' bind:tap="goToAddQuotation">
+      <image src="/static/newQuotation.png"></image>
+      报价单
+    </view>
+    <view class='newItem' bind:tap="goToAddInquiry">
+      <image src="/static/newInquiry.png"></image>
+      询价单
+    </view>
+    <view class='newItem' bind:tap="goToAddMerchant">
+      <image src="/static/newMerchant.png"></image>
+      商家
+    </view>
+    <view class='newItem' bind:tap="goToAddContact">
+      <image src="/static/newContact.png"></image>
+      联系人
+    </view>
   </view>
   <view class="showData">
     <view class="longCard">

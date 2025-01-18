@@ -2,7 +2,19 @@ Page({
   data: {
     products:[
       {
-        name:'AAAAAAAA',
+        name:'AAAAAAAA1',
+        quotation:"20244041200369"
+      },
+      {
+        name:'AAAAAAAA2',
+        quotation:"20244041200369"
+      },
+      {
+        name:'AAAAAAAA3',
+        quotation:"20244041200369"
+      },
+      {
+        name:'AAAAAAAA11',
         quotation:"20244041200369"
       },
       {
@@ -21,19 +33,25 @@ Page({
         name:'AAAAAAAA',
         quotation:"20244041200369"
       },
-      {
-        name:'AAAAAAAA',
-        quotation:"20244041200369"
-      },
-      {
-        name:'AAAAAAAA',
-        quotation:"20244041200369"
-      },
-      {
-        name:'AAAAAAAA',
-        quotation:"20244041200369"
-      },
-    ]
+    ],
+    filterProduct:[],
+    keyword:''
+  },
+  onLoad(){
+    this.setData({
+      filterProduct:this.data.products
+    })
+  },
+  inputProduct(){
+    if(this.data.keyword==''){
+      this.setData({
+        filterProduct:this.data.products
+      })
+    } else {
+      this.setData({
+        filterProduct:this.data.products.filter(item => item.name.includes(this.data.keyword))
+      })
+    }
   },
   confirmDelete(){
     wx.showModal({
@@ -69,7 +87,9 @@ Page({
     })
   },
   navigateToPrice(){
-
+    wx.redirectTo({
+      url: '/quotePackage/pages/sendedQuotationForm/sendedQuotationForm',
+    })
   },
   navigateToMerchant(){
     wx.redirectTo({

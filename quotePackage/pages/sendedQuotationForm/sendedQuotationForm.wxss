@@ -1,0 +1,314 @@
+page{
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  position: relative;
+}
+
+/* 上方区域 */
+.topArea {
+  width: 100%;
+  height: 25%;
+  background-color: #DDDDDD;
+  padding: 20rpx 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.header{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 5rpx;
+  height: 55rpx;
+}
+
+.logo {
+  width: 220rpx;
+  height: 55rpx;
+  margin-left: 30rpx;
+}
+
+.address {
+  font-size: 25rpx;
+  margin-bottom: 5rpx;
+  margin-left: 30rpx;
+  font-weight: 500;
+  color: #23394D;
+}
+
+.searchIcon {
+  margin-right: 30rpx;
+}
+
+.searchIcon image{
+  width: 45rpx;
+  height: 45rpx;
+}
+
+.searchArea {
+  height: 55rpx;
+  width: 700rpx;
+  margin-left: 25rpx;
+  margin-top: 5rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inputArea {
+  width: 550rpx;
+  height: 50rpx;
+  background-color: white;
+  border-radius: 5px;
+  padding: 2.5rpx 15rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.inputArea image {
+  width: 45rpx;
+  height: 45rpx;
+}
+
+.inputArea input {
+  height: 50rpx;
+  text-align: left;
+  font-size: 30rpx;
+  font-weight: lighter;
+}
+
+form button {
+  background-color: #DDDDDD;
+  font-weight: lighter;
+  color: #23394D;
+}
+
+.add {
+  position: absolute;
+  right: 30rpx;
+  top: 23.5%;
+  height: 120rpx;
+  width: 120rpx;
+  background-color: #F9B712;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 30rpx;
+  border-radius: 99rpx;
+  box-shadow:0 1px 5px gray;
+}
+
+.options {
+  display: flex;
+  margin: 60rpx;
+  height: 60rpx;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chooseOption {
+  font-size: 35rpx;
+  height: 60rpx;
+  font-weight: bold;
+  color: #23394D;
+  width: 250rpx;
+  text-align: left;
+  text-decoration: underline 3px;
+  text-underline-offset: 20rpx;
+}
+
+.divide {
+  width: 5rpx;
+  height: 90%;
+  background-color: gray;
+}
+
+.notChooseOption {
+  font-size: 28rpx;
+  height: 60rpx;
+  color: #23394D;
+  width: 250rpx;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.quotationOption {
+  display: flex;
+  margin-left: 60rpx;
+  position: relative;
+  top:20rpx;
+}
+
+.sendedQuotation {
+  padding: 30rpx;
+  background-color: white;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  color: #23394D;
+  font-size: 25rpx;
+}
+
+.recievedQuotation {
+  padding: 30rpx;
+  color: #23394D;
+  font-size: 25rpx;
+}
+
+.cardList{
+  width: 700rpx;
+  margin: 75rpx 25rpx;
+  padding-top: 10rpx;
+  max-height: 56%;
+  overflow: auto;
+}
+
+.card {
+  width: 96%;
+  margin-left: 2%;
+  margin-bottom: 30rpx;
+  height:190rpx;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  -webkit-box-shadow: 0px 0px 10rpx 3rpx lightgray;
+  -moz-box-shadow: 0px 0px 10rpx 3rpx lightgray;
+  box-shadow: 0px 0px 10rpx 3rpx lightgray;
+}
+
+.cardLeft {
+  width: 130rpx;
+  height: 100%;
+  background-color: #23394D;
+  color: white;
+  border-radius: 5px 0 0 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.cardRight {
+  height: 100%;
+  width: 510rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-left: 10rpx;
+  color: #23394D;
+  font-size: 27rpx;
+}
+
+.cardRight .title {
+  width: 100%;
+  display: flex; 
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 15rpx;
+}
+
+.quotationNumber {
+  color: gray;
+  font-size: 23rpx;
+  margin-left: 15rpx;
+}
+
+.operation {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: space-between;
+  margin-bottom: 15rpx;
+}
+
+.operation .notDisabledButton{
+  height: 50rpx;
+  width: 100rpx;
+  background-color: white;
+  border-radius: 5px;
+  border: 1px solid #23394D;
+  font-size: 22rpx;
+  font-weight: lighter;
+  color: #23394D;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.operation .disabledButton{
+  height: 50rpx;
+  width: 100rpx;
+  background-color: white;
+  border-radius: 5px;
+  border: 1px solid lightgray;
+  font-size: 22rpx;
+  font-weight: lighter;
+  color: lightgray;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.operation image {
+  width: 40rpx;
+  height: 40rpx;
+}
+
+.tabBar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 6.5%;
+  border-top: 1px solid #23394D;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.selectedNavigateBar {
+  width: 25%;
+  height: 100%;
+  color: #23394D;
+  font-size: 22rpx;
+  font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 1%;
+  margin-top: 1%;
+}
+
+.notSelectedNavigateBar {
+  width: 25%;
+  height: 100%;
+  color: gray;
+  font-size: 22rpx;
+  font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 1%;
+  margin-top: 1%;
+}
+
+.selectedNavigateBar image {
+  height: 60%;
+  width: 60rpx;
+  margin-bottom: 1%;
+}
+
+.notSelectedNavigateBar image {
+  height: 45%;
+  width: 40rpx;
+  margin-bottom: 1%;
+}

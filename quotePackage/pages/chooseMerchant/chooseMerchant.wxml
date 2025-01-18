@@ -1,0 +1,113 @@
+<!--merchantPackage/pages/contacts/contacts.wxml-->
+<view class="container">
+  <!-- 上方的Logo与文字提示部分 -->
+  <view class="topArea">
+    <view>
+      <header></header>
+      <view class="options">
+        <view class="{{index==1?'chooseOption':'notChooseOption'}}" style="text-align: left;" bind:tap="switchToMerchant">
+          商家库
+        </view>
+        <view class="divide"></view>
+        <view class="{{index==2?'chooseOption':'notChooseOption'}}" style="text-align: right;" bind:tap="switchToContact">
+          联系人库
+        </view>
+      </view>
+    </view>
+    <view class="search" wx:if="{{index==1}}">
+      <form catchsubmit="inputMerchant">
+        <view style="display: flex;align-items: center;">
+          <view class="inputArea">
+            <image src="/static/search.png"></image>
+            <input model:value="{{merchantKeyword}}" style="width: 250rpx;" placeholder="输入名称关键字" bindconfirm="inputMerchant"/>
+          </view>
+          <button formType="submit" size="mini" style="font-size: 32rpx;">搜索</button>
+        </view>
+      </form>
+    </view>
+    <view class="search" wx:if="{{index==2}}">
+      <form catchsubmit="inputContact">
+        <view style="display: flex;align-items: center;">
+          <view class="inputArea">
+            <image src="/static/search.png"></image>
+            <input model:value="{{contactKeyword}}" style="width: 250rpx;" placeholder="输入名称关键字" bindconfirm="inputContact"/>
+          </view>
+          <button formType="submit" size="mini" style="font-size: 32rpx;">搜索</button>
+        </view>
+      </form>
+    </view>
+  </view>
+  <view class="add" wx:if="{{index==1}}" bind:tap="addNew">
+    新建  
+  </view>
+  <view class="add" wx:if="{{index==2}}" bind:tap="addNew">
+    新建  
+  </view>
+  <view class="merchantList" wx:if="{{index==1}}">
+    <view class="merchantCard" wx:for="{{filterMerchant}}" wx:key="index" wx:for-item="item">
+      <view data-index="{{item.id}}" style="height:100%" wx:if="{{item.select==false}}" bind:tap="chooseMerchant">
+        <view class="cardLeft">
+          <view class="graySideBar">
+            <view></view>
+          </view>
+          <view class="information" style="color: gray">
+            <view style="font-size: 25rpx;">{{item.firm}}</view>
+            <view style="font-size: 22rpx;">{{item.name}}，{{item.phone}}</view>
+          </view>
+        </view>
+      </view>
+      <view data-index="{{item.id}}" style="height:100%" wx:if="{{item.select==true}}" bind:tap="cancelChoice">
+        <view class="cardLeft">
+          <view class="blueSideBar">
+            <view>
+              ✔
+            </view>
+          </view>
+          <view class="information" style="color: #23394D;">
+            <view style="font-size: 25rpx;">{{item.firm}}</view>
+            <view style="font-size: 22rpx;">{{item.name}}，{{item.phone}}</view>
+          </view>
+        </view>
+      </view>
+      <view class="operation" wx:if="{{item.select==true}}">
+        <button size="mini" bind:tap="goToChooseContact">换联系人</button>
+      </view>
+    </view>
+  </view>
+  <view class="contactList" wx:if="{{index==2}}">
+    <view class="contactCard" wx:for="{{filterContact}}" wx:key="index" wx:for-item="item">
+      <view data-index="{{item.id}}" style="height:100%" wx:if="{{item.select==false}}" bind:tap="chooseMerchant">
+        <view class="cardLeft">
+          <view class="graySideBar">
+            <view></view>
+          </view>
+          <view class="information" style="color: gray">
+            <view style="font-size: 25rpx;">{{item.name}}，{{item.phone}}</view>
+            <view style="font-size: 22rpx;">{{item.firm}}</view>
+          </view>
+        </view>
+      </view>
+      <view data-index="{{item.id}}" style="height:100%" wx:if="{{item.select==true}}">
+        <view class="cardLeft">
+          <view class="blueSideBar">
+            <view>
+              ✔
+            </view>
+          </view>
+          <view class="information" style="color: #23394D;">
+            <view style="font-size: 25rpx;">{{item.name}}，{{item.phone}}</view>
+            <view style="font-size: 22rpx;">{{item.firm}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view class="buttonGroup">
+    <view class="cancelButton" bind:tap="cancel">
+      取消
+    </view>
+    <view class="confirmButton" bind:tap="confirm">
+      确定
+    </view>
+  </view>
+</view>

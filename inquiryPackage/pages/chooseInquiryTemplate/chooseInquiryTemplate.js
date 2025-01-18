@@ -1,0 +1,41 @@
+// quotePackage/pages/chooseQuotationTemplate/chooseQuotationTemplate.js
+Page({
+  data: {
+    template:[
+      {
+        name:'系统模板1',
+        date:'2024-01-24'  
+      },
+      {
+        name:'系统模板2',
+        date:'2024-01-24'  
+      },
+      {
+        name:'系统模板3',
+        date:'2024-01-24'  
+      }
+    ],
+    selectIndex:0
+  },
+  chooseTemplate(e){
+    this.setData({
+      selectIndex:e.currentTarget.dataset.index
+    })
+  },
+  cancelChoice(){
+    this.setData({
+      selectIndex:null
+    })
+  },
+  goToViewTemplate(){
+    wx.navigateTo({
+      url: '/inquiryPackage/pages/viewInquiryTemplate/viewInquiryTemplate',
+    })
+  },
+  cancel(){
+    wx.navigateBack()
+  },
+  confirm(){
+    wx.navigateBack()
+  }
+})

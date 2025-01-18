@@ -1,5 +1,6 @@
 {
   "usingComponents": {
     "header":"/components/header/header"
-  }
+  },
+  "navigationBarTitleText": "通知信息"
 }

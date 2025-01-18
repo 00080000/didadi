@@ -1,0 +1,146 @@
+/* quotePackage/pages/addQuotation/addQuotation.wxss */
+page{
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  position: relative;
+}
+
+/* 上方区域 */
+.topArea {
+  width: 100%;
+  height: 25%;
+  background-color: #DDDDDD;
+  padding: 20rpx 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.content {
+  margin:40rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}  
+
+.information {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-around;
+  color: #23394D;
+}  
+
+.editButton {
+  float: right;
+}
+
+.editButton button {
+  padding: 7rpx 35rpx;
+  background-color: #DDDDDD;
+  border: 1px solid #23394D;
+  color: #23394D;
+  font-weight: lighter;
+  font-size: 23rpx;
+}
+
+.list {
+  margin-top: 50rpx;
+  width: 690rpx;
+  margin-left: 20rpx;
+  padding: 10rpx;
+}
+
+.item {
+  width: 96%;
+  margin-left: 2%;
+  margin-bottom: 50rpx;
+  height:110rpx;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  -webkit-box-shadow: 0px 0px 10rpx 3rpx lightgray;
+  -moz-box-shadow: 0px 0px 10rpx 3rpx lightgray;
+  box-shadow: 0px 0px 10rpx 3rpx lightgray;
+}
+
+.graySidebar {
+  height: 100%;
+  width: 20rpx;
+  background-color: lightgray;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+
+.cardLeft {
+  height: 100%;
+  display: flex;
+}
+
+.blueSideBar {
+  width: 20rpx;
+  height: 100%;
+  background-color: #23394D;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+
+.cardContent {
+  color: #23394D;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: flex-start;
+  margin-left: 20rpx;
+}
+
+.add {
+  color: gray;
+  font-size: 28rpx;
+  margin-right: 20rpx;
+  display: flex;
+  align-items: center;
+}
+
+.add image {
+  width: 40rpx;
+  height: 40rpx;
+  margin-left: 20rpx;
+}
+
+
+.buttonGroup {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 90rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.cancelButton {
+  width: 50%;
+  height: 100%;
+  font-size: 30rpx;
+  background-color: whitesmoke;
+  color: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirmButton {
+  width: 50%;
+  height: 100%;
+  font-size: 30rpx;
+  background-color: #F9B712;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -1,0 +1,42 @@
+// quotePackage/pages/editFee/editFee.js
+Page({
+  data: {
+    fee:[
+      {
+        name:'系统集成费用',
+        type:'增加',
+        amount:'合计',
+        weight:0.15
+      },
+      {
+        name:'项目管理费用',
+        type:'增加',
+        amount:'合计',
+        weight:0.05
+      },
+      {
+        name:'项目优惠',
+        type:'减少',
+        amount:'-合计',
+        weight:0.02
+      }
+    ],
+    selectedIndex:-1
+  },
+  cancelChoice(){
+    this.setData({
+      selectedIndex:-1
+    })
+  },
+  choose(e){
+    this.setData({
+      selectedIndex:e.currentTarget.dataset.index
+    })
+  },
+  cancel(){
+    wx.navigateBack()
+  },
+  confirm(){
+    wx.navigateBack()
+  }
+})

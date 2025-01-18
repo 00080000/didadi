@@ -1,0 +1,25 @@
+<view class="container">
+  <!-- 上方的Logo与文字提示部分 -->
+  <view class="topArea">
+    <header></header>
+    <view class="content">
+      <view class="information">
+        <view style="font-size: 35rpx;font-weight: bolder;">{{fileName}}</view>
+        <view style="font-size: 27rpx;margin-top: 30rpx;">商品： {{total}} 个</view>
+        <view style="font-size: 27rpx;margin-top: 30rpx;">建档日期：{{time}}</view>
+      </view>
+      <view class="editButton">
+        <button size="mini">复制二维码</button>
+      </view>
+    </view>
+  </view>
+  <view class="code"></view>
+  <view class="buttonGroup">
+    <view class="cancelButton" bind:tap="cancel">
+      取消
+    </view>
+    <view class="confirmButton" bind:tap="confirm">
+      确定
+    </view>
+  </view>
+</view>  

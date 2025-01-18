@@ -17,10 +17,5 @@
   margin-bottom: 5rpx;
   margin-left: 30rpx;
   font-weight: 500;
-}
-
-.search {
-  width: 75rpx;
-  height: 75rpx;
-  margin-right: 20rpx;
+  color: #23394D;
 }

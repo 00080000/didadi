@@ -3,7 +3,22 @@ Page({
   data: {
     contacts:[
       {
-        name:"黄老板",
+        name:"黄老板1",
+        phone:"13900009999",
+        firm:"长沙好好信息科技有限公司"
+      },
+      {
+        name:"黄老板2",
+        phone:"13900009999",
+        firm:"长沙好好信息科技有限公司"
+      },
+      {
+        name:"黄老板11",
+        phone:"13900009999",
+        firm:"长沙好好信息科技有限公司"
+      },
+      {
+        name:"黄老板3",
         phone:"13900009999",
         firm:"长沙好好信息科技有限公司"
       },
@@ -37,22 +52,25 @@ Page({
         phone:"13900009999",
         firm:"长沙好好信息科技有限公司"
       },
-      {
-        name:"黄老板",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司"
-      },
-      {
-        name:"黄老板",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司"
-      },
-      {
-        name:"黄老板",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司"
-      },
-    ]
+    ],
+    filterContact:[],
+    contactKeyword:''
+  },
+  onLoad(){
+    this.setData({
+      filterContact:this.data.contacts
+    })
+  },
+  inputContact(){
+    if(this.data.contactKeyword==''){
+      this.setData({
+        filterContact:this.data.contacts
+      })
+    } else {
+      this.setData({
+        filterContact:this.data.contacts.filter(item => item.name.includes(this.data.contactKeyword))
+      })
+    }
   },
   confirmDelete(){
     wx.showModal({
@@ -88,7 +106,9 @@ Page({
     })
   },
   navigateToPrice(){
-
+    wx.redirectTo({
+      url: '/quotePackage/pages/sendedQuotationForm/sendedQuotationForm',
+    })
   },
   navigateToProduct(){
     wx.redirectTo({

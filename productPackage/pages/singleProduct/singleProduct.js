@@ -3,7 +3,19 @@ Page({
   data: {
     products:[
       {
-        name:'AAAAAAAA',
+        name:'AAAAAAA1',
+        type:'AAAAAA-BBBBBB-CCCCCC'
+      },
+      {
+        name:'AAAAAAA2',
+        type:'AAAAAA-BBBBBB-CCCCCC'
+      },
+      {
+        name:'AAAAAAAA3',
+        type:'AAAAAA-BBBBBB-CCCCCC'
+      },
+      {
+        name:'AAAAAAAA11',
         type:'AAAAAA-BBBBBB-CCCCCC'
       },
       {
@@ -22,19 +34,25 @@ Page({
         name:'AAAAAAAA',
         type:'AAAAAA-BBBBBB-CCCCCC'
       },
-      {
-        name:'AAAAAAAA',
-        type:'AAAAAA-BBBBBB-CCCCCC'
-      },
-      {
-        name:'AAAAAAAA',
-        type:'AAAAAA-BBBBBB-CCCCCC'
-      },
-      {
-        name:'AAAAAAAA',
-        type:'AAAAAA-BBBBBB-CCCCCC'
-      },
-    ]
+    ],
+    filterProduct:[],
+    keyword:''
+  },
+  onLoad(){
+    this.setData({
+      filterProduct:this.data.products
+    })
+  },
+  inputProduct(){
+    if(this.data.keyword==''){
+      this.setData({
+        filterProduct:this.data.products
+      })
+    } else {
+      this.setData({
+        filterProduct:this.data.products.filter(item => item.name.includes(this.data.keyword))
+      })
+    }
   },
   confirmDelete(){
     wx.showModal({
@@ -70,7 +88,9 @@ Page({
     })
   },
   navigateToPrice(){
-
+    wx.redirectTo({
+      url: '/quotePackage/pages/sendedQuotationForm/sendedQuotationForm',
+    })
   },
   navigateToMerchant(){
     wx.redirectTo({

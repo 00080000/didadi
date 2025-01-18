@@ -1,5 +1,6 @@
 {
   "usingComponents": {
     "header":"/components/header/header"
-  }
+  },
+  "navigationBarTitleText": "组合商品库"
 }

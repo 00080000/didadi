@@ -1,0 +1,254 @@
+/* quotePackage/pages/addNewProduct/addNewProduct.wxss */
+page{
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  position: relative;
+}
+
+/* 上方区域 */
+.topArea {
+  width: 100%;
+  height: 25%;
+  background-color: #DDDDDD;
+  padding: 20rpx 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.options {
+  height: 60rpx;
+  display: flex;
+  margin: 60rpx 30rpx;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chooseOption {
+  font-size: 35rpx;
+  height: 60rpx;
+  font-weight: bold;
+  color: #23394D;
+  width: 200rpx;
+  text-decoration: underline 3px;
+  text-underline-offset: 20rpx;
+  display: flex;
+  align-items: center;
+}
+
+.divide {
+  width: 5rpx;
+  height: 90%;
+  background-color: gray;
+}
+
+.notChooseOption {
+  font-size: 28rpx;
+  height: 60rpx;
+  color: #23394D;
+  width: 200rpx;
+  display: flex;
+  align-items: center;
+}
+
+
+.search {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 70rpx;
+  margin-left: 30rpx;
+  margin-bottom: 20rpx;
+}
+
+.searchText {
+  margin-left: 25rpx;
+  font-size: 30rpx;
+  color: #23394D;
+}
+
+.inputArea {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 60rpx;
+  padding: 5rpx 10rpx;
+  background-color: white;
+  border-radius: 5px;
+}
+
+.inputArea input {
+  font-size: 25rpx;
+  text-align: left;
+  padding: 0 10rpx;
+}
+
+.inputArea image {
+  width: 40rpx;
+  height: 40rpx;
+}
+
+form button {
+  background-color: #DDDDDD;
+  font-weight: lighter;
+  color: #23394D;
+}
+
+.switchBar {
+  margin-right: 20rpx;
+  margin-bottom: 20rpx;
+  display: flex;
+  align-items: center;
+  font-size: 25rpx;
+  color: #23394D;
+}
+
+.switchBar switch{
+  margin-left: 20rpx;
+}
+
+.productList {
+  margin-top: 50rpx;
+  width: 690rpx;
+  margin-left: 20rpx;
+  padding: 10rpx;
+  max-height: 56%;
+  overflow: auto;
+}
+
+.productCard {
+  width: 650rpx;
+  height: 110rpx;
+  margin: 0 20rpx 40rpx 20rpx;
+  border-radius: 5px;
+  -webkit-box-shadow: 0px 0px 10rpx 3rpx lightgray;
+  -moz-box-shadow: 0px 0px 10rpx 3rpx lightgray;
+  box-shadow: 0px 0px 10rpx 3rpx lightgray;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+
+.cardLeft {
+  height: 100%;
+  display: flex;
+}
+
+.blueSideBar {
+  width: 65rpx;
+  height: 100%;
+  background-color: #23394D;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.blueSideBar view {
+  width: 30rpx;
+  height: 30rpx;
+  border-radius: 5rpx;
+  border: white solid 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 23rpx;
+  font-weight: bolder;
+}
+
+.graySideBar {
+  width: 65rpx;
+  height: 100%;
+  background-color: lightgray;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.graySideBar view {
+  width: 30rpx;
+  height: 30rpx;
+  border-radius: 5rpx;
+  border: white solid 3px;
+}
+
+.blueSideBar2 {
+  width: 25rpx;
+  height: 100%;
+  background-color: #23394D;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+
+.information {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: flex-start;
+  margin-left: 20rpx;
+}
+
+.operation {
+  display: flex;
+  align-items: center;
+}
+
+.operationButton {
+  width: 40rpx;
+  height: 40rpx;
+  background-color: #23394D;
+  color: white;
+  font-size: 35rpx;
+  border-radius: 3px;
+  font-weight: bolder;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  margin: 0 20rpx;
+}
+
+.cardRight {
+  color: #23394D;
+  margin-right: 20rpx;
+  font-size: 25rpx;
+}
+
+.buttonGroup {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 90rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.cancelButton {
+  width: 50%;
+  height: 100%;
+  font-size: 30rpx;
+  background-color: whitesmoke;
+  color: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirmButton {
+  width: 50%;
+  height: 100%;
+  font-size: 30rpx;
+  background-color: #F9B712;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

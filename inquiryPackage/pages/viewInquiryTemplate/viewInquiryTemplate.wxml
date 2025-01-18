@@ -1,0 +1,12 @@
+<!--quotePackage/pages/viewQuotationTemplate/viewQuotationTemplate.wxml-->
+<view class="container">
+  <!-- 上方的Logo与文字提示部分 -->
+  <view class="topArea">
+    <header></header>
+    <view class="information">
+      <view style="font-size: 35rpx;font-weight: bolder;">{{name}}</view>
+      <view style="font-size: 27rpx;margin-top: 30rpx;">创建日期：{{date}} {{time}}</view>
+    </view>
+    <view></view>
+  </view>
+</view>

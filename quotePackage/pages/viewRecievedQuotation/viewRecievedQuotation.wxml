@@ -1,0 +1,18 @@
+<view class="container">
+  <!-- 上方的Logo与文字提示部分 -->
+  <view class="topArea">
+    <header></header>
+    <view class="information">
+      报价单{{number}}
+    </view>
+    <view class="operation">
+       <view>
+         <button size="mini" bind:tap="goToDownloadQuotation">下载文档</button>
+         <button size="mini" bind:tap="goToDownloadAttachment">查看附件</button>
+       </view>
+       <view>
+         <image src="/static/print.png"></image>
+       </view>
+    </view>
+  </view>
+</view>

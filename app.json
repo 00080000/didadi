@@ -40,6 +40,64 @@
         "pages/viewCombinationProduct/viewCombinationProduct",
         "pages/viewSingleProductInCombination/viewSingleProductInCombination"
       ]
+    },
+    {
+      "root": "quotePackage",
+      "pages": [
+        "pages/sendedQuotationForm/sendedQuotationForm",
+        "pages/recievedQuotationForm/recievedQuotationForm",
+        "pages/addQuotation/addQuotation",
+        "pages/editFileInformation/editFileInformation",
+        "pages/chooseMerchant/chooseMerchant",
+        "pages/chooseContactOfMerchant/chooseContactOfMerchant",
+        "pages/chooseProduct/chooseProduct",
+        "pages/setFormStyle/setFormStyle",
+        "pages/chooseQuotationTemplate/chooseQuotationTemplate",
+        "pages/viewQuotationTemplate/viewQuotationTemplate",
+        "pages/chooseProductFields/chooseProductFields",
+        "pages/viewRecievedQuotation/viewRecievedQuotation",
+        "pages/downloadRecievedQuotation/downloadRecievedQuotation",
+        "pages/downloadAttachment/downloadAttachment",
+        "pages/addNewProduct/addNewProduct",
+        "pages/editChoosedSingleProduct/editChoosedSingleProduct",
+        "pages/editChoosedCombinationProduct/editChoosedCombinationProduct",
+        "pages/editChoosedCuntomProduct/editChoosedCuntomProduct",
+        "pages/editFee/editFee",
+        "pages/uploadAttachment/uploadAttachment",
+        "pages/shareWithSystem/shareWithSystem",
+        "pages/shareWithEmail/shareWithEmail",
+        "pages/shareWithCode/shareWithCode",
+        "pages/editContactOfMerchant/editContactOfMerchant"
+      ]
+    },
+    {
+      "root": "inquiryPackage",
+      "pages": [
+        "pages/sendedInquiryForm/sendedInquiryForm",
+        "pages/recievedInquiryForm/recievedInquiryForm",
+        "pages/addInquiry/addInquiry",
+        "pages/editFileInformation/editFileInformation",
+        "pages/chooseMerchant/chooseMerchant",
+        "pages/chooseContactOfMerchant/chooseContactOfMerchant",
+        "pages/chooseProduct/chooseProduct",
+        "pages/setFormStyle/setFormStyle",
+        "pages/chooseInquiryTemplate/chooseInquiryTemplate",
+        "pages/viewInquiryTemplate/viewInquiryTemplate",
+        "pages/chooseProductFields/chooseProductFields",
+        "pages/viewRecievedInquiry/viewRecievedInquiry",
+        "pages/downloadRecievedInquiry/downloadRecievedInquiry",
+        "pages/downloadAttachment/downloadAttachment",
+        "pages/addNewProduct/addNewProduct",
+        "pages/editChoosedSingleProduct/editChoosedSingleProduct",
+        "pages/editChoosedCombinationProduct/editChoosedCombinationProduct",
+        "pages/editChoosedCuntomProduct/editChoosedCuntomProduct",
+        "pages/editFee/editFee",
+        "pages/uploadAttachment/uploadAttachment",
+        "pages/shareWithSystem/shareWithSystem",
+        "pages/shareWithEmail/shareWithEmail",
+        "pages/shareWithCode/shareWithCode",
+        "pages/editContactOfMerchant/editContactOfMerchant"
+      ]
     }
   ],
   "window": {

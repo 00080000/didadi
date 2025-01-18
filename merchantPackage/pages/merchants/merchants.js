@@ -2,7 +2,19 @@ Page({
   data: {
     merchants:[
       {
-        name:"长沙好好信息科技有限公司",
+        name:"长沙好好信息科技有限公司1",
+        type:"采购商"
+      },
+      {
+        name:"长沙好好信息科技有限公司2",
+        type:"采购商"
+      },
+      {
+        name:"长沙好好信息科技有限公司3",
+        type:"采购商"
+      },
+      {
+        name:"长沙好好信息科技有限公司11",
         type:"采购商"
       },
       {
@@ -29,19 +41,25 @@ Page({
         name:"长沙好好信息科技有限公司",
         type:"采购商"
       },
-      {
-        name:"长沙好好信息科技有限公司",
-        type:"采购商"
-      },
-      {
-        name:"长沙好好信息科技有限公司",
-        type:"采购商"
-      },
-      {
-        name:"长沙好好信息科技有限公司",
-        type:"采购商"
-      },
-    ]
+    ],
+    filterMerchant:[],
+    keyword:''
+  },
+  onLoad(){
+    this.setData({
+      filterMerchant:this.data.merchants
+    })
+  },
+  inputMerchant(){
+    if(this.data.keyword==''){
+      this.setData({
+        filterMerchant:this.data.merchants
+      })
+    } else {
+      this.setData({
+        filterMerchant:this.data.merchants.filter(item => item.name.includes(this.data.keyword))
+      })
+    }
   },
   confirmDelete(){
     wx.showModal({
@@ -72,7 +90,9 @@ Page({
     })
   },
   navigateToPrice(){
-
+    wx.redirectTo({
+      url: '/quotePackage/pages/sendedQuotationForm/sendedQuotationForm',
+    })
   },
   navigateToProduct(){
     wx.redirectTo({

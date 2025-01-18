@@ -1,0 +1,47 @@
+<view class="container">
+  <!-- 上方的Logo与文字提示部分 -->
+  <view class="topArea">
+    <header></header>
+    <view class="content">
+      <view class="information">
+        <view style="font-size: 35rpx;font-weight: bolder;">{{fileName}}</view>
+        <view style="font-size: 27rpx;margin-top: 30rpx;">总价：￥ {{total}} 元</view>
+        <view style="font-size: 27rpx;margin-top: 30rpx;">建档日期：{{time}}</view>
+      </view>
+    </view>
+  </view>
+  <view class="form">
+    <view class="inputArea">
+      <view class="label">商家名称</view>
+      <view style="height: 100%;width: 500rpx;display: flex;align-items: center;justify-content: space-between;">
+        <input placeholder="请选择商家" class="input" style="width: 390rpx;" disabled="true"/>
+        <image src="/static/rightArrow-gray.png" bind:tap="chooseMerchant"></image>
+      </view>
+    </view>
+    <view class="pickerArea">
+      <view class="label">联系人</view>
+      <picker bindchange="contactPickerChange" mode="selector" value="{{contactIndex}}" range="{{contactPickerValue}}"	 class="picker-area">
+        <view class="showPickerValue">
+          <view>{{contactIndex==null? "请选择联系人":contactPickerValue[contactIndex]}}</view>
+          <image src="/static/downArrow-gray.png"></image>
+        </view>
+      </picker>
+    </view>
+    <view class="inputArea">
+      <view class="label">联系人邮箱</view>
+      <input placeholder="请输入联系人邮箱" class="input" style="width: 450rpx;"/>
+    </view>
+    <view class="textArea">
+      <view class="label">邮件主题</view>
+      <textarea placeholder="请输入邮件主题" style="width: 450rpx;font-size: 27rpx;font-weight: lighter;"></textarea>
+    </view>
+  </view>
+  <view class="buttonGroup">
+    <view class="cancelButton" bind:tap="cancel">
+      取消
+    </view>
+    <view class="confirmButton" bind:tap="confirm">
+      确定
+    </view>
+  </view>
+</view>  

@@ -2,23 +2,38 @@
 <view class="container">
   <!-- 上方的Logo与文字提示部分 -->
   <view class="topArea">
-    <header></header>
-    <view class="options">
-      <view class="chooseOption">
-        单商品库
+    <view>
+      <header></header>
+      <view class="options">
+        <view class="chooseOption">
+          单商品库
+        </view>
+        <view class="divide" style="margin-right: 20rpx;"></view>
+        <view class="combinationProoductOption" bind:tap="goToCombinationProoduct">
+          组合商品库
+        </view>
+        <view class="divide" style="margin-left: 20rpx;"></view>
+        <view class="temporaryProoductOption" bind:tap="goToTemporaryProoduct">
+          临时商品库
+        </view>
       </view>
-      <view class="divide" style="margin-right: 20rpx;"></view>
-      <view class="combinationProoductOption" bind:tap="goToCombinationProoduct">
-        组合商品库
-      </view>
-      <view class="divide" style="margin-left: 20rpx;"></view>
-      <view class="temporaryProoductOption" bind:tap="goToTemporaryProoduct">
-        临时商品库
-      </view>
+    </view>
+    <view class="search">
+      <form catchsubmit="inputProduct">
+        <view style="display: flex;align-items: center;">
+          <view class="inputArea">
+            <image src="/static/search.png"></image>
+            <view style="display: flex;align-items: center;" >
+              <input model:value="{{keyword}}" bindconfirm="inputProduct" style="width: 250rpx;" placeholder="输入名称关键字"/>
+            </view>
+          </view>
+          <button formType="submit" size="mini" style="font-size: 32rpx;">搜索</button>
+        </view>
+      </form>
     </view>
   </view>
   <view class="productList">
-    <view class="productCard" wx:for="{{products}}" wx:key="index" wx:for-item="item">
+    <view class="productCard" wx:for="{{filterProduct}}" wx:key="index" wx:for-item="item">
       <view class="cardLeft">
         <view class="sideBar"></view>
         <view class="information">
