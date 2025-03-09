@@ -1,0 +1,89 @@
+卷 Windows-SSD 的文件夹 PATH 列表
+卷序列号为 66E7-E6D2
+C:\USERS\LEGION\DESKTOP\PROJECT\TRUMPET
+├─components  // 通用组件，包括页头
+│  └─header
+├─inquiryPackage  // 询价界面组件
+│  └─pages
+│      ├─addInquiry
+│      ├─addNewProduct
+│      ├─chooseContactOfMerchant
+│      ├─chooseInquiryTemplate
+│      ├─chooseMerchant
+│      ├─chooseProduct
+│      ├─chooseProductFields
+│      ├─downloadAttachment
+│      ├─downloadRecievedInquiry
+│      ├─editChoosedCombinationProduct
+│      ├─editChoosedCuntomProduct
+│      ├─editChoosedSingleProduct
+│      ├─editContactOfMerchant
+│      ├─editFee
+│      ├─editFileInformation
+│      ├─recievedInquiryForm
+│      ├─sendedInquiryForm
+│      ├─setFormStyle
+│      ├─shareWithCode
+│      ├─shareWithEmail
+│      ├─shareWithSystem
+│      ├─uploadAttachment
+│      ├─viewInquiryTemplate
+│      └─viewRecievedInquiry
+├─mainPackage  // 首页见面组件
+│  └─pages
+│      ├─editFirmInformation
+│      ├─editPassword
+│      ├─home
+│      ├─message
+│      ├─personalInformation
+│      └─systemManage
+├─merchantPackage  // 商家界面组件
+│  └─pages
+│      ├─addContact
+│      ├─contacts
+│      ├─editInformation
+│      └─merchants
+├─pages  // 登录界面组件
+│  ├─login
+│  ├─password-login
+│  ├─phone-login
+│  ├─privacy-agreement
+│  ├─register
+│  ├─search
+│  └─service-agreement
+├─productPackage  // 商品界面组件
+│  └─pages
+│      ├─combinationProduct
+│      ├─singleProduct
+│      ├─temporaryProduct
+│      ├─viewCombinationProduct
+│      ├─viewSingleProduct
+│      └─viewSingleProductInCombination
+├─quotePackage  // 报价界面组件
+│  └─pages
+│      ├─addNewProduct
+│      ├─addQuotation
+│      ├─chooseContactOfMerchant
+│      ├─chooseMerchant
+│      ├─chooseProduct
+│      ├─chooseProductFields
+│      ├─chooseQuotationTemplate
+│      ├─downloadAttachment
+│      ├─downloadRecievedQuotation
+│      ├─editChoosedCombinationProduct
+│      ├─editChoosedCuntomProduct
+│      ├─editChoosedSingleProduct
+│      ├─editContactOfMerchant
+│      ├─editFee
+│      ├─editFileInformation
+│      ├─recievedQuotationForm
+│      ├─sendedQuotationForm
+│      ├─setFormStyle
+│      ├─shareWithCode
+│      ├─shareWithEmail
+│      ├─shareWithSystem
+│      ├─uploadAttachment
+│      ├─viewQuotationTemplate
+│      └─viewRecievedQuotation
+├─static
+└─utils
