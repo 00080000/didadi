@@ -49,7 +49,7 @@ App({
       this.navigateToLogin();
     },
   
-    // 跳转到登录页
+    // 跳转到登录
     navigateToLogin() {
       wx.redirectTo({
         url: '/pages/login/login'
