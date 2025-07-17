@@ -58,7 +58,7 @@
           {{item.name}}
         </view>
         <view class="operation">
-          <button bind:tap="goToViewRecievedQuotation" class="notDisabledButton" size="mini">
+          <button bind:tap="goToViewRecievedQuotation" class="notDisabledButton" size="mini"  data-index="{{index}}">
           预览</button>
           <button class="disabledButton" size="mini">编辑</button>
           <button class="disabledButton" size="mini">复制</button>

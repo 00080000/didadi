@@ -72,9 +72,11 @@ Page({
       url: '/inquiryPackage/pages/sendedInquiryForm/sendedInquiryForm',
     })
   },
-  goToViewRecievedQuotation(){
+  goToViewRecievedQuotation(e){
+    const index = e.currentTarget.dataset.index;
+    const item = this.data.filterQuotation[index];
     wx.navigateTo({
-      url: '/quotePackage/pages/viewRecievedQuotation/viewRecievedQuotation',
+      url: `/quotePackage/pages/viewRecievedQuotation/viewRecievedQuotation?name=${item.name}`,
     })
   },
   goToSendedQuotation(){

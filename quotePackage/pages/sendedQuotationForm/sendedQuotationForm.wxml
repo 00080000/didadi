@@ -62,10 +62,10 @@
           {{item.name}}
         </view>
         <view class="operation">
-          <button class="{{item.status==1? 'notDisabledButton':'disabledButton'}}" size="mini" disabled="{{item.status==0? true:false}}" bind:tap="goToViewRecievedQuotation">预览</button>
+          <button class="{{item.status==1? 'notDisabledButton':'disabledButton'}}" size="mini" disabled="{{item.status==0? true:false}}" bind:tap="goToViewRecievedQuotation" data-index="{{index}}">预览</button>
           <button class="notDisabledButton" size="mini" bind:tap="edit">编辑</button>
-          <button class="notDisabledButton" size="mini" bind:tap="copy">复制</button>
-          <button class="{{item.status==1? 'notDisabledButton':'disabledButton'}}" size="mini"  bind:tap="share" disabled="{{item.status==0? true:false}}">分享</button>
+          <button class="notDisabledButton" size="mini" bind:tap="copy" data-index="{{index}}">复制</button>
+          <button class="{{item.status==1? 'notDisabledButton':'disabledButton'}}" size="mini"  bind:tap="share" disabled="{{item.status==0? true:false}}"  data-index="{{index}}">分享</button>
         <image src="/static/delete.png" bind:tap="confirmDelete"></image>
       </view>
       </view>

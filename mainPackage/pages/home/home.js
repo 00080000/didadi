@@ -14,6 +14,48 @@ Page({
     combinationGoodsSKU:36,
     ifShow:false
   },
+  onLoad() {
+    this.fetchKPI();
+  },
+
+  fetchKPI() {
+    wx.request({
+      url: `${getApp().globalData.serverUrl}/diServer/index/queryKPI?enterpriseId=11`,
+      method: 'GET',
+      header: {
+        'Authorization': `Bearer ${getApp().globalData.token}`
+      },
+      success: (res) => {
+          console.log('statusCode:',res.statusCode,' code:',res.data.code);
+        if (res.statusCode === 200 && res.data.code === 200) {
+          // 请求成功，更新数据
+          const data = res.data.data || {};
+          this.setData({
+            quotationQuantity: data.quoteCount || 0,
+            inquiryQuantity: data.inquiryCount || 0,
+            purchaserQuantity: data.buyerCount || 0,
+            supplierQuantity: data.sellerCount || 0,
+            singleGoodsSKU: data.productCount || 0,
+            combinationGoodsSKU: data.productGroupCount || 0
+          });
+          console.log('fetch成功');
+        } else {
+          // 请求失败，使用本地默认数据
+          this.setData({ 
+            errorMsg: res.data.message || '获取数据失败，使用默认数据',
+          });
+          console.log('errorMsg');
+        }
+      },
+      fail: (err) => {
+        // 请求失败，使用本地默认数据
+        this.setData({ 
+          errorMsg: '网络请求失败，使用默认数据',
+        });
+        console.error(err);
+      },
+    });
+  },
   goToSystemManage(){
     wx.navigateTo({
       url: '/mainPackage/pages/systemManage/systemManage',

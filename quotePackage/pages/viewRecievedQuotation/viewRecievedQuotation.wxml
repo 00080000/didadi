@@ -3,7 +3,7 @@
   <view class="topArea">
     <header></header>
     <view class="information">
-      报价单{{number}}
+      {{item.name}}
     </view>
     <view class="operation">
        <view>

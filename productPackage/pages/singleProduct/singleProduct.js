@@ -77,9 +77,11 @@ Page({
       url: '/productPackage/pages/temporaryProduct/temporaryProduct',
     })
   },
-  goToViewProduct(){
+  goToViewProduct(e){
+    const index = e.currentTarget.dataset.index;
+    const item = this.data.filterProduct[index];
     wx.navigateTo({
-      url: '/productPackage/pages/viewSingleProduct/viewSingleProduct',
+      url: `/productPackage/pages/viewSingleProduct/viewSingleProductname=${item.name}`,
     })
   },
   navigateToMain(){

@@ -42,7 +42,7 @@
         </view>
       </view>
       <view class="operation">
-        <button size="mini" bind:tap="goToViewProduct">查看</button>
+        <button size="mini" bind:tap="goToViewProduct" data-index="{{index}}" >查看</button>
         <image src="/static/delete.png" bind:tap="confirmDelete"></image>
       </view>
     </view>
