@@ -16,6 +16,7 @@ Page({
   },
   onLoad() {
     this.fetchKPI();
+    this.fetchNewMsg();
   },
 
   fetchKPI() {
@@ -26,7 +27,7 @@ Page({
         'Authorization': `Bearer ${getApp().globalData.token}`
       },
       success: (res) => {
-          console.log('statusCode:',res.statusCode,' code:',res.data.code);
+          console.log('fetchKPI:statusCode:',res.statusCode,' code:',res.data.code);
         if (res.statusCode === 200 && res.data.code === 200) {
           // 请求成功，更新数据
           const data = res.data.data || {};
@@ -36,9 +37,10 @@ Page({
             purchaserQuantity: data.buyerCount || 0,
             supplierQuantity: data.sellerCount || 0,
             singleGoodsSKU: data.productCount || 0,
-            combinationGoodsSKU: data.productGroupCount || 0
+            combinationGoodsSKU: data.productGroupCount || 0,
+            quotationAmount: data.quoteTotalPirce || 0
           });
-          console.log('fetch成功');
+          console.log('KPI：',res.data.data);
         } else {
           // 请求失败，使用本地默认数据
           this.setData({ 
@@ -56,6 +58,39 @@ Page({
       },
     });
   },
+  fetchNewMsg() {
+    wx.request({
+      url: `${getApp().globalData.serverUrl}/diServer/system/notice/myMsgList`,
+      method: 'GET',
+      header: {
+        'Authorization': `Bearer ${getApp().globalData.token}`
+      },
+      success: (res) => {
+        if (res.statusCode === 200 && res.data.code === 200) {
+            const data = res.data.data || []; 
+            const hasNewMessage = data.length > 0; // 判断是否有新消息
+            this.setData({
+              ifHaveNewMessage: hasNewMessage
+          });
+          console.log('NewMessage:',res.data.data);
+        } else {
+          // 请求失败，使用本地默认数据
+          this.setData({ 
+            errorMsg: res.data.message || '获取数据失败，使用默认数据',
+          });
+          console.log('errorMsg');
+        }
+      },
+      fail: (err) => {
+        // 请求失败，使用本地默认数据
+        this.setData({ 
+          errorMsg: '网络请求失败，使用默认数据',
+        });
+        console.error(err);
+      },
+    });
+  },
+
   goToSystemManage(){
     wx.navigateTo({
       url: '/mainPackage/pages/systemManage/systemManage',
