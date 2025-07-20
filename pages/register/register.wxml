@@ -1,0 +1,97 @@
+<!-- 注册界面 -->
+<view class="container">
+  <!-- 上方的Logo与介绍部分 -->
+  <view class="topArea">
+    <view>
+      <image src="/static/logo.png" class="logo"></image>
+      <view class="beta">(Beta版)</view>
+    </view>
+    <view>
+      <view class="subtitle">免费注册，无限续期使用！</view>
+      <view class="link">访问https://app.didadi.vip电脑端，拥有更多功能！</view>
+    </view>
+  </view>
+
+  <!-- 注册流程区域 -->
+  <view class="bottomArea">
+
+    <!-- 步骤 1：输入手机号 -->
+    <view wx:if="{{step === 1}}">
+      <view class="title">新用户注册</view>
+      <view class="form">
+        <view class="inputArea">
+          <input placeholder="请输入手机号码"
+                 class="input"
+                 type="number"
+                 maxlength="11"
+                 data-field="phone"
+                 bindinput="onInput" />
+        </view>
+        <button class="button" bindtap="goToStep2">获取短信验证码</button>
+        <navigator url="/pages/login/login" class="backToLogin">返回登录</navigator>
+      </view>
+    </view>
+
+    <!-- 步骤 2：输入验证码 -->
+    <view wx:if="{{step === 2}}">
+      <view class="title">输入验证码</view>
+      <view class="tip">验证码已发送至：{{phone}}</view>
+      <view class="form">
+        <view class="inputArea">
+          <input placeholder="请输入验证码"
+                 class="input"
+                 type="number"
+                 maxlength="6"
+                 data-field="code"
+                 bindinput="onInput" />
+        </view>
+        <view class="countdown">
+          {{countdown > 0 ? countdown + 's后可重新发送' : ''}}
+        </view>
+        <button class="button" bindtap="goToStep3">确定</button>
+        <navigator url="/pages/login/login" class="backToLogin">返回登录</navigator>
+      </view>
+    </view>
+
+    <!-- 步骤 3：设置密码 -->
+    <view wx:if="{{step === 3}}">
+      <view class="title">设置登录密码</view>
+      <view class="form">
+        <view class="inputArea">
+          <input placeholder="请输入登录密码"
+                 class="input"
+                 password
+                 data-field="password"
+                 bindinput="onInput" />
+        </view>
+        <view class="inputArea">
+          <input placeholder="请再次输入登录密码"
+                 class="input"
+                 password
+                 data-field="passwordAgain"
+                 bindinput="onInput" />
+        </view>
+        <view class="rememberMe">
+          <checkbox checked="{{agreeProtocol}}" bindtap="toggleAgree" />
+          <view style="margin-left: 15rpx;font-weight: lighter;">
+            记住我，下次自动登录
+          </view>
+        </view>
+        <button class="button" bindtap="registerUser">注册并登录</button>
+        <navigator url="/pages/login/login" class="backToLogin">返回登录</navigator>
+      </view>
+    </view>
+
+    <!-- 协议 -->
+    <view class="agreement">
+      <checkbox checked="{{agreeProtocol}}" bindtap="toggleAgree" />
+      <view style="display:flex;margin-left: 20rpx;flex-wrap: wrap;">
+        我已阅读并同意
+        <navigator url="/pages/privacy-agreement/privacy-agreement">《隐私政策》</navigator>
+        和
+        <navigator url="/pages/service-agreement/service-agreement">《服务协议》</navigator>
+      </view>
+    </view>
+
+  </view>
+</view>
