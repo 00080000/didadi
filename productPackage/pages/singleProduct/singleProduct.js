@@ -231,7 +231,18 @@ Page({
       url: `/productPackage/pages/viewSingleProduct/viewSingleProduct?productId=${item.id}&name=${encodeURIComponent(item.productName || '')}`,
     });
   },
-
+//跳转到组合商品库
+goToCombinationProoduct(){
+  wx.redirectTo({
+    url: '/productPackage/pages/combinationProduct/combinationProduct',
+  });
+},
+//跳到临时商品库
+goToTemporaryProoduct(){
+  wx.redirectTo({
+    url: '/productPackage/pages/temporaryProduct/temporaryProduct',
+  });
+},
   // 跳转到首页
   navigateToMain() {
     wx.redirectTo({
