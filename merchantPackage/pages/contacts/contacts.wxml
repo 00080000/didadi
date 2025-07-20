@@ -36,8 +36,12 @@
       <view class="cardLeft">
         <view class="sideBar"></view>
         <view class="information">
-          <view style="font-size: 25rpx;">{{item.name}}，{{item.phone}}</view>
-          <view style="font-size: 22rpx;">{{item.firm}}</view>
+            <view style="font-size: 25rpx;">
+            {{item.userName}}
+            <text wx:if="{{item.tel}}">，{{item.tel}}</text>
+            <text wx:elif="{{item.email}}">，{{item.email}}</text>
+          </view>
+          <view style="font-size: 22rpx;">{{item.companyName}}</view>
         </view>
       </view>
       <view class="operation">

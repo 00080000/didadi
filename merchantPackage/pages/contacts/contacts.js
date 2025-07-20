@@ -3,63 +3,91 @@ Page({
   data: {
     contacts:[
       {
-        name:"黄老板1",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司"
+        userName:"黄老板1",
+        tel:"13900009999",
+        companyName:"长沙好好信息科技有限公司"
       },
       {
-        name:"黄老板2",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司"
+        userName:"黄老板2",
+        tel:"13900009999",
+        companyName:"长沙好好信息科技有限公司"
       },
       {
-        name:"黄老板11",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司"
+        userName:"黄老板11",
+        tel:"13900009999",
+        companyName:"长沙好好信息科技有限公司"
       },
       {
-        name:"黄老板3",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司"
+        userName:"黄老板3",
+        tel:"13900009999",
+        companyName:"长沙好好信息科技有限公司"
       },
       {
-        name:"黄老板",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司"
+        userName:"黄老板",
+        tel:"13900009999",
+        companyName:"长沙好好信息科技有限公司"
       },
       {
-        name:"黄老板",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司"
+        userName:"黄老板",
+        tel:"13900009999",
+        companyName:"长沙好好信息科技有限公司"
       },
       {
-        name:"黄老板",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司"
+        userName:"黄老板",
+        tel:"13900009999",
+        companyName:"长沙好好信息科技有限公司"
       },
       {
-        name:"黄老板",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司"
+        userName:"黄老板",
+        tel:"13900009999",
+        companyName:"长沙好好信息科技有限公司"
       },
       {
-        name:"黄老板",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司"
+        userName:"黄老板",
+        tel:"13900009999",
+        companyName:"长沙好好信息科技有限公司"
       },
       {
-        name:"黄老板",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司"
+        userName:"黄老板",
+        tel:"13900009999",
+        companyName:"长沙好好信息科技有限公司"
       },
     ],
     filterContact:[],
     contactKeyword:''
   },
   onLoad(){
-    this.setData({
-      filterContact:this.data.contacts
-    })
+    this.fetchContacts();
+  },
+  fetchContacts(){
+    wx.request({
+        url: `${getApp().globalData.serverUrl}/diServer/companyLinkman/list`,
+        method: 'GET',
+        header: {
+          'Authorization': `Bearer ${getApp().globalData.token}`
+        },
+        success: (res) => {
+          if (res.statusCode === 200 && res.data.code === 200) {
+              const data = res.data.rows || []; 
+            console.log('data:',data);
+            this.setData({
+                filterContact:data
+              })
+          } else {
+            // 请求失败，使用本地默认数据
+            this.setData({
+                filterContact:this.data.contacts
+              })
+            console.log('errorMsg');
+          }
+        },
+        fail: (err) => {
+          this.setData({ 
+            errorMsg: '网络请求失败，使用默认数据',
+          });
+          console.error(err);
+        },
+      });
   },
   inputContact(){
     if(this.data.contactKeyword==''){
