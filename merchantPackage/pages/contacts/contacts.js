@@ -58,9 +58,6 @@ Page({
   },
   onLoad(){
     this.fetchContacts();
-    this.setData({
-      filterContact:this.data.contacts
-    })
   },
   fetchContacts(){
     wx.request({
