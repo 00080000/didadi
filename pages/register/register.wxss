@@ -1,0 +1,140 @@
+page{
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+}
+
+/* 上方区域 */
+.topArea {
+  width: 100%;
+  height: 25%;
+  background-color: #DDDDDD;
+  padding: 20rpx 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* 上方区域的logo 与 文字*/
+.logo {
+  width: 400rpx;
+  height: 100rpx;
+  margin: 20rpx auto;
+}
+
+.beta {
+  font-size: 35rpx;
+  color: #23394D;
+  margin-top: 10rpx;
+  font-weight: 500;
+}
+
+.subtitle {
+  color: gray;
+  font-size: 25rpx;
+  margin-top: 30rpx;
+}
+
+.link {
+  color: gray;
+  font-size: 25rpx;
+  margin-top: 10rpx;
+  margin-bottom: 30rpx;
+}
+
+/* 下方区域 */
+.bottomArea{
+  height: 70%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 50rpx;
+}
+
+.inputArea {
+  border-bottom: 1px lightgray solid;
+  width: 600rpx;
+  height: 100rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.deleteIcon {
+  margin-right: 10rpx;
+  display: flex;
+  align-items: center;
+  font-size: 70rpx;
+  color: gray;
+  cursor: pointer;
+}
+
+.input {
+  height: 70rpx;
+  font-size: 28rpx;
+  text-align: left;
+  padding: 10rpx 25rpx;
+}
+
+.button {
+  background-color:#F9B712;
+  color:white;
+  font-size: 30rpx;
+  font-weight:500;
+  height: 90rpx;
+  border-radius: 999rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 100rpx;
+}
+
+.backToLogin {
+  font-weight: lighter;
+  font-size: 25rpx;
+  margin-top: 50rpx;
+}
+
+.notGetCode {
+  color: #F9B712;
+  font-weight: lighter;
+  font-size: 27rpx;
+  margin-top: 20rpx;
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  width: 100%;
+  margin-left: 150rpx;
+}
+
+.rememberMe {
+  margin-top: 50rpx;
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  width: 100%;
+  margin-left: 150rpx;
+  font-size: 27rpx;
+}
+
+/* 同意协议 */
+.agreement {
+  padding-bottom: 30rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24rpx;
+  color: #333;
+}
+
+.agreement navigator {
+  margin-left: 10rpx;
+  color:#F9B712;
+}
