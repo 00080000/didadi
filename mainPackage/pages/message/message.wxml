@@ -16,21 +16,26 @@
     </view>
   </view>
   <view class="table">
+  <view wx:if="{{newMessage.length === 0}}" class="no-message">
+    当前没有新消息
+  </view>
+  <view wx:else>
     <view wx:for="{{newMessage}}" 
-    wx:for-item="message"
-    wx:key="index"
-    class="message">
+      wx:for-item="message"
+      wx:key="index"
+      class="message">
       <view class="header" 
-      data-index="{{index}}"
-      bind:tap="changeShowDetail">
+        data-index="{{index}}"
+        bind:tap="changeShowDetail">
         <view class="title">你有新的报价单要处理</view>
         <image wx:if="{{message.showDetail==true}}" src="/static/upArrow-gray.png"></image>
         <image wx:if="{{message.showDetail==false}}" src="/static/downArrow-gray.png"></image>
       </view>
       <view wx:if="{{message.showDetail==true}}" class="content">
         有来自{{message.city}}{{message.firm}}的报价单{{message.number}}需要处理，请点击“查看”按钮进行下一步操作。
-        <button size="mini">查看</button>
+        <button size="mini" bind:tap="gotowatch">查看</button>
       </view>
     </view>
   </view>
+</view>
 </view>
