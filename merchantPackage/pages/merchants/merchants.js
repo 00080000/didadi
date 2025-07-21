@@ -2,42 +2,52 @@ Page({
   data: {
     merchants:[
       {
+        id:"12",
         companyName:"长沙好好信息科技有限公司1",
         typeName:"采购商"
       },
       {
+        id:"17",
         companyName:"长沙好好信息科技有限公司2",
         typeName:"采购商"
       },
       {
+        id:"16",
         companyName:"长沙好好信息科技有限公司3",
         typeName:"采购商"
       },
       {
+        id:"15",
         companyName:"长沙好好信息科技有限公司11",
         typeName:"采购商"
       },
       {
+        id:"14",
         companyName:"长沙好好信息科技有限公司",
         typeName:"采购商"
       },
       {
+        id:"13",
         companyName:"长沙好好信息科技有限公司",
         typeName:"采购商"
       },
       {
+        id:"11",
         companyName:"长沙好好信息科技有限公司",
         typeName:"采购商"
       },
       {
+        id:"122",
         companyName:"长沙好好信息科技有限公司",
         typeName:"采购商"
       },
       {
+        id:"1",
         companyName:"长沙好好信息科技有限公司",
         typeName:"采购商"
       },
       {
+        id:"2",
         companyName:"长沙好好信息科技有限公司",
         typeName:"采购商"
       },
@@ -60,7 +70,8 @@ Page({
               const data = res.data.data || []; 
             console.log('data:',data);
             this.setData({
-                filterMerchant:data
+                filterMerchant:data,
+                merchants:data
               })
           } else {
             // 请求失败，使用本地默认数据
@@ -85,7 +96,7 @@ Page({
       })
     } else {
       this.setData({
-        filterMerchant:this.data.merchants.filter(item => item.name.includes(this.data.keyword))
+        filterMerchant:this.data.merchants.filter(item => item.companyName.includes(this.data.keyword))
       })
     }
   },
@@ -107,9 +118,10 @@ Page({
       url: '/merchantPackage/pages/contacts/contacts',
     })
   },
-  goToEditMerchant(){
+  goToEditMerchant(e){
+    const id = e.currentTarget.dataset.id || 0;
     wx.navigateTo({
-      url: '/merchantPackage/pages/editInformation/editInformation',
+      url: `/merchantPackage/pages/editInformation/editInformation?id=${id}`,
     })
   },
   navigateToMain(){
