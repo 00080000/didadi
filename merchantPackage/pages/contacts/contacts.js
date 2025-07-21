@@ -124,9 +124,10 @@ Page({
       url: '/merchantPackage/pages/editInformation/editInformation',
     })
   },
-  goToAddContact(){
+  goToAddContact(e){
+    const id = e.currentTarget.dataset.id || 0;
     wx.navigateTo({
-      url: '/merchantPackage/pages/addContact/addContact',
+      url: `/merchantPackage/pages/addContact/addContact?id=${id}`,
     })
   },
   navigateToMain(){
