@@ -8,6 +8,7 @@ Page({
     errorMsg: '',       // 错误信息提示（确保为字符串）
     isLoading: false,   // 加载状态
     searchTimer: null,  // 防抖定时器
+    filterTimer: null,  // 筛选防抖定时器
     // 补充筛选参数
     brand: '',          // 品牌筛选
     classId: '',        // 类别ID筛选
@@ -200,46 +201,59 @@ Page({
     });
   },
 
-  // 删除商品
+  // 删除商品（完善版）
   confirmDelete(e) {
-    const index = e.currentTarget.dataset.index;
-    const product = this.data.filterProduct[index];
+    // 1. 获取商品ID和相关信息（通过data-*属性传递）
+    const productId = e.currentTarget.dataset.id;
+    const productName = e.currentTarget.dataset.name;
+    const productCode = e.currentTarget.dataset.code;
 
-    // 校验商品有效性
-    if (!product || !product.id) {
+    // 2. 基础校验（确保ID存在）
+    if (!productId) {
       wx.showToast({ title: '商品信息无效', icon: 'none', duration: 2000 });
       return;
     }
 
-    // 二次确认删除
+    // 3. 二次确认弹窗
     wx.showModal({
       title: '确认删除',
-      content: `确定要删除商品【${product.productName || product.productCode}】吗？`,
+      content: `确定要删除商品【${productName || productCode || '未知商品'}】吗？`,
       success: (res) => {
         if (res.confirm) {
-          // 调用删除接口
+          // 4. 调用删除接口（按最新规范：路径传参ids）
           wx.request({
-            url: `${getApp().globalData.serverUrl}/diServer/product/delete`,
+            url: `${getApp().globalData.serverUrl}/diServer/product/${productId}`,
             method: 'DELETE',
             header: {
               'Authorization': `Bearer ${getApp().globalData.token}`,
               'Content-Type': 'application/json'
             },
-            data: { id: product.id },
             success: (res) => {
-              if (res.statusCode === 200 && res.data.code === 200) {
-                wx.showToast({ title: '删除成功', icon: 'success' });
-                this.fetchProducts(); // 删除后重新加载列表
+              // 5. 接口响应处理
+              if (res.statusCode === 200) {
+                // 业务成功
+                if (res.data.code === 200) {
+                  wx.showToast({ title: '删除成功', icon: 'success' });
+                  this.fetchProducts(); // 删除后重新加载列表
+                } else {
+                  // 业务失败
+                  wx.showToast({ 
+                    title: res.data?.msg || '删除失败', 
+                    icon: 'none',
+                    duration: 2000 
+                  });
+                }
               } else {
+                // 网络状态码错误
                 wx.showToast({ 
-                  title: res.data?.msg || '删除失败', 
-                  icon: 'none',
-                  duration: 2000 
+                  title: `请求失败（状态码：${res.statusCode}）`, 
+                  icon: 'none' 
                 });
               }
             },
             fail: () => {
-              wx.showToast({ title: '删除请求失败', icon: 'none' });
+              // 网络请求失败
+              wx.showToast({ title: '网络连接失败', icon: 'none' });
             }
           });
         }
@@ -249,17 +263,18 @@ Page({
 
   // 查看商品详情
   goToViewProduct(e) {
-    const index = e.currentTarget.dataset.index;
-    const item = this.data.filterProduct[index];
+    // 通过data-id获取商品ID
+    const productId = e.currentTarget.dataset.id;
+    const productName = e.currentTarget.dataset.name;
     
-    if (!item) {
+    if (!productId) {
       wx.showToast({ title: '商品信息不存在', icon: 'none' });
       return;
     }
 
     // 携带商品ID跳转到详情页
     wx.navigateTo({
-      url: `/productPackage/pages/viewSingleProduct/viewSingleProduct?productId=${item.id}&name=${encodeURIComponent(item.productName || '')}`,
+      url: `/productPackage/pages/viewSingleProduct/viewSingleProduct?productId=${productId}&name=${encodeURIComponent(productName || '')}`,
     });
   },
 

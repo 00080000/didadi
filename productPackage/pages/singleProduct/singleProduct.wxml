@@ -18,59 +18,70 @@
       </view>
     </view>
 
-    <!-- 搜索区域（与组合商品库一致） -->
+    <!-- 搜索区域 -->
     <view class="search">
       <form catchsubmit="inputProduct">
-      <view style="display: flex;align-items: center;">
+      <view style="display: flex; align-items: center;">
         <view class="inputArea">
           <image src="/static/search.png"></image>
-          <view style="display: flex;align-items: center;">
-            <!-- 实时搜索 -->
+          <view style="display: flex; align-items: center;">
             <input 
               bindinput="onInput" 
               value="{{keyword}}" 
               style="width: 250rpx;" 
-              placeholder="输入名称关键字" 
+              placeholder="输入名称" 
             />
           </view>
         </view>
         <button bind:tap="onSearch" size="mini" style="font-size: 32rpx;">搜索</button>
       </view>
-    
-      
-      <!-- 错误信息 -->
-      <view class="errorMsg" wx:if="{{errorMsg}}">
+  
+      <!-- 错误信息显示 -->
+      <view class="errorMsg" wx:if="{{errorMsg}}" style="color: red; font-size: 24rpx; margin-top: 10rpx;">
         {{errorMsg}}
       </view>
       </form>
     </view>
   </view>
 
-  <!-- 商品列表区域（与组合商品库一致） -->
+  <!-- 商品列表区域 -->
   <view class="productList">
     <!-- 无数据提示 -->
     <view class="emptyList" wx:if="{{!filterProduct.length && !isLoading}}">
-      <text>暂无数据</text>
+      <text>暂无商品数据</text>
     </view>
     
-    <!-- 商品卡片（保持与组合商品库一致的布局结构） -->
-    <view class="productCard" wx:for="{{filterProduct}}" wx:key="index" wx:for-item="item">
+    <!-- 商品卡片 -->
+    <view class="productCard" wx:for="{{filterProduct}}" wx:key="id" wx:for-item="item">
       <view class="cardLeft">
         <view class="sideBar"></view>
         <view class="information">
-          <!-- 只保留商品名称和型号 -->
-          <view style="font-size: 25rpx;">商品：{{item.productName || '未知商品'}}</view>
-          <view style="font-size: 20rpx; color: #888;">型号: {{item.model || '无型号'}}</view>
+          <view style="font-size: 30rpx;font-weight: bold;">{{item.productName || '未知商品'}}</view>
+          <view style="font-size: 24rpx;color: rgb(85, 81, 81);">型号: {{item.model || '无'}}</view>
         </view>
       </view>
       <view class="operation">
-        <button size="mini" bind:tap="goToViewProduct" data-index="{{index}}">查看</button>
-        <image src="/static/delete.png" bind:tap="confirmDelete"></image>
+        <!-- 查看按钮：绑定商品ID和名称 -->
+        <button 
+          size="mini" 
+          bind:tap="goToViewProduct" 
+          data-id="{{item.id}}" 
+          data-name="{{item.productName}}"
+        >查看</button>
+        
+        <!-- 删除按钮：绑定商品ID、名称和编码 -->
+        <image 
+          src="/static/delete.png" 
+          bind:tap="confirmDelete" 
+          data-id="{{item.id}}" 
+          data-name="{{item.productName}}"
+          data-code="{{item.productCode}}"
+        ></image>
       </view>
     </view>
   </view>
 
-  <!-- 底部导航栏（保持一致） -->
+  <!-- 底部导航栏 -->
   <view class="tabBar">
     <view class="notSelectedNavigateBar" bind:tap="navigateToMain">
       <image mode="heightFix" src="/static/home-gray.png"></image>
