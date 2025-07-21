@@ -17,35 +17,69 @@
         </view>
       </view>
     </view>
+
+    <!-- 优化为实时搜索（与其他商品库样式统一） -->
     <view class="search">
       <form catchsubmit="inputProduct">
-        <view style="display: flex;align-items: center;">
-          <view class="inputArea">
-            <image src="/static/search.png"></image>
-            <view style="display: flex;align-items: center;" >
-              <input model:value="{{keyword}}" bindconfirm="inputProduct" style="width: 250rpx;" placeholder="输入名称关键字"/>
-            </view>
+      <view style="display: flex;align-items: center;">
+        <view class="inputArea">
+          <image src="/static/search.png"></image>
+          <view style="display: flex;align-items: center;">
+            <!-- 实时监听输入，自动搜索 -->
+            <input 
+              bindinput="onInput" 
+              value="{{keyword}}" 
+              style="width: 250rpx;" 
+              placeholder="输入名称关键字" 
+            />
           </view>
-          <button formType="submit" size="mini" style="font-size: 32rpx;">搜索</button>
         </view>
+        <button bind:tap="onSearch" size="mini" style="font-size: 32rpx;">搜索</button>
+      </view>
+      <!-- 错误信息显示 -->
+      <view class="errorMsg" wx:if="{{errorMsg}}" style="color: red; font-size: 24rpx;">
+        {{errorMsg}}
+      </view>
       </form>
     </view>
   </view>
+
+  <!-- 商品列表区域（样式与其他商品库统一） -->
   <view class="productList">
-    <view class="productCard" wx:for="{{filterProduct}}" wx:key="index" wx:for-item="item">
+    <!-- 无数据提示 -->
+    <view class="emptyList" wx:if="{{!filterProduct.length && !isLoading}}">
+      <text>暂无临时商品数据</text>
+    </view>
+
+    <!-- 临时商品卡片（对接接口返回字段） -->
+    <view class="productCard" wx:for="{{filterProduct}}" wx:key="id" wx:for-item="item">
       <view class="cardLeft">
         <view class="sideBar"></view>
         <view class="information">
-          <view style="font-size: 25rpx;">临时商品名称{{item.name}}</view>
-          <view style="font-size: 22rpx;">报价单{{item.quotation}}</view>
+          <!-- 显示接口返回的商品名称和来源（报价单） -->
+          <view style="font-size: 25rpx;">临时商品：{{item.productName || '未知名称'}}</view>
+          <view style="font-size: 22rpx;">来源：{{item.source || '未知来源'}}</view>
         </view>
       </view>
       <view class="operation">
-        <button size="mini" bind:tap="goToViewProduct">查看</button>
-        <image src="/static/delete.png" bind:tap="confirmDelete"></image>
+        <!-- 查看按钮：传递商品ID（接口返回的id字段） -->
+        <button 
+          size="mini" 
+          bind:tap="goToViewProduct" 
+          data-product-id="{{item.id}}"
+        >查看</button>
+        <!-- 删除按钮：传递商品ID -->
+        <image 
+          src="/static/delete.png" 
+          bind:tap="confirmDelete" 
+          data-product-id="{{item.id}}"
+          data-index="{{index}}"
+        ></image>
       </view>
     </view>
   </view>
+
+  <!-- 底部导航栏（与其他页面统一） -->
   <view class="tabBar">
     <view class="notSelectedNavigateBar" bind:tap="navigateToMain">
       <image mode="heightFix" src="/static/home-gray.png"></image>
@@ -64,4 +98,4 @@
       商家
     </view>
   </view>
-</view>  
+</view>

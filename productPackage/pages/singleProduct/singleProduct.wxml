@@ -30,7 +30,7 @@
               bindinput="onInput" 
               value="{{keyword}}" 
               style="width: 250rpx;" 
-              placeholder="输入名称/编码/品牌" 
+              placeholder="输入名称关键字" 
             />
           </view>
         </view>
@@ -59,8 +59,8 @@
         <view class="sideBar"></view>
         <view class="information">
           <!-- 只保留商品名称和型号 -->
-          <view style="font-size: 30rpx;font-weight: bold;">{{item.productName || '未知商品'}}</view>
-          <view style="font-size: 24rpx;color: rgb(85, 81, 81);">型号: {{item.model || '无型号'}}</view>
+          <view style="font-size: 25rpx;">商品：{{item.productName || '未知商品'}}</view>
+          <view style="font-size: 20rpx; color: #888;">型号: {{item.model || '无型号'}}</view>
         </view>
       </view>
       <view class="operation">

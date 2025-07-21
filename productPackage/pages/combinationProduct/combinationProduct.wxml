@@ -60,7 +60,7 @@
       <view class="cardLeft">
         <view class="sideBar"></view>
         <view class="information">
-          <view style="font-size: 25rpx;">组合商品名称：{{item.name}}</view>
+          <view style="font-size: 25rpx;">商品组：{{item.name}}</view>
           <view style="font-size: 20rpx; color: #888;">编码：{{item.code}}</view>
         </view>
       </view>
