@@ -3,6 +3,10 @@ Page({
    pickerValue: ['采购方', '供应商', '两者皆是'],
    index:0
   },
+  onLoad(options) {
+    const Id = options.id; // 获取传递的id
+    console.log('商家ID:', Id);
+  },
   pickerChange(e){
     this.setData({
       index: e.detail.value

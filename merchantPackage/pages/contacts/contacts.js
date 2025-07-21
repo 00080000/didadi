@@ -71,7 +71,8 @@ Page({
               const data = res.data.rows || []; 
             console.log('data:',data);
             this.setData({
-                filterContact:data
+                filterContact:data,
+                contacts:data
               })
           } else {
             // 请求失败，使用本地默认数据
@@ -96,7 +97,7 @@ Page({
       })
     } else {
       this.setData({
-        filterContact:this.data.contacts.filter(item => item.name.includes(this.data.contactKeyword))
+        filterContact:this.data.contacts.filter(item => item.companyName.includes(this.data.contactKeyword))
       })
     }
   },
@@ -123,9 +124,10 @@ Page({
       url: '/merchantPackage/pages/editInformation/editInformation',
     })
   },
-  goToAddContact(){
+  goToAddContact(e){
+    const id = e.currentTarget.dataset.id || 0;
     wx.navigateTo({
-      url: '/merchantPackage/pages/addContact/addContact',
+      url: `/merchantPackage/pages/addContact/addContact?id=${id}`,
     })
   },
   navigateToMain(){
