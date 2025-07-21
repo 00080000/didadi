@@ -1,8 +1,21 @@
 <view class="container">
+  <!-- 顶部提示 -->
   <view class="header">
     如需编辑商品或添加商品，请登录电脑端操作！
   </view>
-  <view class="form">
+
+  <!-- 加载状态 -->
+  <view class="loading" wx:if="{{isLoading}}">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 错误提示 -->
+  <view class="error" wx:if="{{errorMsg && !isLoading}}">
+    {{errorMsg}}
+  </view>
+
+  <!-- 商品详情表单（数据加载成功后显示） -->
+  <view class="form" wx:if="{{!isLoading && !errorMsg}}">
     <view class="inputArea">
       <view class="label">商品名称</view>
       <input class="input" style="width: 450rpx;" disabled="true" value="{{product.name}}"/>
@@ -38,7 +51,10 @@
     <view class="imageArea">
       <view class="label">产品图片</view>
       <view class="productImage">
-        <image src="{{product.image}}"></image>
+        <image 
+          src="{{product.image || '/static/avatar.jpg'}}" 
+          mode="widthFix"
+        ></image>
       </view>
     </view>
     <view class="inputArea">

@@ -2,13 +2,20 @@
   <view class="header">
     如需编辑商品或添加商品，请登录电脑端操作！
   </view>
-  <view class="productList">
-    <view class="productCard" wx:for="{{list}}" wx:key="index" wx:for-item="item">
+
+  <!-- 空状态提示 -->
+  <view class="empty" wx:if="{{list.length === 0 && !isLoading}}">
+    <text>暂无商品数据</text>
+  </view>
+
+  <!-- 商品列表 -->
+  <view class="productList" wx:if="{{list.length > 0}}">
+    <view class="productCard" wx:for="{{list}}" wx:key="id" wx:for-item="item">
       <view class="cardLeft">
         <view class="sideBar"></view>
         <view class="information">
-          <view style="font-size: 25rpx;">商品名称{{item.name}}</view>
-          <view style="font-size: 22rpx;">数量：{{item.num}}</view>
+          <view style="font-size: 25rpx;">商品名称：{{item.productName}}</view>
+          <view style="font-size: 22rpx;">数量：{{item.quantity || 1}}</view>
         </view>
       </view>
     </view>

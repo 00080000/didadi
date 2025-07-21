@@ -18,14 +18,13 @@
       </view>
     </view>
 
-    <!-- 优化为实时搜索（与其他商品库样式统一） -->
+    <!-- 搜索区域 -->
     <view class="search">
       <form catchsubmit="inputProduct">
       <view style="display: flex;align-items: center;">
         <view class="inputArea">
           <image src="/static/search.png"></image>
           <view style="display: flex;align-items: center;">
-            <!-- 实时监听输入，自动搜索 -->
             <input 
               bindinput="onInput" 
               value="{{keyword}}" 
@@ -36,7 +35,8 @@
         </view>
         <button bind:tap="onSearch" size="mini" style="font-size: 32rpx;">搜索</button>
       </view>
-      <!-- 错误信息显示 -->
+
+      <!-- 错误信息 -->
       <view class="errorMsg" wx:if="{{errorMsg}}" style="color: red; font-size: 24rpx;">
         {{errorMsg}}
       </view>
@@ -44,42 +44,43 @@
     </view>
   </view>
 
-  <!-- 商品列表区域（样式与其他商品库统一） -->
+  <!-- 商品列表区域 -->
   <view class="productList">
     <!-- 无数据提示 -->
     <view class="emptyList" wx:if="{{!filterProduct.length && !isLoading}}">
       <text>暂无临时商品数据</text>
     </view>
 
-    <!-- 临时商品卡片（对接接口返回字段） -->
+    <!-- 临时商品卡片 -->
     <view class="productCard" wx:for="{{filterProduct}}" wx:key="id" wx:for-item="item">
       <view class="cardLeft">
         <view class="sideBar"></view>
         <view class="information">
-          <!-- 显示接口返回的商品名称和来源（报价单） -->
-          <view style="font-size: 25rpx;">临时商品：{{item.productName || '未知名称'}}</view>
+          <view style="font-size: 25rpx;">临时商品名称：{{item.productName || '未知名称'}}</view>
           <view style="font-size: 22rpx;">来源：{{item.source || '未知来源'}}</view>
         </view>
       </view>
       <view class="operation">
-        <!-- 查看按钮：传递商品ID（接口返回的id字段） -->
+        <!-- 查看按钮 -->
         <button 
           size="mini" 
           bind:tap="goToViewProduct" 
-          data-product-id="{{item.id}}"
+          data-id="{{item.id}}"
+          data-name="{{item.productName}}"
         >查看</button>
-        <!-- 删除按钮：传递商品ID -->
+        
+        <!-- 删除按钮：绑定itemId和商品名称 -->
         <image 
           src="/static/delete.png" 
           bind:tap="confirmDelete" 
-          data-product-id="{{item.id}}"
-          data-index="{{index}}"
+          data-item-id="{{item.id}}"
+          data-name="{{item.productName}}"
         ></image>
       </view>
     </view>
   </view>
 
-  <!-- 底部导航栏（与其他页面统一） -->
+  <!-- 底部导航栏 -->
   <view class="tabBar">
     <view class="notSelectedNavigateBar" bind:tap="navigateToMain">
       <image mode="heightFix" src="/static/home-gray.png"></image>
@@ -99,3 +100,4 @@
     </view>
   </view>
 </view>
+    
