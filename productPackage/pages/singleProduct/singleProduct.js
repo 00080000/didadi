@@ -1,21 +1,23 @@
 Page({
   data: {
-    products: [],       // 存储商品列表
+    products: [],       // 存储商品列表（原始数据）
     filterProduct: [],  // 存储筛选后的商品列表
     keyword: '',        // 搜索关键字
     companyEnterpriseId: 11, // 企业ID
     tableHeaders: [],   // 表头数据
-    errorMsg: '',       // 错误信息提示
-    // 补充筛选参数（根据接口文档新增）
+    errorMsg: '',       // 错误信息提示（确保为字符串）
+    isLoading: false,   // 加载状态
+    searchTimer: null,  // 防抖定时器
+    // 补充筛选参数
     brand: '',          // 品牌筛选
     classId: '',        // 类别ID筛选
     className: '',      // 类别名称筛选
     status: '',         // 商品状态筛选
-    // 价格分类相关筛选条件
-    priceCategoryType: '',        // 价格类型
-    priceCategoryPriceName: '',   // 价格名称
-    priceCategoryFormula: '',     // 计算公式
-    priceCategoryValidityTime: '' // 有效期
+    // 价格分类相关条件
+    priceCategoryType: '',
+    priceCategoryPriceName: '',
+    priceCategoryFormula: '',
+    priceCategoryValidityTime: ''
   },
 
   // 页面加载时调用
@@ -38,8 +40,9 @@ Page({
             tableHeaders: res.data.data || []
           });
         } else {
+          // 确保错误信息为字符串（修复[Object object]问题）
           this.setData({
-            errorMsg: res.data.message || '获取表头数据失败'
+            errorMsg: res.data?.message || '获取表头数据失败'
           });
         }
       },
@@ -47,12 +50,16 @@ Page({
         this.setData({
           errorMsg: '网络请求失败，无法获取表头数据'
         });
+        console.error('表头请求失败：', err);
       }
     });
   },
 
-  // 获取商品列表（根据接口文档完善参数）
+  // 获取商品列表（核心接口）
   fetchProducts() {
+    // 显示加载状态
+    this.setData({ isLoading: true });
+
     const { 
       companyEnterpriseId, 
       brand, 
@@ -60,34 +67,26 @@ Page({
       className,
       status,
       keyword,
-      // 价格分类参数
       priceCategoryType,
       priceCategoryPriceName,
       priceCategoryFormula,
       priceCategoryValidityTime
     } = this.data;
     
-    // 构建请求参数（包含接口要求的所有可选参数）
+    // 构建请求参数（只传有值的参数）
     const params = {
-      enterpriseId: companyEnterpriseId,
-      brand,
-      classId,
-      className,
-      status,
-      productName: keyword || '',
-      // 价格分类相关参数（接口文档中标注的查询参数）
-      'priceCategory.type': priceCategoryType,
-      'priceCategory.priceName': priceCategoryPriceName,
-      'priceCategory.formula': priceCategoryFormula,
-      'priceCategory.validityTime': priceCategoryValidityTime
+      enterpriseId: companyEnterpriseId, // 必传企业ID
+      ...(brand && { brand }),
+      ...(classId && { classId }),
+      ...(className && { className }),
+      ...(status && { status }),
+      ...(keyword && { productName: keyword }), // 关键字搜索
+      // 价格分类参数
+      ...(priceCategoryType && { 'priceCategory.type': priceCategoryType }),
+      ...(priceCategoryPriceName && { 'priceCategory.priceName': priceCategoryPriceName }),
+      ...(priceCategoryFormula && { 'priceCategory.formula': priceCategoryFormula }),
+      ...(priceCategoryValidityTime && { 'priceCategory.validityTime': priceCategoryValidityTime })
     };
-
-    // 移除空值参数，减少无效请求参数
-    Object.keys(params).forEach(key => {
-      if (params[key] === '' || params[key] === undefined) {
-        delete params[key];
-      }
-    });
 
     wx.request({
       url: `${getApp().globalData.serverUrl}/diServer/product/list`,
@@ -98,72 +97,102 @@ Page({
         'accept': '*/*'
       },
       success: (res) => {
-        // 适配接口返回格式（根据实际响应调整）
+        // 接口响应处理（确保错误信息为字符串）
         if (res.statusCode === 200) {
           if (res.data.code === 200) {
+            // 成功：更新商品列表
             this.setData({
               products: res.data.rows || [],
               filterProduct: res.data.rows || [],
-              errorMsg: ''
+              errorMsg: '' // 清空错误
             });
           } else {
+            // 接口返回错误（如参数错误）
             this.setData({
-              errorMsg: res.data.msg || '获取商品列表失败'
+              errorMsg: res.data?.msg || '获取商品列表失败',
+              filterProduct: []
             });
           }
         } else {
+          // 网络状态码错误（如404、500）
           this.setData({
-            errorMsg: `请求失败，状态码：${res.statusCode}`
+            errorMsg: `请求失败，状态码：${res.statusCode}`,
+            filterProduct: []
           });
         }
       },
       fail: (err) => {
+        // 网络请求失败（如断网）
         this.setData({
-          errorMsg: '网络请求失败，请检查网络连接'
+          errorMsg: '网络连接失败，请检查网络',
+          filterProduct: []
         });
         console.error('商品列表请求失败：', err);
+      },
+      complete: () => {
+        // 无论成功失败，都关闭加载状态
+        this.setData({ isLoading: false });
       }
     });
   },
 
-  // 搜索商品（优化搜索逻辑，支持多字段搜索）
-  inputProduct(e) {
-    // 获取输入的关键字（如果有输入事件则更新关键字）
-    if (e && e.detail && e.detail.value) {
-      this.setData({
-        keyword: e.detail.value
-      });
-    }
+  // 实时输入监听（核心实时搜索逻辑）
+  onInput(e) {
+    // 获取输入的关键字（确保为字符串）
+    const keyword = (e?.detail?.value || '').trim();
 
-    const { keyword, products } = this.data;
-    if (!keyword) {
-      this.setData({
-        filterProduct: products
+    // 防抖处理：输入停止300ms后再执行搜索，避免频繁请求
+    clearTimeout(this.data.searchTimer);
+    const timer = setTimeout(() => {
+      this.setData({ keyword }, () => {
+        // 有关键字：先本地筛选（快速响应），再请求最新数据
+        if (keyword) {
+          this.localSearch(keyword); // 本地模糊搜索
+          this.fetchProducts();     // 同时请求服务器（确保数据最新）
+        } else {
+          // 无关键字：重新请求全部数据
+          this.fetchProducts();
+        }
       });
-      return;
-    }
+    }, 300);
 
-    // 支持商品名称、商品编码、品牌多字段搜索
+    // 保存定时器，用于后续清除
+    this.setData({ searchTimer: timer });
+  },
+
+  // 本地模糊搜索（提高搜索响应速度）
+  localSearch(keyword) {
+    const { products } = this.data;
+    if (!products.length) return;
+
+    // 多字段模糊匹配（名称、编码、品牌）
     const filtered = products.filter(item => {
-      const matchProductName = item.productName && item.productName.includes(keyword);
-      const matchProductCode = item.productCode && item.productCode.includes(keyword);
+      const matchName = item.productName && item.productName.includes(keyword);
+      const matchCode = item.productCode && item.productCode.includes(keyword);
       const matchBrand = item.brand && item.brand.includes(keyword);
-      return matchProductName || matchProductCode || matchBrand;
+      return matchName || matchCode || matchBrand;
     });
 
-    this.setData({
-      filterProduct: filtered
-    });
+    // 更新筛选后的列表（本地快速显示）
+    this.setData({ filterProduct: filtered });
+  },
+
+  // 点击搜索按钮触发（兼容手动点击）
+  onSearch() {
+    const { keyword } = this.data;
+    if (keyword) {
+      this.localSearch(keyword); // 本地筛选
+      this.fetchProducts();     // 服务器请求
+    } else {
+      this.fetchProducts();     // 无关键字时重新加载全部
+    }
   },
 
   // 筛选条件变化时重新获取数据
   onFilterChange(e) {
     const { type, value } = e.currentTarget.dataset;
-    // 更新对应筛选条件的值
-    this.setData({
-      [type]: value
-    }, () => {
-      // 延迟执行，避免频繁请求
+    this.setData({ [type]: value }, () => {
+      // 防抖：300ms后执行，避免频繁请求
       clearTimeout(this.filterTimer);
       this.filterTimer = setTimeout(() => {
         this.fetchProducts();
@@ -176,16 +205,19 @@ Page({
     const index = e.currentTarget.dataset.index;
     const product = this.data.filterProduct[index];
 
+    // 校验商品有效性
     if (!product || !product.id) {
-      wx.showToast({ title: '商品信息无效', icon: 'none' });
+      wx.showToast({ title: '商品信息无效', icon: 'none', duration: 2000 });
       return;
     }
 
+    // 二次确认删除
     wx.showModal({
       title: '确认删除',
       content: `确定要删除商品【${product.productName || product.productCode}】吗？`,
       success: (res) => {
         if (res.confirm) {
+          // 调用删除接口
           wx.request({
             url: `${getApp().globalData.serverUrl}/diServer/product/delete`,
             method: 'DELETE',
@@ -193,22 +225,21 @@ Page({
               'Authorization': `Bearer ${getApp().globalData.token}`,
               'Content-Type': 'application/json'
             },
-            data: {
-              id: product.id
-            },
+            data: { id: product.id },
             success: (res) => {
               if (res.statusCode === 200 && res.data.code === 200) {
                 wx.showToast({ title: '删除成功', icon: 'success' });
-                this.fetchProducts(); // 删除后重新拉取列表
+                this.fetchProducts(); // 删除后重新加载列表
               } else {
                 wx.showToast({ 
-                  title: res.data.msg || '删除失败', 
-                  icon: 'none' 
+                  title: res.data?.msg || '删除失败', 
+                  icon: 'none',
+                  duration: 2000 
                 });
               }
             },
             fail: () => {
-              wx.showToast({ title: '网络请求失败', icon: 'none' });
+              wx.showToast({ title: '删除请求失败', icon: 'none' });
             }
           });
         }
@@ -216,7 +247,7 @@ Page({
     });
   },
 
-  // 查看商品详情（优化参数传递）
+  // 查看商品详情
   goToViewProduct(e) {
     const index = e.currentTarget.dataset.index;
     const item = this.data.filterProduct[index];
@@ -226,23 +257,26 @@ Page({
       return;
     }
 
-    // 传递完整商品ID，方便详情页获取完整信息
+    // 携带商品ID跳转到详情页
     wx.navigateTo({
       url: `/productPackage/pages/viewSingleProduct/viewSingleProduct?productId=${item.id}&name=${encodeURIComponent(item.productName || '')}`,
     });
   },
-//跳转到组合商品库
-goToCombinationProoduct(){
-  wx.redirectTo({
-    url: '/productPackage/pages/combinationProduct/combinationProduct',
-  });
-},
-//跳到临时商品库
-goToTemporaryProoduct(){
-  wx.redirectTo({
-    url: '/productPackage/pages/temporaryProduct/temporaryProduct',
-  });
-},
+
+  // 跳转到组合商品库
+  goToCombinationProoduct() {
+    wx.redirectTo({
+      url: '/productPackage/pages/combinationProduct/combinationProduct',
+    });
+  },
+
+  // 跳到临时商品库
+  goToTemporaryProoduct() {
+    wx.redirectTo({
+      url: '/productPackage/pages/temporaryProduct/temporaryProduct',
+    });
+  },
+
   // 跳转到首页
   navigateToMain() {
     wx.redirectTo({
@@ -264,8 +298,9 @@ goToTemporaryProoduct(){
     });
   },
 
-  // 页面卸载时清理定时器
+  // 页面卸载时清理定时器（避免内存泄漏）
   onUnload() {
+    clearTimeout(this.data.searchTimer);
     clearTimeout(this.filterTimer);
   }
 });

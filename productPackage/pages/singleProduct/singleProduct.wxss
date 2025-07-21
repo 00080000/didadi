@@ -1,11 +1,11 @@
-/* 页面整体样式 */
-page {
+/* productPackage/pages/singleProduct/singleProduct.wxss */
+/* merchantPackage/pages/merchants/merchants.wxss */
+page{
   text-align: center;
   width: 100%;
   height: 100%;
   background-color: white;
   position: relative;
-  overflow: hidden; /* 防止内容超出 */
 }
 
 /* 上方区域 */
@@ -44,7 +44,7 @@ page {
   background-color: gray;
 }
 
-.combinationProoductOption, .temporaryProoductOption {
+.combinationProoductOption {
   font-size: 28rpx;
   height: 60rpx;
   color: #23394D;
@@ -54,7 +54,17 @@ page {
   justify-content: center;
 }
 
-/* 搜索框样式 */
+.temporaryProoductOption {
+  font-size: 28rpx;
+  height: 60rpx;
+  color: #23394D;
+  width: 200rpx;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+
 .search {
   display: flex;
   align-items: center;
@@ -62,6 +72,11 @@ page {
   height: 70rpx;
   margin-left: 30rpx;
   margin-bottom: 20rpx;
+}
+
+.searchText {
+  margin-left: 25rpx;
+  font-size: 30rpx;
 }
 
 .inputArea {
@@ -78,7 +93,6 @@ page {
   font-size: 25rpx;
   text-align: left;
   padding: 0 10rpx;
-  width: 250rpx; /* 限制输入框宽度 */
 }
 
 .inputArea image {
@@ -92,8 +106,7 @@ form button {
   color: #23394D;
 }
 
-/* 商品列表区域 */
-.productList {
+.productList{
   width: 700rpx;
   margin: 40rpx 25rpx;
   padding-top: 10rpx;
@@ -101,18 +114,17 @@ form button {
   overflow: auto;
 }
 
-/* 商品卡片 */
 .productCard {
   width: 650rpx;
-  height: 100%;
+  height: 110rpx;
   margin: 0 25rpx 40rpx 25rpx;
-  border-radius: 10px;
+  border-radius: 5px;
+  -webkit-box-shadow: 0px 0px 10rpx 3rpx lightgray;
+  -moz-box-shadow: 0px 0px 10rpx 3rpx lightgray;
   box-shadow: 0px 0px 10rpx 3rpx lightgray;
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
- 
-  overflow: hidden; /* 防止内容超出 */
 }
 
 .cardLeft {
@@ -122,8 +134,7 @@ form button {
 
 .sideBar {
   width: 20rpx;
-  height: 130px;
-  display: flex;
+  height: 100%;
   background-color: #23394D;
   border-top-left-radius: 5px;
   border-bottom-left-radius: 5px;
@@ -136,23 +147,12 @@ form button {
   justify-content: space-around;
   align-items: flex-start;
   margin-left: 20rpx;
-  text-align: left;
-  overflow: hidden;
-  margin-top:7px ;
-  margin-bottom: 7px;
 }
 
-.information .productInfoRow view {
-  overflow: hidden;
-  text-overflow: ellipsis; /* 防止文字溢出 */
-  white-space: nowrap; /* 禁止换行 */
-}
-
-/* 操作区域 */
 .operation {
   display: flex;
   align-items: center;
-  margin: 15rpx;
+  margin:15rpx;
 }
 
 .operation button {
@@ -171,7 +171,6 @@ form button {
   height: 40rpx;
 }
 
-/* 底部导航栏 */
 .tabBar {
   position: absolute;
   bottom: 0;
@@ -184,9 +183,10 @@ form button {
   justify-content: space-around;
 }
 
-.selectedNavigateBar, .notSelectedNavigateBar {
+.selectedNavigateBar {
   width: 25%;
   height: 100%;
+  color: #23394D;
   font-size: 22rpx;
   font-weight: bold;
   display: flex;
@@ -197,12 +197,18 @@ form button {
   margin-top: 1%;
 }
 
-.selectedNavigateBar {
-  color: #23394D;
-}
-
 .notSelectedNavigateBar {
+  width: 25%;
+  height: 100%;
   color: gray;
+  font-size: 22rpx;
+  font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 1%;
+  margin-top: 1%;
 }
 
 .selectedNavigateBar image {

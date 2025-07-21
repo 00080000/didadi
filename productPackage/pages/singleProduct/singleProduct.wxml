@@ -17,50 +17,60 @@
         </view>
       </view>
     </view>
+
+    <!-- 搜索区域（与组合商品库一致） -->
     <view class="search">
       <form catchsubmit="inputProduct">
-        <view style="display: flex; align-items: center;">
-          <view class="inputArea">
-            <image src="/static/search.png"></image>
-            <view style="display: flex; align-items: center;">
-              <input model:value="{{keyword}}" bindinput="inputProduct" style="width: 250rpx;" placeholder="输入名称/编码/品牌" />
-            </view>
+      <view style="display: flex;align-items: center;">
+        <view class="inputArea">
+          <image src="/static/search.png"></image>
+          <view style="display: flex;align-items: center;">
+            <!-- 实时搜索 -->
+            <input 
+              bindinput="onInput" 
+              value="{{keyword}}" 
+              style="width: 250rpx;" 
+              placeholder="输入名称/编码/品牌" 
+            />
           </view>
-          <button formType="submit" size="mini" style="font-size: 32rpx;">搜索</button>
         </view>
+        <button bind:tap="onSearch" size="mini" style="font-size: 32rpx;">搜索</button>
+      </view>
+    
+      
+      <!-- 错误信息 -->
+      <view class="errorMsg" wx:if="{{errorMsg}}">
+        {{errorMsg}}
+      </view>
       </form>
     </view>
   </view>
 
-  <!-- 商品列表区域 -->
+  <!-- 商品列表区域（与组合商品库一致） -->
   <view class="productList">
-    <view class="productCard" wx:for="{{filterProduct}}" wx:key="id" wx:for-item="item">
+    <!-- 无数据提示 -->
+    <view class="emptyList" wx:if="{{!filterProduct.length && !isLoading}}">
+      <text>暂无数据</text>
+    </view>
+    
+    <!-- 商品卡片（保持与组合商品库一致的布局结构） -->
+    <view class="productCard" wx:for="{{filterProduct}}" wx:key="index" wx:for-item="item">
       <view class="cardLeft">
         <view class="sideBar"></view>
         <view class="information">
-          <view style="font-size: 30rpx;font-weight: bold;">{{item.productName}}</view>
-          <view class="productInfoRow">
-            <view style="font-size: 24rpx;color: rgb(85, 81, 81);">型号: {{item.model || '无'}}</view>
-            <view style="font-size: 24rpx;color: rgb(85, 81, 81);">品牌: {{item.brand || '无'}}</view>
-          </view>
-          <view class="productInfoRow">
-            <view style="font-size: 24rpx;color: rgb(197, 33, 33);">价格: {{item.unitPrice || '0.00'}}元</view>
-            <view style="font-size: 24rpx;color: rgb(85, 81, 81);">状态: {{item.status === '1' ? '有效' : '无效'}}</view>
-          </view>
-          <view class="productInfoRow">
-            <view style="font-size: 24rpx;color: rgb(85, 81, 81);">创建时间: {{item.createTime || '无'}}</view>
-            <view style="font-size: 24rpx;color: rgb(85, 81, 81);">类别: {{item.className || '未分类'}}</view>
-          </view>
+          <!-- 只保留商品名称和型号 -->
+          <view style="font-size: 30rpx;font-weight: bold;">{{item.productName || '未知商品'}}</view>
+          <view style="font-size: 24rpx;color: rgb(85, 81, 81);">型号: {{item.model || '无型号'}}</view>
         </view>
       </view>
       <view class="operation">
-        <button size="mini" bind:tap="goToViewProduct" data-index="{{index}}" >查看</button>
-        <image src="/static/delete.png" bind:tap="confirmDelete" data-index="{{index}}"></image>
+        <button size="mini" bind:tap="goToViewProduct" data-index="{{index}}">查看</button>
+        <image src="/static/delete.png" bind:tap="confirmDelete"></image>
       </view>
     </view>
   </view>
 
-  <!-- 底部导航栏 -->
+  <!-- 底部导航栏（保持一致） -->
   <view class="tabBar">
     <view class="notSelectedNavigateBar" bind:tap="navigateToMain">
       <image mode="heightFix" src="/static/home-gray.png"></image>

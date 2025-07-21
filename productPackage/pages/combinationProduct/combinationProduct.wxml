@@ -1,3 +1,4 @@
+<!-- pages/combinationProduct/combinationProduct.wxml -->
 <view class="container">
   <!-- 上方的Logo与文字提示部分 -->
   <view class="topArea">
@@ -17,34 +18,60 @@
         </view>
       </view>
     </view>
+    
+    <!-- 优化后的搜索区域 -->
     <view class="search">
       <form catchsubmit="inputProduct">
-        <view style="display: flex;align-items: center;">
-          <view class="inputArea">
-            <image src="/static/search.png"></image>
-            <view style="display: flex;align-items: center;" >
-              <input model:value="{{keyword}}" bindconfirm="inputProduct" style="width: 250rpx;" placeholder="输入名称关键字"/>
-            </view>
+      <view style="display: flex;align-items: center;">
+        <view class="inputArea">
+          <image src="/static/search.png"></image>
+          <view style="display: flex;align-items: center;">
+            <!-- 使用bindinput实时监听输入 -->
+            <input 
+              bindinput="onInput" 
+              value="{{keyword}}" 
+              style="width: 250rpx;" 
+              placeholder="输入名称关键字" 
+            />
           </view>
-          <button formType="submit" size="mini" style="font-size: 32rpx;">搜索</button>
         </view>
-      </form>
+        <!-- 保留搜索按钮，点击时也触发搜索 -->
+        <button bind:tap="onSearch" size="mini" style="font-size: 32rpx;">搜索</button>
+      </view>
+            
+      <!-- 错误信息显示（确保只显示字符串） -->
+      <view class="errorMsg" wx:if="{{errorMsg}}">
+        {{errorMsg}}
+      </view>
+    </form>
     </view>
+ 
   </view>
+
+  <!-- 商品列表区域 -->
   <view class="productList">
+    <!-- 无数据提示 -->
+    <view class="emptyList" wx:if="{{!filterProduct.length && !isLoading}}">
+      <text>暂无数据</text>
+    </view>
+    
+    <!-- 商品列表 -->
     <view class="productCard" wx:for="{{filterProduct}}" wx:key="index" wx:for-item="item">
       <view class="cardLeft">
         <view class="sideBar"></view>
         <view class="information">
-          <view style="font-size: 25rpx;">组合商品名称{{item.name}}</view>
+          <view style="font-size: 25rpx;">组合商品名称：{{item.name}}</view>
+          <view style="font-size: 20rpx; color: #888;">编码：{{item.code}}</view>
         </view>
       </view>
       <view class="operation">
-        <button size="mini" bind:tap="goToViewProduct">查看</button>
+        <button size="mini" bind:tap="goToViewProduct" data-index="{{index}}">查看</button>
         <image src="/static/delete.png" bind:tap="confirmDelete"></image>
       </view>
     </view>
   </view>
+
+  <!-- 底部导航栏 -->
   <view class="tabBar">
     <view class="notSelectedNavigateBar" bind:tap="navigateToMain">
       <image mode="heightFix" src="/static/home-gray.png"></image>
@@ -63,4 +90,4 @@
       商家
     </view>
   </view>
-</view>  
+</view>
