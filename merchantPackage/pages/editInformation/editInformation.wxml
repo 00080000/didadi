@@ -6,11 +6,23 @@
   <view class="form">
     <view class="inputArea">
       <view class="label">商家名称</view>
-      <input placeholder="请输入商户名称" class="input" style="width: 450rpx;"/>
+      <input 
+        placeholder="请输入商户名称" 
+        class="input" 
+        style="width: 450rpx;"
+        value="{{companyName}}"
+        bindinput="handleCompanyNameInput"
+      />
     </view>
     <view class="pickerArea">
       <view class="label">商户分类</view>
-      <picker bindchange="pickerChange" mode="selector" value="{{index}}" range="{{pickerValue}}"	 class="picker-area">
+      <picker 
+        bindchange="pickerChange" 
+        mode="selector" 
+        value="{{index}}" 
+        range="{{pickerValue}}"	
+        class="picker-area"
+      >
         <view class="showPickerValue">
           <view>{{pickerValue[index]}}</view>
           <image src="/static/downArrow-gray.png"></image>
@@ -19,27 +31,62 @@
     </view>
     <view class="inputArea">
       <view class="label">商户标签</view>
-      <input placeholder="请输入标签" class="input" style="width: 450rpx;"/>
+      <input 
+        placeholder="请输入标签" 
+        class="input" 
+        style="width: 450rpx;"
+        value="{{tag}}"
+        bindinput="handleTagInput"
+      />
     </view>
     <view class="inputArea">
       <view class="label">信用代码</view>
-      <input placeholder="请输入信用代码" class="input" style="width: 450rpx;"/>
+      <input 
+        placeholder="请输入信用代码" 
+        class="input" 
+        style="width: 450rpx;"
+        value="{{creditCode}}"
+        bindinput="handleCreditCodeInput"
+      />
     </view>
     <view class="inputArea">
       <view class="label">注册电话</view>
-      <input placeholder="请输入注册电话" class="input" style="width: 450rpx;"/>
+      <input 
+        placeholder="请输入注册电话" 
+        class="input" 
+        style="width: 450rpx;"
+        value="{{registerTel}}"
+        bindinput="handlePhoneInput"
+      />
     </view>
     <view class="inputArea">
       <view class="label">开户行</view>
-      <input placeholder="请输入开户行名称" class="input" style="width: 450rpx;"/>
+      <input 
+        placeholder="请输入开户行名称" 
+        class="input" 
+        style="width: 450rpx;"
+        value="{{bankName}}"
+        bindinput="handleBankNameInput"
+      />
     </view>
     <view class="inputArea">
       <view class="label">银行账号</view>
-      <input placeholder="请输入银行账号" class="input" style="width: 450rpx;"/>
+      <input 
+        placeholder="请输入银行账号" 
+        class="input" 
+        style="width: 450rpx;"
+        value="{{bankAccount}}"
+        bindinput="handleBankAccountInput"
+      />
     </view>
     <view class="textArea">
       <view class="label">注册地址</view>
-      <textarea placeholder="请输入注册地址" style="width: 450rpx;font-size: 27rpx;font-weight: lighter;"></textarea>
+      <textarea 
+        placeholder="请输入注册地址" 
+        style="width: 450rpx;font-size: 27rpx;font-weight: lighter;"
+        value="{{address}}"
+        bindinput="handleAddressInput"
+      ></textarea>
     </view>
   </view>
   <view class="buttonGroup">

@@ -60,14 +60,14 @@ Page({
   },
   fetchContacts(){
     wx.request({
-        url: `${getApp().globalData.serverUrl}/diServer/company/myList`,
+        url: `${getApp().globalData.serverUrl}/diServer/company/list?pageNum=1&pageSize=10`,
         method: 'GET',
         header: {
           'Authorization': `Bearer ${getApp().globalData.token}`
         },
         success: (res) => {
           if (res.statusCode === 200 && res.data.code === 200) {
-              const data = res.data.data || []; 
+              const data = res.data.rows || []; 
             console.log('data:',data);
             this.setData({
                 filterMerchant:data,
@@ -119,10 +119,14 @@ Page({
     })
   },
   goToEditMerchant(e){
-    const id = e.currentTarget.dataset.id || 0;
-    wx.navigateTo({
-      url: `/merchantPackage/pages/editInformation/editInformation?id=${id}`,
-    })
+    const item = e.currentTarget.dataset.item || '';
+  wx.navigateTo({
+    url: `/merchantPackage/pages/editInformation/editInformation`,
+    events: {},
+    success: function(res) {
+      res.eventChannel.emit('acceptDataFromOpenerPage', { data: item })
+    }
+  })
   },
   navigateToMain(){
     wx.redirectTo({

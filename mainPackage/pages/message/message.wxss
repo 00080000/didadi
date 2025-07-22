@@ -145,3 +145,13 @@ page{
   font-size: 25rpx;
   padding: 5rpx 30rpx;
 }
+.no-message {
+    width: 100%;
+    height: 100rpx;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 28rpx;
+    color: #999;
+    margin-top: 50rpx;
+  }

@@ -1,4 +1,4 @@
-<!--mainPackage/pages/message/message.wxml-->
+<!--mainPackage/pages/watch/watch.wxml-->
 <view class="container">
   <!-- 上方的Logo与文字提示部分 -->
   <view class="topArea">

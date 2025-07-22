@@ -126,12 +126,12 @@ Page({
   },
   goToAddMerchant(){
     wx.navigateTo({
-      url: '/merchantPackage/pages/editInformation/editInformation',
+      url: '/merchantPackage/pages/editInformation/editInformation?id=0',
     })
   },
   goToAddContact(){
     wx.navigateTo({
-      url: '/merchantPackage/pages/addContact/addContact',
+      url: '/merchantPackage/pages/addContact/addContact?id=0',
     })
   },
 })
