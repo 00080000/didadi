@@ -72,7 +72,7 @@
         <!-- 删除按钮：绑定itemId和商品名称 -->
         <image 
           src="/static/delete.png" 
-          bind:tap="confirmDelete" 
+          bind:tap="showDeleteConfirm" 
           data-item-id="{{item.id}}"
           data-name="{{item.productName}}"
         ></image>
