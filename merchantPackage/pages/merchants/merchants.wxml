@@ -42,7 +42,7 @@
       </view>
       <view class="operation">
         <button size="mini" bind:tap="goToEditMerchant" data-item="{{item}}">编辑</button>
-        <image src="/static/delete.png" bind:tap="confirmDelete"></image>
+        <image src="/static/delete.png" bind:tap="confirmDelete" data-id="{{item.id}}"></image>
       </view>
     </view>
   </view>

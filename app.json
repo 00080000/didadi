@@ -18,7 +18,8 @@
         "pages/personalInformation/personalInformation",
         "pages/editPassword/editPassword",
         "pages/editFirmInformation/editFirmInformation",
-        "pages/message/message"
+        "pages/message/message",
+        "pages/watch/watch"
       ]
     },
     {
