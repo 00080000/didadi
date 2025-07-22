@@ -50,8 +50,8 @@
     <view class="card" wx:for="{{filterQuotation}}" wx:key="index" wx:item="item">
       <view class="cardLeft">
         <view style="font-size: 22rpx;margin-top: 20rpx;">询价时间</view>
-        <view style="font-size: 20rpx;">{{item.date}}</view>
-        <view style="font-size: 20rpx;margin-bottom: 20rpx;">{{item.time}}</view>
+        <view style="font-size: 20rpx;line-height: 55rpx;">{{item.quoteDate}}</view>
+       
       </view>
       <view class="cardRight">
         <view class="title">
