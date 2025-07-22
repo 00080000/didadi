@@ -9,7 +9,8 @@ Page({
       registerTel: '',
       bankName: '',
       bankAccount: '',
-      address: ''
+      address: '',
+      isAdd: false
     },
     onLoad() {
       const eventChannel = this.getOpenerEventChannel();
@@ -17,7 +18,12 @@ Page({
       eventChannel.on('acceptDataFromOpenerPage', function(data) {
         console.log('item:',data.data); 
         const item = data.data || {};
-        
+        if (Object.keys(item).length === 0) {
+            that.setData({
+            isAdd: true
+            });
+        console.log('isAdd:', that.data.isAdd); 
+    }
         let index = 0;
         if (item.type === '2') {
           index = 1;
@@ -94,15 +100,15 @@ Page({
           id
         } = this.data;
         
-        let type;
-        if (index === 0) {
+        let type = '0';
+        if (this.data.index == 0) {
             type = '1';
-        } else if (index === 1) {
+        } else if (this.data.index == 1) {
             type = '2';
-        } else if (index === 2) {
+        } else if (this.data.index == 2) {
             type = '3';
         }
-        
+
         const submitData = {
           companyName: companyName || '',
           tag: tag || '',
@@ -116,42 +122,84 @@ Page({
           address: address || '',
           params: {}
         };
-        
-        wx.request({
-          url: `${getApp().globalData.serverUrl}/diServer/company/edit`,
-          method: 'POST', 
-          header: {
-            'Authorization': `Bearer ${getApp().globalData.token}`,
-            'Content-Type': 'application/json' 
-          },
-          data: submitData,
-          success: (res) => {
-            if (res.data.code == 200) { 
-              wx.showToast({
-                title: '修改成功',
-                icon: 'success',
-                duration: 1500
+        console.log('addData:',submitData);
+        if(this.data.isAdd)
+        {
+            wx.request({
+                url: `${getApp().globalData.serverUrl}/diServer/company/add`,
+                method: 'POST', 
+                header: {
+                  'Authorization': `Bearer ${getApp().globalData.token}`,
+                  'Content-Type': 'application/json' 
+                },
+                data: submitData,
+                success: (res) => {
+                  if (res.data.code == 200) { 
+                    wx.showToast({
+                      title: '新增成功',
+                      icon: 'success',
+                      duration: 1500
+                    });
+                    
+                    setTimeout(() => {
+                      wx.navigateBack();
+                    }, 1500);
+                  } else {
+                    wx.showToast({
+                      title: res.data.msg || '新增失败',
+                      icon: 'none',
+                      duration: 2000
+                    });
+                  }
+                },
+                fail: (err) => {
+                  console.error('修改请求失败', err);
+                  wx.showToast({
+                    title: '网络错误',
+                    icon: 'none',
+                    duration: 2000
+                  });
+                }
               });
-              
-              setTimeout(() => {
-                wx.navigateBack();
-              }, 1500);
-            } else {
-              wx.showToast({
-                title: res.data.msg || '修改失败',
-                icon: 'none',
-                duration: 2000
+        }
+        else
+        {
+            wx.request({
+                url: `${getApp().globalData.serverUrl}/diServer/company/edit`,
+                method: 'POST', 
+                header: {
+                  'Authorization': `Bearer ${getApp().globalData.token}`,
+                  'Content-Type': 'application/json' 
+                },
+                data: submitData,
+                success: (res) => {
+                  if (res.data.code == 200) { 
+                    wx.showToast({
+                      title: '修改成功',
+                      icon: 'success',
+                      duration: 1500
+                    });
+                    
+                    setTimeout(() => {
+                      wx.navigateBack();
+                    }, 1500);
+                  } else {
+                    wx.showToast({
+                      title: res.data.msg || '修改失败',
+                      icon: 'none',
+                      duration: 2000
+                    });
+                  }
+                },
+                fail: (err) => {
+                  console.error('修改请求失败', err);
+                  wx.showToast({
+                    title: '网络错误',
+                    icon: 'none',
+                    duration: 2000
+                  });
+                }
               });
-            }
-          },
-          fail: (err) => {
-            console.error('修改请求失败', err);
-            wx.showToast({
-              title: '网络错误',
-              icon: 'none',
-              duration: 2000
-            });
-          }
-        });
+        }
       }
   });

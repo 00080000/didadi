@@ -60,7 +60,8 @@ App({
       userInfo: null,
       authenticated: false,
       serverUrl: 'http://121.199.52.199:8080',
-      token: 'eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6ImQ3MjRlZDUyLTEyZGQtNGQxMy05YjQyLWZmYTgyZDg1Njk2NiJ9.5ltfo23pPH3_6EaHDz2XJ-v7frD1A_BnjhlLBxj6sXHDdRxIYOK0eSXEoR37K0yjrd0ZV-F9EtL-Hbr1OVmhhQ' // 存储认证 token
+      token: 'eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjY2YzhlMGE2LTAwNWYtNDBhYS04OTZlLWJkZjQwY2EyZGUwNyJ9.RvgB6-QaTFkb36kcj3HttIwf2-weJEKad87uvyDJWh-q1voa6nIjR4TueWeGBVNmE6n7shbP1LVEKTuEk95J9Q' // 存储认证 token
+
 
     }
   });
