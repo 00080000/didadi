@@ -46,7 +46,6 @@ Page({
         success: (res) => {
           if (res.statusCode === 200 && res.data.code === 200) {
               const data = res.data.rows || []; 
-            console.log('data:',data);
             this.setData({
                 filterContact:data,
                 contacts:data
@@ -113,7 +112,6 @@ Page({
                       },
                     });
                 } else if (res.cancel) {
-                    console.log('用户点击取消')
                 }
             }
         });

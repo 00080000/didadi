@@ -30,7 +30,6 @@ Page({
       const eventChannel = this.getOpenerEventChannel();
       const that = this;
       eventChannel.on('acceptDataFromOpenerPage', function(data) {
-        console.log('item:', data.data);
         const item = data.data || {};
         if (Object.keys(item).length === 0) {
           that.setData({
@@ -41,7 +40,6 @@ Page({
         let index = that.data.pickerValue.findIndex(name => name === item.companyName);
         if (index === -1) {
           index = null; 
-          console.log('未找到商家');
         }
   
         that.setData({

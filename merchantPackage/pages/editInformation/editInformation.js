@@ -16,13 +16,11 @@ Page({
       const eventChannel = this.getOpenerEventChannel();
       const that = this; 
       eventChannel.on('acceptDataFromOpenerPage', function(data) {
-        console.log('item:',data.data); 
         const item = data.data || {};
         if (Object.keys(item).length === 0) {
             that.setData({
             isAdd: true
-            });
-        console.log('isAdd:', that.data.isAdd); 
+            }); 
     }
         let index = 0;
         if (item.type === '2') {
