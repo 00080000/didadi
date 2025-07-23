@@ -5,31 +5,55 @@
   <view class="form">
     <view class="pickerArea">
       <view class="label">商家名称</view>
-      <picker bindchange="pickerChange" mode="selector" value="{{index}}" range="{{pickerValue}}"	 class="picker-area">
+      <picker bindchange="pickerChange" mode="selector" value="{{index}}" range="{{pickerValue}}" class="picker-area">
         <view class="showPickerValue">
-          <view>{{index==null? "请选择商家":pickerValue[index]}}</view>
+          <view>{{index === null ? "请选择商家" : pickerValue[index]}}</view>
           <image src="/static/downArrow-gray.png"></image>
         </view>
       </picker>
     </view>
     <view class="inputArea">
       <view class="label">姓名</view>
-      <input placeholder="请输入联系人姓名" class="input" style="width: 450rpx;"/>
+      <input 
+        placeholder="请输入联系人姓名" 
+        class="input" 
+        style="width: 450rpx;"
+        value="{{userName}}"
+        bindinput="handleUserNameInput"
+      />
     </view>
     <view class="inputArea">
       <view class="label">电话</view>
-      <input placeholder="请输入联系人手机号码" class="input" style="width: 450rpx;"/>
+      <input 
+        placeholder="请输入联系人手机号码" 
+        class="input" 
+        style="width: 450rpx;"
+        value="{{tel}}"
+        bindinput="handleTelInput"
+      />
     </view>
+    <view class="error-message">{{telError}}</view>
     <view class="inputArea">
       <view class="label">邮箱</view>
-      <input placeholder="请输入联系人电子邮箱" class="input" style="width: 450rpx;"/>
+      <input 
+        placeholder="请输入联系人电子邮箱" 
+        class="input" 
+        style="width: 450rpx;"
+        value="{{email}}"
+        bindinput="handleEmailInput"
+      />
     </view>
+    <view class="error-message">{{emailError}}</view>
     <view class="inputArea">
-      <view class="label">是否默认</view>
-      <view style="width: 500rpx;display: flex;justify-content: flex-start;">
-        <checkbox></checkbox>
-      </view>
-    </view>
+  <view class="label">是否默认</view>
+  <view style="width: 500rpx;display: flex;justify-content: flex-start;">
+    <checkbox 
+      checked="{{defaultFlag === 1}}" 
+      catchtap="handleDefaultChange"
+      value="default"  
+    ></checkbox>
+  </view>
+</view>
   </view>
   <view class="buttonGroup">
     <view class="cancelButton" bind:tap="cancel">

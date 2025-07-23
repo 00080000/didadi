@@ -58,6 +58,9 @@ Page({
   onLoad(){
     this.fetchContacts();
   },
+  onShow() {
+    this.fetchContacts();
+  },
   //数据更新
   fetchContacts(){
     wx.request({
@@ -74,6 +77,11 @@ Page({
                 filterMerchant:data,
                 merchants:data
               })
+              const formattedData = data.map(item => ({
+                companyId: item.id,  
+                companyName: item.companyName
+              }));
+              wx.setStorageSync('companyData', formattedData);
           } else {
             // 请求失败，使用本地默认数据
             this.setData({
