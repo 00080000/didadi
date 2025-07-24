@@ -1,8 +1,8 @@
 // mainPackage/pages/home/home.js
 Page({
   data: {
-    name:"用户",
-    phone:11111111111,
+    nickName:"用户",
+    phonenumber:11111111111,
     firm:'长沙颂融信息科技有限公司',
     ifHaveNewMessage:true,
     quotationAmount:670.10,
@@ -15,10 +15,74 @@ Page({
     ifShow:false
   },
   onLoad() {
-    this.fetchKPI();
-    this.fetchNewMsg();
+      this.fetchInfo();
+      this.fetchKPI();
+      this.fetchNewMsg();
   },
-
+  fetchInfo() {
+    wx.request({
+      url: `${getApp().globalData.serverUrl}/diServer/getInfo`,
+      method: 'GET',
+      header: {
+        'Authorization': `Bearer ${getApp().globalData.token}`
+      },
+      success: (res) => {
+        console.log('Info:', res);
+        if (res.statusCode === 200 && res.data.code === 200) {
+          const userInfo = res.data.user || {}; 
+          this.setData({
+            nickName: userInfo.nickName || '',
+            phonenumber: userInfo.phonenumber || '',
+            firm: userInfo.enterprise.name || ''
+          });
+          const userToStore = {
+            createBy: userInfo.createBy || '',
+            createTime: userInfo.createTime || '',
+            updateBy: userInfo.updateBy || null,
+            updateTime: userInfo.updateTime || null,
+            remark: userInfo.remark || '',
+            params: userInfo.params || {},
+            userId: userInfo.userId || '',
+            deptId: userInfo.deptId || null,
+            enterpriseId: userInfo.enterpriseId || '',
+            userName: userInfo.userName || '',
+            nickName: userInfo.nickName || '',
+            userType: userInfo.userType || '',
+            email: userInfo.email || '',
+            phonenumber: userInfo.phonenumber || '',
+            sex: userInfo.sex || '',
+            avatar: userInfo.avatar || '',
+            password: userInfo.password || null, 
+            status: userInfo.status || '',
+            delFlag: userInfo.delFlag || '',
+            loginIp: userInfo.loginIp || '',
+            loginDate: userInfo.loginDate || '',
+            dept: userInfo.dept || null,
+            roles: userInfo.roles || [], 
+            roleIds: userInfo.roleIds || null,
+            postIds: userInfo.postIds || null,
+            roleId: userInfo.roleId || null,
+            keyword: userInfo.keyword || '',
+            enterprise: userInfo.enterprise || {}, 
+            admin: userInfo.admin || false
+          };
+          const app = getApp();
+          app.globalData.userInfo = userToStore;
+        } else {
+          this.setData({ 
+            errorMsg: res.data.message || '获取数据失败',
+          });
+          console.log('errorMsg:', this.data.errorMsg);
+        }
+      },
+      fail: (err) => {
+        this.setData({ 
+          errorMsg: '网络请求失败',
+        });
+        console.error(err);
+      },
+    });
+  },
   fetchKPI() {
     wx.request({
       url: `${getApp().globalData.serverUrl}/diServer/index/queryKPI?enterpriseId=11`,
@@ -76,7 +140,7 @@ Page({
         } else {
           // 请求失败，使用本地默认数据
           this.setData({ 
-            errorMsg: res.data.message || '获取数据失败，使用默认数据',
+            errorMsg: res.data.message || '获取数据失败',
           });
           console.log('errorMsg');
         }
@@ -84,7 +148,7 @@ Page({
       fail: (err) => {
         // 请求失败，使用本地默认数据
         this.setData({ 
-          errorMsg: '网络请求失败，使用默认数据',
+          errorMsg: '网络请求失败',
         });
         console.error(err);
       },

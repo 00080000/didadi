@@ -10,6 +10,9 @@ App({
         this.globalData.authenticated = true;
         this.globalData.token = token;
         this.checkTokenValidity(token);
+        wx.redirectTo({
+            url: '/mainPackage/pages/home/home'
+          });
       } else {
         // 无 token，跳转登录页
         wx.redirectTo({
@@ -32,7 +35,10 @@ App({
             this.clearAuthInfo();
           }
           else
-          console.log('Hello！');
+          {
+            console.log('Hello！');
+            //this.fetchAndSaveUserInfo(); 
+          }
         },
         fail: () => {
           // 请求失败，清除并跳转登录
@@ -55,13 +61,65 @@ App({
         url: '/pages/login/login'
       });
     },
-  
+    // 请求并保存用户信息
+    fetchAndSaveUserInfo() {
+        wx.request({
+            url: `${this.globalData.serverUrl}/diServer/getInfo`,
+            method: 'GET',
+            header: {
+                'Authorization': `Bearer ${this.globalData.token}`
+            },
+            success: (res) => {
+                if (res.statusCode === 200 && res.data.code === 200) {
+                    const userInfo = res.data.user || {};
+                    const filteredUser = {
+                    createBy: userInfo.createBy || '',
+                    createTime: userInfo.createTime || '',
+                    updateBy: userInfo.updateBy || null,
+                    updateTime: userInfo.updateTime || null,
+                    remark: userInfo.remark || '',
+                    params: userInfo.params || {},
+                    userId: userInfo.userId || '',
+                    deptId: userInfo.deptId || null,
+                    enterpriseId: userInfo.enterpriseId || '',
+                    userName: userInfo.userName || '',
+                    nickName: userInfo.nickName || '',
+                    userType: userInfo.userType || '',
+                    email: userInfo.email || '',
+                    phonenumber: userInfo.phonenumber || '',
+                    sex: userInfo.sex || 0,
+                    avatar: userInfo.avatar || '',
+                    password: userInfo.password || null,
+                    status: userInfo.status || '',
+                    delFlag: userInfo.delFlag || '',
+                    loginIp: userInfo.loginIp || '',
+                    loginDate: userInfo.loginDate || '',
+                    dept: userInfo.dept || null,
+                    roles: userInfo.roles || [],
+                    roleIds: userInfo.roleIds || null,
+                    postIds: userInfo.postIds || null,
+                    roleId: userInfo.roleId || null,
+                    keyword: userInfo.keyword || '',
+                    enterprise: userInfo.enterprise || {},
+                    admin: userInfo.admin || false
+                };
+                // 保存到全局数据和本地存储
+                this.globalData.userInfo = filteredUser;
+                wx.setStorageSync('userInfo', filteredUser);
+                console.log('用户信息已保存', filteredUser);
+            } else {
+                console.log('获取用户信息失败', res.data.message);
+            }
+        },
+        fail: (err) => {
+            console.error('获取用户信息请求失败', err);
+        }
+    });
+  },
     globalData: {
       userInfo: null,
       authenticated: false,
       serverUrl: 'http://121.199.52.199:8080',
-      token: 'eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6ImZhYzQzY2NjLTkyMGYtNDZjOC1iNDc3LTg0ZjFhMzQ4NWJlYyJ9.uNBlkmfC0cXz-7bjNCUbQaI9pUO6yRkzRAfE1QmglBO5i9sCQljHSxdh2w2Jz963jqTwXMeO0WvpgBqS8saF-g' // 存储认证 token
-
-
+      token: 'eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjRhMjY5YzQ5LTlhYTYtNGZkMi1hYTBhLWNhMGUxYzc3NmEwMSJ9.eDdLCO-ckjDYFtB5wjkFYPeyNozaS_o8cJuiKJDubq7orqnky9OqcnRatI2nqEvQjlYIWn1lORPWEcCleKxWmQ' // 存储认证 token
     }
   });

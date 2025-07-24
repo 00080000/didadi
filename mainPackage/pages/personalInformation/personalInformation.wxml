@@ -9,8 +9,8 @@
           <image class="avatar" src="/static/avatar.jpg" ></image>
         </view>
         <view class="wordArea">
-          <view style="font-size: 38rpx;margin-top: 10rpx;">{{name}}</view>
-          <view style="font-size: 28rpx;margin-bottom: 10rpx;">{{phone}}</view>
+          <view style="font-size: 38rpx;margin-top: 10rpx;">{{nickName}}</view>
+          <view style="font-size: 28rpx;margin-bottom: 10rpx;">{{phonenumber}}</view>
         </view>
       </view>
     </view>
@@ -18,7 +18,7 @@
   <view class="form">
     <view class="inputArea">
       <view class="label">联系人</view>
-      <input placeholder="请输入姓名" model:value="{{name}}"	class="input" style="width: 400rpx;"/>
+      <input placeholder="请输入姓名" model:value="{{nickName}}"	class="input" style="width: 400rpx;"/>
     </view>
     <view class="inputArea">
       <view class="label">性别</view>
@@ -33,7 +33,7 @@
     </view>
     <view class="inputArea">
       <view class="label">电话</view>
-      <input placeholder="请输入电话" model:value="{{phone}}"	class="input" style="width: 400rpx;"/>
+      <input placeholder="请输入电话" model:value="{{phonenumber}}"	class="input" style="width: 400rpx;"/>
     </view>
     <view class="inputArea">
       <view class="label">邮箱</view>

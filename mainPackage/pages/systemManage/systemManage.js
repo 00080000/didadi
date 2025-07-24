@@ -1,14 +1,25 @@
 // mainPackage/pages/systemManage/systemManage.js
 Page({
   data: {
-    name:"用户",
-    phone:11111111111,
+    nickName:"用户",
+    phonenumber:11111111111,
     newMessageAmount:3
   },
   onLoad() {
       console.log('systemManage');
+      this.loadUserInfo();
     this.fetchNewMsg();
   },
+  // 加载用户信息
+  loadUserInfo() {
+    const app = getApp();
+    const userInfo = app.globalData.userInfo;
+    this.setData({
+        nickName: userInfo.nickName || "用户",
+        phonenumber: userInfo.phonenumber || "未设置"
+    });
+  },
+
   fetchNewMsg() {
     wx.request({
       url: `${getApp().globalData.serverUrl}/diServer/system/notice/myMsgList`,
@@ -26,7 +37,7 @@ Page({
         } else {
           // 请求失败，使用本地默认数据
           this.setData({ 
-            errorMsg: res.data.message || '获取数据失败，使用默认数据',
+            errorMsg: res.data.message || '获取数据失败',
           });
           console.log('errorMsg');
         }
@@ -34,7 +45,7 @@ Page({
       fail: (err) => {
         // 请求失败，使用本地默认数据
         this.setData({ 
-          errorMsg: '网络请求失败，使用默认数据',
+          errorMsg: '网络请求失败',
         });
         console.error(err);
       },

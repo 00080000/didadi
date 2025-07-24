@@ -68,7 +68,6 @@ Page({
       bankName: this.data.bankOfDeposit,
       bankAccount: this.data.bankAccountNumber,
       address: this.data.registeredAddress
-      // 可根据接口要求补充其他字段
     };
     console.log('enterpriseInfo:',enterpriseInfo);
     wx.request({

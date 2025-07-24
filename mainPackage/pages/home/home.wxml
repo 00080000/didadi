@@ -7,10 +7,10 @@
       <view class="userInformation">
         <view style="display: flex;align-items: center;">
           <image class="avatar" src="/static/avatar.jpg" ></image>
-          <text style="font-size:40rpx;">{{name}}</text>
+          <text style="font-size:40rpx;">{{nickName}}</text>
         </view>
         <view style="font-size: 25rpx;text-align: left;">
-          <view style="margin-top: 30rpx;">{{phone}}</view>
+          <view style="margin-top: 30rpx;">{{phonenumber}}</view>
           <view style="margin-top: 20rpx;">{{firm}}</view>
         </view>
       </view>
