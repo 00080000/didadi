@@ -4,6 +4,7 @@ Page({
     nickName:"用户",
     phonenumber:11111111111,
     firm:'长沙颂融信息科技有限公司',
+    enterpriseId:'',
     ifHaveNewMessage:true,
     quotationAmount:670.10,
     quotationQuantity:45,
@@ -16,7 +17,6 @@ Page({
   },
   onLoad() {
       this.fetchInfo();
-      this.fetchKPI();
       this.fetchNewMsg();
   },
   fetchInfo() {
@@ -68,6 +68,7 @@ Page({
           };
           const app = getApp();
           app.globalData.userInfo = userToStore;
+          this.fetchKPI();
         } else {
           this.setData({ 
             errorMsg: res.data.message || '获取数据失败',
@@ -84,8 +85,11 @@ Page({
     });
   },
   fetchKPI() {
+    const app = getApp();
+    this.data.enterpriseId = app.globalData.userInfo.enterpriseId ;
+    console.log('enterpriseId:',this.data.enterpriseId)
     wx.request({
-      url: `${getApp().globalData.serverUrl}/diServer/index/queryKPI?enterpriseId=11`,
+      url: `${getApp().globalData.serverUrl}/diServer/index/queryKPI?enterpriseId=${getApp().globalData.userInfo.enterpriseId}`,
       method: 'GET',
       header: {
         'Authorization': `Bearer ${getApp().globalData.token}`
