@@ -10,37 +10,37 @@ Page({
       staticQuotation: [
         {
           name: '报价单2024040319008882',
-          date: '2024.04.13',
+          quoteDate: '2024.04.13',
           time: '20:09:45',
-          amount: '331.58',
+          totalPrice: '331.58',
           status: 0
         },
         {
           name: '报价单2024040319008883',
-          date: '2024.04.13',
+          quoteDate: '2024.04.13',
           time: '20:09:45',
-          amount: '331.58',
+          totalPrice: '331.58',
           status: 1
         },
         {
           name: '报价单2024040319008884',
-          date: '2024.04.13',
+          quoteDate: '2024.04.13',
           time: '20:09:45',
-          amount: '331.58',
+          totalPrice: '331.58',
           status: 1
         },
         {
           name: '报价单2024040319008885',
-          date: '2024.04.13',
+          quoteDate: '2024.04.13',
           time: '20:09:45',
-          amount: '331.58',
+          totalPrice: '331.58',
           status: 0
         },
         {
           name: '报价单2024040319008882',
-          date: '2024.04.13',
+          quoteDate: '2024.04.13',
           time: '20:09:45',
-          amount: '331.58',
+          totalPrice: '331.58',
           status: 1
         }
       ]
@@ -55,17 +55,16 @@ Page({
     loadQuotationData() {
       this.setData({ isLoading: true, errorMsg: '' });
       
-      // 替换为实际接口路径
       wx.request({
-        url: `${getApp().globalData.serverUrl}/api/quotation/list`,
+        url: `${getApp().globalData.serverUrl}/diServer/quote/list?pageNum=1&pageSize=10`,
         method: 'GET',
         header: {
           'Authorization': `Bearer ${getApp().globalData.token}`
         },
         success: (res) => {
-          if (res.statusCode === 200 && res.data.code === 0) {
-            const quotation = res.data.data || [];
-            
+          if (res.statusCode === 200 && res.data.code === 200) {
+            const quotation = res.data.rows || [];
+            console.log('QuotationData:',quotation);
             this.setData({
               quotation,
               filterQuotation: quotation
@@ -152,7 +151,7 @@ Page({
       });
     },
   
-    // 分享功能（保持原有逻辑不变）
+    // 分享功能
     share(e) {
       const index = e.currentTarget.dataset.index;
       const item = this.data.filterQuotation[index];
@@ -216,7 +215,7 @@ Page({
       });
     },
   
-    // 定义分享内容（保持原有逻辑不变）
+    // 定义分享内容
     onShareAppMessage() {
       return {
         title: '报价记录分享',
@@ -226,7 +225,7 @@ Page({
       };
     },
   
-    // 删除确认（保持原有逻辑不变）
+    // 删除确认
     confirmDelete() {
       wx.showModal({
         title: '确认',
@@ -242,7 +241,7 @@ Page({
       });
     },
   
-    // 查看报价详情（保持原有逻辑不变）
+    // 查看报价详情
     goToViewRecievedQuotation(e) {
       const index = e.currentTarget.dataset.index;
       const item = this.data.filterQuotation[index];
@@ -252,7 +251,7 @@ Page({
       });
     },
   
-    // 导航相关方法（保持原有逻辑不变）
+    // 导航相关方法
     goToInquiry() {
       wx.redirectTo({
         url: '/inquiryPackage/pages/sendedInquiryForm/sendedInquiryForm',
