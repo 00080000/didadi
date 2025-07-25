@@ -32,9 +32,49 @@ Page({
     keyword:''
   },
   onLoad(){
+    this.loadQuotationData();
     this.setData({
       filterQuotation:this.data.quotation
     })
+  },
+  loadQuotationData() {
+    
+    wx.request({
+      url: `${getApp().globalData.serverUrl}/diServer/quote/outQuote/list?pageSize=10&pageNum=1`,
+      method: 'GET',
+      header: {
+        'Authorization': `Bearer ${getApp().globalData.token}`
+      },
+      success: (res) => {
+        if (res.statusCode === 200 && res.data.code === 200) {
+          const quotation = res.data.rows || [];
+          console.log('QuotationData:',quotation);
+          this.setData({
+            quotation,
+            filterQuotation: quotation
+          });
+        } else {
+          // 请求失败，使用本地静态数据
+          this.setData({ 
+            errorMsg: res.data.message || '获取数据失败，使用本地数据',
+            quotation: this.data.staticQuotation,
+            filterQuotation: this.data.staticQuotation
+          });
+        }
+      },
+      fail: (err) => {
+        // 请求失败，使用本地静态数据
+        this.setData({ 
+          errorMsg: '网络请求失败，使用本地数据',
+          quotation: this.data.staticQuotation,
+          filterQuotation: this.data.staticQuotation
+        });
+        console.error(err);
+      },
+      complete: () => {
+        this.setData({ isLoading: false });
+      }
+    });
   },
   inputQuotation(){
     if(this.data.keyword==''){
