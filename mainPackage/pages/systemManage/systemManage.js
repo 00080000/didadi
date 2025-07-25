@@ -6,8 +6,11 @@ Page({
     newMessageAmount:3
   },
   onLoad() {
-      console.log('systemManage');
       this.loadUserInfo();
+    this.fetchNewMsg();
+  },
+  onShow(){
+    this.loadUserInfo();
     this.fetchNewMsg();
   },
   // 加载用户信息

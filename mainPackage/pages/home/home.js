@@ -19,6 +19,10 @@ Page({
       this.fetchInfo();
       this.fetchNewMsg();
   },
+  onShow(){
+    this.fetchInfo();
+    this.fetchNewMsg();
+  },
   fetchInfo() {
     wx.request({
       url: `${getApp().globalData.serverUrl}/diServer/getInfo`,

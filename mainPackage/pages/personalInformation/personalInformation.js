@@ -10,7 +10,9 @@ Page({
     onLoad() {
       this.loadUserInfo();
     },
-  
+    onShow(){
+        this.loadUserInfo();
+      },
     loadUserInfo() {
       const app = getApp();
       // 优先从全局数据获取
