@@ -3,7 +3,7 @@ Page({
       nickName: "用户",
       phonenumber: "11111111111",
       email: null,
-      sex: 0, // 0-女，1-男
+      sex: 0, 
       isLoaded: false 
     },
   
@@ -40,11 +40,11 @@ Page({
     },
   
     setMale() {
-      this.setData({ sex: 1 });
+      this.setData({ sex: 0 });
     },
   
     setFemale() {
-      this.setData({ sex: 0 });
+      this.setData({ sex: 1 });
     },
   
     cancel() {
@@ -74,10 +74,76 @@ Page({
         // 保存到全局数据和本地存储
         getApp().globalData.userInfo = updatedUser;
         wx.setStorageSync('userInfo', updatedUser);
-      
-        wx.showToast({ title: '信息已保存', icon: 'success' });
-        setTimeout(() => {
-          wx.navigateBack();
-        }, 1000);
+        this.profile(updatedUser);
+      },
+
+      profile(updatedUser) {
+        wx.request({
+          url: `${getApp().globalData.serverUrl}/diServer/system/user/profile`,
+          method: 'GET',
+          header: {
+            'Authorization': `Bearer ${getApp().globalData.token}`
+          },
+          success: (res) => {
+            if (res.data.code === 200) {
+              const data = res.data.data || {};
+              data.nickName = updatedUser.nickName;
+              data.phonenumber = updatedUser.phonenumber;
+              data.email = updatedUser.email;
+              data.sex = updatedUser.sex;
+              console.log('profile:', data);
+              this.profileP(data);
+            } else {
+              this.setData({ 
+                errorMsg: res.data.message || '获取数据失败',
+              });
+              console.log('errorMsg');
+            }
+          },
+          fail: (err) => {
+            // 请求失败
+            this.setData({ 
+              errorMsg: '网络请求失败',
+            });
+            console.error(err);
+          },
+        });
+      },
+      profileP(data){
+        wx.request({
+            url: `${getApp().globalData.serverUrl}/diServer/system/user/profile`,
+            method: 'PUT',
+            header: {
+              'Authorization': `Bearer ${getApp().globalData.token}`,
+              'Content-Type': 'application/json'
+            },
+            data: data,
+            success: (res) => {
+              if (res.data.code == 200) {
+                wx.showToast({
+                  title:  '保存成功',
+                  icon: 'success',
+                  duration: 1500
+                });
+                setTimeout(() => {
+                  wx.navigateBack();
+                }, 1500);
+              } else {
+                wx.showToast({
+                  title: '保存失败',
+                  icon: 'none',
+                  duration: 2000
+                });
+              }
+            },
+            fail: (err) => {
+              console.error('请求失败', err);
+              wx.showToast({
+                title: '网络错误',
+                icon: 'none',
+                duration: 2000
+              });
+            }
+          });
       }
   });

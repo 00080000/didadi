@@ -23,10 +23,10 @@
     <view class="inputArea">
       <view class="label">性别</view>
       <view class="selectSex">
-        <view bind:tap="setMale" class="{{sex==1 ? 'selectedSex' : 'notSelectedSex'}}">
+        <view bind:tap="setMale" class="{{sex==0 ? 'selectedSex' : 'notSelectedSex'}}">
           先生
         </view>
-        <view bind:tap="setFemale" style="margin-left: 30rpx;" class="{{sex==0 ? 'selectedSex' : 'notSelectedSex'}}">
+        <view bind:tap="setFemale" style="margin-left: 30rpx;" class="{{sex==1 ? 'selectedSex' : 'notSelectedSex'}}">
           女士
         </view>
       </view>
