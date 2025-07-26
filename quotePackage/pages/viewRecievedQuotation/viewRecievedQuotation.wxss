@@ -144,12 +144,14 @@ page {
     margin-bottom: 10rpx;
   }
   
-  .totalLabel, .amountLabel {
+  .totalLabel {
     margin-right: 20rpx;
     color: #666;
   }
-  
-  .totalValue, .amountValue {
+  .amountLabel, .amountValue{
+    font-weight: bold;
+  }
+  .totalValue {
     font-weight: bold;
     color: #e13c39;
   }
@@ -162,26 +164,4 @@ page {
     border-radius: 5rpx;
   }
   
-  /* 时间信息 */
-  .timeInfo {
-    margin-top: 30rpx;
-    padding-top: 20rpx;
-    border-top: 1px solid #eee;
-  }
   
-  .timeRow {
-    display: flex;
-    margin-bottom: 10rpx;
-  }
-  
-  .timeLabel {
-    width: 200rpx;
-    text-align: right;
-    padding-right: 20rpx;
-    color: #666;
-  }
-  
-  .timeValue {
-    flex: 1;
-    text-align: left;
-  }

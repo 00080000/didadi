@@ -24,34 +24,6 @@
       <rich-text nodes="{{item.headText}}"></rich-text>
     </view>
 
-    <!-- 项目信息 -->
-    <view class="projectInfo">
-      <view class="infoRow">
-        <view class="infoLabel">报价单号：</view>
-        <view class="infoValue">{{item.quoteNo}}</view>
-      </view>
-      <view class="infoRow">
-        <view class="infoLabel">项目名称：</view>
-        <view class="infoValue">{{item.projectName}}</view>
-      </view>
-      <view class="infoRow">
-        <view class="infoLabel">供应商：</view>
-        <view class="infoValue">{{item.companyName}}</view>
-      </view>
-      <view class="infoRow">
-        <view class="infoLabel">联系人：</view>
-        <view class="infoValue">{{item.linkMan}}</view>
-      </view>
-      <view class="infoRow">
-        <view class="infoLabel">联系电话：</view>
-        <view class="infoValue">{{item.linkTel}}</view>
-      </view>
-      <view class="infoRow">
-        <view class="infoLabel">联系邮箱：</view>
-        <view class="infoValue">{{item.linkEmail}}</view>
-      </view>
-    </view>
-
     <!-- 商品表格 -->
     <view class="tableContainer" wx:if="{{tableColumns.length > 0}}">
       <view class="tableRow headerRow">
@@ -62,7 +34,7 @@
           {{item.label}}
         </view>
       </view>
-      <!-- 这里仅做示例，实际表格数据需根据接口返回补充 -->
+      
       <view class="tableRow" wx:for="{{[1,2,3]}}" wx:key="index">
         <view class="tableCell" wx:for="{{tableColumns}}" wx:for-item="col" wx:key="label"
           style="width: {{col.width}}; background: {{col.background}}; text-align: {{col.align}}">
@@ -78,9 +50,9 @@
         <view class="totalValue">{{item.totalPrice}} 元</view>
       </view>
       <view class="amountRow">
-        <view class="amountLabel">报价金额：</view>
-        <view class="amountValue">{{item.amountPrice}} 元 (含税价)</view>
-      </view>
+    <view class="amountLabel">币种：人民币，总计（大写）：</view>
+    <view class="amountValue">{{amountChinese}}</view>
+  </view>
     </view>
 
     <!-- 底部文本 -->
@@ -88,20 +60,6 @@
       <rich-text nodes="{{item.footText}}"></rich-text>
     </view>
 
-    <!-- 时间信息 -->
-    <view class="timeInfo">
-      <view class="timeRow">
-        <view class="timeLabel">报价日期：</view>
-        <view class="timeValue">{{item.quoteDate}}</view>
-      </view>
-      <view class="timeRow">
-        <view class="timeLabel">有效期至：</view>
-        <view class="timeValue">{{item.validityTime}}</view>
-      </view>
-      <view class="timeRow">
-        <view class="timeLabel">创建时间：</view>
-        <view class="timeValue">{{item.createTime}}</view>
-      </view>
-    </view>
+
   </view>
 </view>

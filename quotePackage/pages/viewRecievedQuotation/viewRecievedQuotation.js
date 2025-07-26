@@ -1,14 +1,17 @@
 // quotePackage/pages/viewRecievedQuotation/viewRecievedQuotation.js
 const app = getApp();
+// 引入工具函数
+const { numberToChinese } = require('../../../utils/util');
 
 Page({
   data: {
     item: null,
     tableColumns: [],
-    tableData: []
+    tableData: [],
+    amountChinese: '' // 用于存储金额大写
   },
 
-  onLoad(options) {
+  onLoad() {
     // 从appData获取数据
     this.setData({
       item: app.globalData.currentQuoteItem
@@ -22,6 +25,18 @@ Page({
         } catch (e) {
           console.error('解析表格配置失败', e);
         }
+      }
+      console.log('chinese');
+      // 转换金额为大写并存储
+      if (this.data.item.totalPrice) {
+        const chinese = numberToChinese(this.data.item.totalPrice);
+        console.log('chinese:',chinese);
+        this.setData({
+          amountChinese: chinese
+        });
+      }
+      else{
+        console.log('chinese');
       }
     });
   },
