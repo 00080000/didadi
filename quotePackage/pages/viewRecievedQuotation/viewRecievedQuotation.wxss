@@ -164,4 +164,32 @@ page {
     border-radius: 5rpx;
   }
   
+  /* 表格滚动容器 */
+.tableScroll {
+    width: 100%;
+    overflow-x: auto; /* 允许横向滚动 */
+    -webkit-overflow-scrolling: touch; /* 优化iOS滚动体验 */
+    margin-bottom: 30rpx;
+  }
+  
+/* 表格容器调整：移除固定宽度限制，让表格能自由扩展 */
+.tableContainer {
+    /* 移除 width: 100%，避免表格被强制限制在屏幕宽度内 */
+    border: 1px solid #eee;
+    border-radius: 5rpx;
+    margin-bottom: 30rpx;
+    overflow: hidden;
+    min-width: 100%; /* 确保表格在内容较少时仍占满屏幕宽度 */
+  }
+  
+  /* 恢复单元格最小宽度，并确保内容不换行 */
+  .tableCell {
+    padding: 15rpx 10rpx;
+    border-right: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+    font-size: 26rpx;
+    min-width: 110rpx; /* 保留最小宽度，避免表格错乱 */
+    
+    /* 移除 word-break: break-all; 避免内容自动换行导致宽度异常 */
+  }
   

@@ -253,13 +253,10 @@ Page({
   
 // 预览报价详情
 goToViewRecievedQuotation(e) {
-    const index = e.currentTarget.dataset.index;
-    const item = this.data.filterQuotation[index];
-    const app = getApp();
-    app.globalData.currentQuoteItem = item;
-    
+    const id = e.currentTarget.dataset.id;
+    console.log('id:',id);
     wx.navigateTo({
-      url: `/quotePackage/pages/viewRecievedQuotation/viewRecievedQuotation`
+      url: `/quotePackage/pages/viewRecievedQuotation/viewRecievedQuotation?id=${id}`
     });
   },
   

@@ -24,24 +24,27 @@
       <rich-text nodes="{{item.headText}}"></rich-text>
     </view>
 
-    <!-- 商品表格 -->
-    <view class="tableContainer" wx:if="{{tableColumns.length > 0}}">
-      <view class="tableRow headerRow">
-        <view class="tableCell" 
-          wx:for="{{tableColumns}}" 
-          wx:key="index"
-          style="width: {{item.width}}; background: {{item.background}}; text-align: {{item.align}}">
-          {{item.label}}
-        </view>
-      </view>
-      
-      <view class="tableRow" wx:for="{{[1,2,3]}}" wx:key="index">
-        <view class="tableCell" wx:for="{{tableColumns}}" wx:for-item="col" wx:key="label"
-          style="width: {{col.width}}; background: {{col.background}}; text-align: {{col.align}}">
-          {{index + 1}}. 示例{{col.label}}
-        </view>
+<!-- 商品表格 - 新增滚动容器 -->
+<view class="tableScroll"> <!-- 外层滚动容器 -->
+  <view class="tableContainer" wx:if="{{tableColumns.length > 0}}">
+    <view class="tableRow headerRow">
+      <view class="tableCell" 
+        wx:for="{{tableColumns}}" 
+        wx:key="index"
+        style="width: {{item.width}}; background: {{item.background}}; text-align: {{item.align}}">
+        {{item.label}}
       </view>
     </view>
+    
+    <!-- 恢复真实数据绑定（之前的示例用了模拟数据，这里改回你的实际数据） -->
+    <view class="tableRow" wx:for="{{tableData}}" wx:key="index">
+      <view class="tableCell" wx:for="{{tableColumns}}" wx:for-item="col" wx:key="label"
+        style="width: {{col.width}}; background: {{col.background}}; text-align: {{col.align}}">
+        {{item[col.code] !== undefined ? item[col.code] : (col.label === '序号' ? item.index : '')}}
+      </view>
+    </view>
+  </view>
+</view>
 
     <!-- 金额信息 -->
     <view class="priceInfo">
@@ -50,16 +53,14 @@
         <view class="totalValue">{{item.totalPrice}} 元</view>
       </view>
       <view class="amountRow">
-    <view class="amountLabel">币种：人民币，总计（大写）：</view>
-    <view class="amountValue">{{amountChinese}}</view>
-  </view>
+        <view class="amountLabel">币种：人民币，总计（大写）：</view>
+        <view class="amountValue">{{amountChinese}}</view>
+      </view>
     </view>
 
     <!-- 底部文本 -->
     <view class="footText" wx:if="{{item.footText}}">
       <rich-text nodes="{{item.footText}}"></rich-text>
     </view>
-
-
   </view>
 </view>
