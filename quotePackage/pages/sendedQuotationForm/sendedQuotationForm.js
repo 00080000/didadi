@@ -6,6 +6,11 @@ Page({
       keyword: '',
       isLoading: false, // 加载状态
       errorMsg: '', // 错误信息
+      // 总条数（后端返回的total）
+    total: 0,
+    pageNum: 1,        // 当前页码
+    pageSize: 9999,      // 每页条数
+    hasMore: true,     // 是否还有更多数据
       // 原始静态数据
       staticQuotation: [
         {
@@ -47,16 +52,14 @@ Page({
     },
   
     onLoad() {
-      // 优先从服务器加载数据
       this.loadQuotationData();
     },
-  
     // 从服务器加载报价单数据
-    loadQuotationData() {
+    loadQuotationData(isLoadMore = false) {
       this.setData({ isLoading: true, errorMsg: '' });
       
       wx.request({
-        url: `${getApp().globalData.serverUrl}/diServer/quote/list?pageNum=1&pageSize=10`,
+        url: `${getApp().globalData.serverUrl}/diServer/quote/list?pageNum=${this.data.pageNum}&pageSize=${this.data.pageSize}`,
         method: 'GET',
         header: {
           'Authorization': `Bearer ${getApp().globalData.token}`
@@ -64,24 +67,28 @@ Page({
         success: (res) => {
           if (res.statusCode === 200 && res.data.code === 200) {
             const quotation = res.data.rows || [];
+            const hasMore = this.data.pageNum * this.data.pageSize < res.data.total;
             console.log('QuotationData:',quotation);
             this.setData({
-              quotation,
-              filterQuotation: quotation
+                quotation: isLoadMore ? [...this.data.quotation, ...quotation] : quotation,
+            // 筛选列表同步更新
+            filterQuotation: isLoadMore ? [...this.data.quotation, ...quotation] : quotation,
+              total: res.data.total, 
+              hasMore
             });
           } else {
-            // 请求失败，使用本地静态数据
+            // 请求失败
             this.setData({ 
-              errorMsg: res.data.message || '获取数据失败，使用本地数据',
+              errorMsg: res.data.message || '获取数据失败',
               quotation: this.data.staticQuotation,
-              filterQuotation: this.data.staticQuotation
+              filterQuotation: this.data.staticQuotation,
             });
           }
         },
         fail: (err) => {
-          // 请求失败，使用本地静态数据
+          // 请求失败
           this.setData({ 
-            errorMsg: '网络请求失败，使用本地数据',
+            errorMsg: '网络请求失败',
             quotation: this.data.staticQuotation,
             filterQuotation: this.data.staticQuotation
           });
@@ -95,6 +102,7 @@ Page({
   
     // 下拉刷新
     onPullDownRefresh() {
+        console.log('onPullDownRefresh');
       this.loadQuotationData();
       wx.stopPullDownRefresh();
     },
@@ -122,7 +130,9 @@ Page({
     },
   
     // 编辑功能
-    edit() {
+    edit(e) {
+        const index = e.currentTarget.dataset.index;
+      const item = this.data.filterQuotation[index];
       wx.navigateTo({
         url: '/quotePackage/pages/addQuotation/addQuotation',
       });
@@ -241,15 +251,17 @@ Page({
       });
     },
   
-    // 查看报价详情
-    goToViewRecievedQuotation(e) {
-      const index = e.currentTarget.dataset.index;
-      const item = this.data.filterQuotation[index];
-      
-      wx.navigateTo({
-        url: `/quotePackage/pages/viewRecievedQuotation/viewRecievedQuotation?name=${item.name}`
-      });
-    },
+// 预览报价详情
+goToViewRecievedQuotation(e) {
+    const index = e.currentTarget.dataset.index;
+    const item = this.data.filterQuotation[index];
+    const app = getApp();
+    app.globalData.currentQuoteItem = item;
+    
+    wx.navigateTo({
+      url: `/quotePackage/pages/viewRecievedQuotation/viewRecievedQuotation`
+    });
+  },
   
     // 导航相关方法
     goToInquiry() {

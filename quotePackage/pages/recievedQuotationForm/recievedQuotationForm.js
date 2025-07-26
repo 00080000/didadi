@@ -40,7 +40,7 @@ Page({
   loadQuotationData() {
     
     wx.request({
-      url: `${getApp().globalData.serverUrl}/diServer/quote/outQuote/list?pageSize=10&pageNum=1`,
+      url: `${getApp().globalData.serverUrl}/diServer/quote/outQuote/list?pageSize=9999&pageNum=1`,
       method: 'GET',
       header: {
         'Authorization': `Bearer ${getApp().globalData.token}`
