@@ -131,10 +131,9 @@ Page({
   
     // 编辑功能
     edit(e) {
-        const index = e.currentTarget.dataset.index;
-      const item = this.data.filterQuotation[index];
+        const id = e.currentTarget.dataset.id;
       wx.navigateTo({
-        url: '/quotePackage/pages/addQuotation/addQuotation',
+        url:   `/quotePackage/pages/addQuotation/addQuotation?id=${id}`,
       });
     },
   

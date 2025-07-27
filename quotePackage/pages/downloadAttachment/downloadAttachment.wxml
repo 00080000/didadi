@@ -12,12 +12,13 @@
   <view class="fileList">
     <view class="fileCard" wx:for="{{file}}" wx:for-item="item" wx:key="index" data-index="index">
       <view class="fileInformation">
+        <image src="/static/word.png" wx:if="{{item.type=='docx'}}"></image>
         <image src="/static/word.png" wx:if="{{item.type=='doc'}}"></image>
         <image src="/static/PDF.png" wx:if="{{item.type=='pdf'}}"></image>
         <image src="/static/Excel.png" wx:if="{{item.type=='xls'}}"></image>
         <view>{{item.name}}</view>
       </view>
-      <image src="/static/download.png"></image>
+      <image src="/static/download.png" bind:tap="downloadFile" data-filepath="{{item.filePath}}" data-filename="{{item.name}}"></image>
     </view>
   </view>
 </view>

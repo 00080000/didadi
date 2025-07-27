@@ -49,6 +49,7 @@ Page({
 
   viewQuotationData(fullData) {
     console.log('完整报价单数据：', fullData);
+    app.globalData.quoteData = fullData;
     const { quote, productGroupList, quoteCostCategoryList } = fullData;
     let tableData = [];
     let index = 1;
@@ -59,7 +60,7 @@ Page({
         let columns = JSON.parse(quote.dataJson);
         columns = columns.map(col => ({
             ...col,
-            width: col.width || '150rpx' // 关键：处理空宽度
+            width: col.width || '150rpx' 
           }));
         this.setData({
              tableColumns: columns,

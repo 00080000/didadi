@@ -8,7 +8,7 @@
     <view class="operation">
       <view>
         <button size="mini" bind:tap="goToDownloadQuotation">下载文档</button>
-        <button size="mini" bind:tap="goToDownloadAttachment">查看附件</button>
+        <button size="mini" bind:tap="goToDownloadAttachment" >查看附件</button>
       </view>
       <view bind:tap="printQuotation">
         <image src="/static/print.png" mode="widthFix"></image>

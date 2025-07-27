@@ -31,6 +31,9 @@ Page({
     }],
     attachment:['1'],
   },
+  onLoad(options){
+      console.log('id:',options.id);
+  },
   onShow(){
     this.setData({
       totalAmount:this.getTotalAmount()
