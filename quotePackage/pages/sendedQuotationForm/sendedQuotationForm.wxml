@@ -66,7 +66,7 @@
           <button class="notDisabledButton" size="mini" bind:tap="edit" data-id="{{item.id}}">编辑</button>
           <button class="notDisabledButton" size="mini" bind:tap="copy" data-id="{{item.id}}}">复制</button>
           <button class="{{item.status==1? 'notDisabledButton':'disabledButton'}}" size="mini"  bind:tap="share" disabled="{{item.status==0? true:false}}"  data-index="{{index}}">分享</button>
-        <image src="/static/delete.png" bind:tap="confirmDelete"></image>
+        <image src="/static/delete.png" bind:tap="confirmDelete" data-id="{{item.id}}"></image>
       </view>
       </view>
     </view>

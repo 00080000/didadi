@@ -56,8 +56,14 @@ Page({
     // 解析表格列配置
     if (quote.dataJson) {
       try {
-        const columns = JSON.parse(quote.dataJson);
-        this.setData({ tableColumns: columns });
+        let columns = JSON.parse(quote.dataJson);
+        columns = columns.map(col => ({
+            ...col,
+            width: col.width || '150rpx' // 关键：处理空宽度
+          }));
+        this.setData({
+             tableColumns: columns,
+             });
       } catch (e) {
         console.error('解析表格配置失败', e);
       }

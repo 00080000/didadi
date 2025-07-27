@@ -179,7 +179,7 @@ page {
     border-radius: 5rpx;
     margin-bottom: 30rpx;
     overflow: hidden;
-    min-width: 100%; /* 确保表格在内容较少时仍占满屏幕宽度 */
+    min-width: 160%; /* 确保表格在内容较少时仍占满屏幕宽度 */
   }
   
   /* 恢复单元格最小宽度，并确保内容不换行 */

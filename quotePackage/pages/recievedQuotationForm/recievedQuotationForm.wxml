@@ -58,12 +58,12 @@
           {{item.name}}
         </view>
         <view class="operation">
-          <button bind:tap="goToViewRecievedQuotation" class="notDisabledButton" size="mini"  data-index="{{index}}">
+          <button bind:tap="goToViewRecievedQuotation" class="notDisabledButton" size="mini"  data-id="{{item.id}}">
           预览</button>
-          <button class="disabledButton" size="mini">编辑</button>
-          <button class="disabledButton" size="mini">复制</button>
-          <button class="disabledButton" size="mini">分享</button>
-          <image src="/static/delete.png" bind:tap="confirmDelete"></image>
+          <button class="disabledButton" size="mini" data-id="{{item.id}}">编辑</button>
+          <button class="disabledButton" size="mini" data-id="{{item.id}}">复制</button>
+          <button class="disabledButton" size="mini" data-id="{{item.id}}">分享</button>
+          <image src="/static/delete.png" bind:tap="confirmDelete" data-id="{{item.id}}"></image>
         </view>
       </view>
     </view>

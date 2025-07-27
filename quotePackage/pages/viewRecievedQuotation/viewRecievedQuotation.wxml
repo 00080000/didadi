@@ -36,7 +36,6 @@
       </view>
     </view>
     
-    <!-- 恢复真实数据绑定（之前的示例用了模拟数据，这里改回你的实际数据） -->
     <view class="tableRow" wx:for="{{tableData}}" wx:key="index">
       <view class="tableCell" wx:for="{{tableColumns}}" wx:for-item="col" wx:key="label"
         style="width: {{col.width}}; background: {{col.background}}; text-align: {{col.align}}">
@@ -53,7 +52,10 @@
         <view class="totalValue">{{item.totalPrice}} 元</view>
       </view>
       <view class="amountRow">
-        <view class="amountLabel">币种：人民币，总计（大写）：</view>
+        <view class="amountLabel">币种：人民币</view>
+      </view>
+      <view class="amountRow">
+        <view class="amountLabel">总计（大写）：</view>
         <view class="amountValue">{{amountChinese}}</view>
       </view>
     </view>
