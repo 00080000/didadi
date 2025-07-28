@@ -9,8 +9,8 @@
           <image class="avatar" src="/static/avatar.jpg" ></image>
         </view>
         <view class="wordArea">
-          <view style="font-size: 38rpx;margin-top: 10rpx;">{{name}}</view>
-          <view style="font-size: 28rpx;margin-bottom: 10rpx;">{{phone}}</view>
+          <view style="font-size: 38rpx;margin-top: 10rpx;">{{nickName}}</view>
+          <view style="font-size: 28rpx;margin-bottom: 10rpx;">{{phonenumber}}</view>
         </view>
       </view>
     </view>

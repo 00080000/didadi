@@ -1,8 +1,8 @@
 // mainPackage/pages/watch/watch.js
 Page({
     data: {
-      name:"用户A",
-      phone:11111111111,
+        nickName:"用户A",
+        phonenumber:11111111111,
       newMessage:[
         {
           city:'广州',
@@ -32,8 +32,17 @@ Page({
     },
     onLoad() {
       console.log('message');
-    this.fetchNewMsg();
-  },
+      this.loadUserInfo();
+    },
+      // 加载用户信息
+      loadUserInfo() {
+        const app = getApp();
+        const userInfo = app.globalData.userInfo;
+        this.setData({
+            nickName: userInfo.nickName || "用户",
+            phonenumber: userInfo.phonenumber || "未设置"
+        });
+      },
     fetchNewMsg() {
       wx.request({
         url: `${getApp().globalData.serverUrl}/diServer/system/notice/myMsgList`,
@@ -43,7 +52,12 @@ Page({
         },
         success: (res) => {
           if (res.statusCode === 200 && res.data.code === 200) {
-              const data = res.data.data || []; 
+            const originalData = res.data.data || [];
+            // 给每个数据项添加showDetail: false属性
+            const data = originalData.map(item => ({
+              ...item,
+              showDetail: false
+            }));
               this.setData({
                   newMessage: data
             });

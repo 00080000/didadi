@@ -56,16 +56,17 @@
       <view class="cardRight">
         <view class="title">
           <view style="font-weight: bolder;font-size: 30rpx;margin-left: 15rpx;">￥{{item.totalPrice}} 万元</view>
-          <view style="font-size: 23rpx;color: {{item.status==1?'blue':'orange'}};">{{item.status==1? '已提交':'已过期'}}</view>
+          <view style="font-size: 23rpx; color: {{ item.status == 1 ? 'blue' : item.status == 0 ? 'red' : 'gray' }};">{{ item.status == 1 ? '已提交' : item.status == 0 ? '草稿' : '已过期' }}
+</view>
         </view>
         <view class='quotationNumber'>
           {{item.name}}
         </view>
         <view class="operation">
-          <button class="{{item.status==1? 'notDisabledButton':'disabledButton'}}" size="mini" disabled="{{item.status==0? true:false}}" bind:tap="goToViewRecievedQuotation" data-id="{{item.id}}">预览</button>
+          <button class="{{item.status == 1 ? 'notDisabledButton' : item.status == 0 ? 'notDisabledButton' : 'disabledButton' }}" size="mini" disabled="{{item.status==-1? true:false}}" bind:tap="goToViewRecievedQuotation" data-id="{{item.id}}">预览</button>
           <button class="notDisabledButton" size="mini" bind:tap="edit" data-id="{{item.id}}">编辑</button>
           <button class="notDisabledButton" size="mini" bind:tap="copy" data-id="{{item.id}}}">复制</button>
-          <button class="{{item.status==1? 'notDisabledButton':'disabledButton'}}" size="mini"  bind:tap="share" disabled="{{item.status==0? true:false}}"  data-index="{{index}}">分享</button>
+          <button class="{{item.status == 1 ? 'notDisabledButton' : item.status == 0 ? 'notDisabledButton' : 'disabledButton' }}" size="mini"  bind:tap="share" disabled="{{item.status==-1? true:false}}"  data-index="{{index}}">分享</button>
         <image src="/static/delete.png" bind:tap="confirmDelete" data-id="{{item.id}}"></image>
       </view>
       </view>

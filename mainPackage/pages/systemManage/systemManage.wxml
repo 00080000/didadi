@@ -46,7 +46,7 @@
         </view>
         <view class="title">通知消息</view>
         <view class="content">
-          <text>查看历史通知和消息，及时处理</text>
+          <text>查看新通知和消息，及时处理</text>
         </view>
       </view>
       <view class="card" bind:tap="exit">

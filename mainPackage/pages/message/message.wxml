@@ -9,8 +9,8 @@
           <image class="avatar" src="/static/avatar.jpg" ></image>
         </view>
         <view class="wordArea">
-          <view style="font-size: 38rpx;margin-top: 10rpx;">{{name}}</view>
-          <view style="font-size: 28rpx;margin-bottom: 10rpx;">{{phone}}</view>
+          <view style="font-size: 38rpx;margin-top: 10rpx;">{{nickName}}</view>
+          <view style="font-size: 28rpx;margin-bottom: 10rpx;">{{phonenumber}}</view>
         </view>
       </view>
     </view>
@@ -27,12 +27,12 @@
       <view class="header" 
         data-index="{{index}}"
         bind:tap="changeShowDetail">
-        <view class="title">你有新的报价单要处理</view>
+        <view class="title">{{message.title}}</view>
         <image wx:if="{{message.showDetail==true}}" src="/static/upArrow-gray.png"></image>
         <image wx:if="{{message.showDetail==false}}" src="/static/downArrow-gray.png"></image>
       </view>
       <view wx:if="{{message.showDetail==true}}" class="content">
-        有来自{{message.city}}{{message.firm}}的报价单{{message.number}}需要处理，请点击“查看”按钮进行下一步操作。
+        {{message.content}}
         <button size="mini" bind:tap="gotowatch">查看</button>
       </view>
     </view>

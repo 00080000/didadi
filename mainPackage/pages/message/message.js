@@ -1,8 +1,8 @@
 // mainPackage/pages/message/message.js
 Page({
   data: {
-    name:"用户",
-    phone:11111111111,
+    nickName:"用户",
+    phonenumber:11111111111,
     newMessage:[
       {
         city:'广州',
@@ -33,7 +33,17 @@ Page({
   onLoad() {
     console.log('message');
   this.fetchNewMsg();
+  this.loadUserInfo();
 },
+  // 加载用户信息
+  loadUserInfo() {
+    const app = getApp();
+    const userInfo = app.globalData.userInfo;
+    this.setData({
+        nickName: userInfo.nickName || "用户",
+        phonenumber: userInfo.phonenumber || "未设置"
+    });
+  },
   fetchNewMsg() {
     wx.request({
       url: `${getApp().globalData.serverUrl}/diServer/system/notice/myMsgList`,
@@ -43,22 +53,26 @@ Page({
       },
       success: (res) => {
         if (res.statusCode === 200 && res.data.code === 200) {
-            const data = res.data.data || []; 
-        //     this.setData({
-        //         newMessage: data
-        //   });
-          console.log('Message:',res.data.data);
+            const originalData = res.data.data || [];
+            const data = originalData.map(item => ({
+              ...item,
+              showDetail: false
+            }));
+            this.setData({
+                newMessage: data
+          });
+          console.log('Message:',this.data.newMessage);
         } else {
-          // 请求失败，使用本地默认数据
+          // 请求失败
           this.setData({ 
-            errorMsg: res.data.message || '获取数据失败，使用默认数据',
+            errorMsg: res.data.message || '获取数据失败',
           });
           console.log('errorMsg');
         }
       },
       fail: (err) => {
         this.setData({ 
-          errorMsg: '网络请求失败，使用默认数据',
+          errorMsg: '网络请求失败',
         });
         console.error(err);
       },
