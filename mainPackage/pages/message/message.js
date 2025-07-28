@@ -83,9 +83,38 @@ Page({
     this.data.newMessage[index].showDetail=!this.data.newMessage[index].showDetail
     this.setData(this.data)
   },
-  gotowatch(){
+  gotowatch(e){
+    const id = e.currentTarget.dataset.id;
     wx.navigateTo({
-        url: '/mainPackage/pages/watch/watch',
-      })
+        url: `/quotePackage/pages/viewRecievedQuotation/viewRecievedQuotation?id=${id}`
+      });
+  },
+  readed(e){
+    const id = e.currentTarget.dataset.id;
+    wx.request({
+        url: `${getApp().globalData.serverUrl}/diServer/system/notice/readedMsg/${id}`,
+        method: 'GET',
+        header: {
+          'Authorization': `Bearer ${getApp().globalData.token}`
+        },
+        success: (res) => {
+          if (res.statusCode === 200 && res.data.code === 200) {
+            this.fetchNewMsg();
+          } else {
+            // 请求失败
+            this.setData({ 
+              errorMsg: res.data.message || '获取数据失败',
+            });
+            console.log('errorMsg');
+          }
+        },
+        fail: (err) => {
+          this.setData({ 
+            errorMsg: '网络请求失败',
+          });
+          console.error(err);
+        },
+      });
+
   }
 })

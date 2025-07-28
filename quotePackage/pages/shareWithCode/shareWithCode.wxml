@@ -4,16 +4,19 @@
     <header></header>
     <view class="content">
       <view class="information">
-        <view style="font-size: 35rpx;font-weight: bolder;">{{fileName}}</view>
-        <view style="font-size: 27rpx;margin-top: 30rpx;">总价：￥ {{total}} 元</view>
-        <view style="font-size: 27rpx;margin-top: 30rpx;">建档日期：{{time}}</view>
+        <view style="font-size: 35rpx;font-weight: bolder;">{{item.name}}</view>
+        <view style="font-size: 27rpx;margin-top: 30rpx;">总价：￥ {{item.amountPrice}} 元</view>
+        <view style="font-size: 27rpx;margin-top: 30rpx;">建档日期：{{item.createTime}}</view>
       </view>
       <view class="editButton">
-        <button size="mini">复制二维码</button>
+        <button size="mini" bindtap="copyQrCode">复制二维码</button>
       </view>
     </view>
   </view>
-  <view class="code"></view>
+  <!-- 二维码区域 -->
+  <view class="code">
+    <canvas canvas-id="qrCode" style="width: 400rpx; height: 400rpx;"></canvas>
+  </view>
   <view class="buttonGroup">
     <view class="cancelButton" bind:tap="cancel">
       取消

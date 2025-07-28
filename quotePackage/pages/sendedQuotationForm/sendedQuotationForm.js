@@ -162,8 +162,7 @@ Page({
   
     // 分享功能
     share(e) {
-      const index = e.currentTarget.dataset.index;
-      const item = this.data.filterQuotation[index];
+      const id = e.currentTarget.dataset.id;
       
       wx.showActionSheet({
         itemList: ['系统内发送', '生成二维码', '复制链接', '发送邮件', '分享至微信'],
@@ -171,13 +170,13 @@ Page({
           switch (res.tapIndex) {
             case 0: {
               wx.navigateTo({
-                url: '/quotePackage/pages/shareWithSystem/shareWithSystem',
+                url: `/quotePackage/pages/shareWithSystem/shareWithSystem?id=${id}`,
               });
               break;
             }
             case 1: {
               wx.navigateTo({
-                url: '/quotePackage/pages/shareWithCode/shareWithCode',
+                url: `/quotePackage/pages/shareWithCode/shareWithCode?id=${id}`,
               });
               break;
             }

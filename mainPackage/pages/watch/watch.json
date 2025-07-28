@@ -1,6 +1,6 @@
 {
     "usingComponents": {
-      "header":"/components/header/header"
+      
     },
     "navigationBarTitleText": "信息查看"
   }

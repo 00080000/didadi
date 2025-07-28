@@ -46,12 +46,13 @@ page{
 }
 
 .code {
-  width: 350rpx;
-  height: 350rpx;
-  background-color: #DDDDDD;
-  margin: 0 auto;
-  margin-top: 100rpx;
-}
+    width: 400rpx; /* 适当增大尺寸 */
+    height: 400rpx;
+    background-color: #ffffff; /* 改为白色背景，避免与二维码颜色冲突 */
+    margin: 0 auto;
+    margin-top: 100rpx;
+    padding: 20rpx; /* 增加内边距，避免边框遮挡 */
+  }
 
 .buttonGroup {
   position: absolute;

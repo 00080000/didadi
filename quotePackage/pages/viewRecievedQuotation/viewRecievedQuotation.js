@@ -13,6 +13,7 @@ Page({
   },
 
   onLoad(options) {
+      console.log(options.id);
     this.setData({
       id: options.id
     });
@@ -27,6 +28,7 @@ Page({
         'Authorization': `Bearer ${getApp().globalData.token}`
       },
       success: (res) => {
+          console.log('loadQuotationData:',res);
         if (res.statusCode === 200 && res.data.code === 200) {
           const viewData = res.data.data || {};
           console.log('viewData:', viewData);
