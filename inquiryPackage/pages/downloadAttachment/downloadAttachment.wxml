@@ -12,12 +12,26 @@
   <view class="fileList">
     <view class="fileCard" wx:for="{{file}}" wx:for-item="item" wx:key="index" data-index="index">
       <view class="fileInformation">
-        <image src="/static/word.png" wx:if="{{item.type=='doc'}}"></image>
-        <image src="/static/PDF.png" wx:if="{{item.type=='pdf'}}"></image>
-        <image src="/static/Excel.png" wx:if="{{item.type=='xls'}}"></image>
-        <view>{{item.name}}</view>
+        <!-- 按文件类型显示对应图标（精确匹配） -->
+        <image src="/static/word.png" wx:if="{{item.type == 'docx' || item.type == 'doc'}}"></image>
+        <image src="/static/PDF.png" wx:if="{{item.type == 'pdf'}}"></image>
+        <image src="/static/Excel.png" wx:if="{{item.type == 'xls' || item.type == 'xlsx'}}"></image>
+        <image src="/static/other.png" wx:else></image> <!-- 其他类型显示默认图标 -->
+        <view>{{item.name}}</view> <!-- 显示文件名 -->
       </view>
-      <image src="/static/download.png"></image>
+      <!-- 下载按钮（绑定下载事件，传递必要参数） -->
+      <image 
+        src="/static/download.png" 
+        bind:tap="downloadFile" 
+        data-filepath="{{item.filePath}}" 
+        data-filename="{{item.name}}"
+        class="download-icon"
+      ></image>
+    </view>
+
+    <!-- 空状态：没有附件时显示 -->
+    <view class="empty-state" wx:if="{{file.length == 0}}">
+      <view class="empty-text">暂无附件文件</view>
     </view>
   </view>
 </view>
