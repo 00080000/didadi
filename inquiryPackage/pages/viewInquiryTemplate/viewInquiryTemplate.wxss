@@ -1,16 +1,25 @@
-/* quotePackage/pages/viewQuotationTemplate/viewQuotationTemplate.wxss */
-page{
+/* quotePackage/pages/viewRecievedQuotation/viewRecievedQuotation.wxss */
+page {
   text-align: center;
   width: 100%;
-  height: 100%;
-  background-color: white;
+  min-height: 100%;
+  background-color: #f5f5f5;
   position: relative;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.container {
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 上方区域 */
 .topArea {
   width: 100%;
-  height: 25%;
+  height: 370rpx;
   background-color: #DDDDDD;
   padding: 20rpx 0;
   display: flex;
@@ -18,8 +27,169 @@ page{
   justify-content: space-between;
 }
 
+
 .information {
   text-align: left;
-  margin-left: 50rpx;
+  margin-left: 30rpx;
+  font-size: 35rpx;
+  font-weight: bolder;
   color: #23394D;
+  margin-top: 10rpx;
+}
+
+.operation {
+  margin: 20rpx 50rpx 20rpx 30rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.operation button {
+  background-color: #DDDDDD;
+  border: 1px solid #23394D;
+  border-radius: 5px;
+  color: #23394D;
+  font-size: 23rpx;
+  font-weight: lighter;
+  padding: 5rpx 50rpx;
+  margin-right: 30rpx;
+}
+
+.operation image {
+  width: 50rpx;
+  height: 50rpx;
+  margin-left: 30rpx;
+  cursor: pointer;
+}
+
+/* 内容区域 */
+.contentArea {
+  flex: 1;
+  padding: 30rpx;
+  background-color: white;
+  margin: 20rpx;
+  border-radius: 10rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.1);
+}
+
+/* 头部文本 */
+.headText {
+  margin-bottom: 30rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 1px solid #eee;
+}
+
+/* 项目信息 */
+.projectInfo {
+  margin-bottom: 30rpx;
+}
+
+.infoRow {
+  display: flex;
+  margin-bottom: 15rpx;
+}
+
+.infoLabel {
+  width: 200rpx;
+  text-align: right;
+  padding-right: 20rpx;
+  color: #666;
+}
+
+.infoValue {
+  flex: 1;
+  text-align: left;
+}
+
+/* 表格样式 */
+.tableContainer {
+  width: 100%;
+  border: 1px solid #eee;
+  border-radius: 5rpx;
+  margin-bottom: 30rpx;
+  overflow: hidden;
+}
+
+.tableRow {
+  display: flex;
+  width: 100%;
+}
+
+.headerRow {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+.tableCell {
+  padding: 15rpx 10rpx;
+  border-right: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  word-break: break-all;
+  font-size: 26rpx;
+}
+
+.tableCell:last-child {
+  border-right: none;
+}
+
+/* 价格信息 */
+.priceInfo {
+  margin-bottom: 30rpx;
+  padding: 20rpx;
+  background-color: #f9f9f9;
+  border-radius: 5rpx;
+}
+
+.totalRow, .amountRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10rpx;
+}
+
+.totalLabel {
+  margin-right: 20rpx;
+  color: #666;
+}
+.amountLabel, .amountValue{
+  font-weight: bold;
+}
+.totalValue {
+  font-weight: bold;
+  color: #e13c39;
+}
+
+/* 底部文本 */
+.footText {
+  margin-bottom: 30rpx;
+  padding: 20rpx;
+  border: 1px dashed #eee;
+  border-radius: 5rpx;
+}
+
+/* 表格滚动容器 */
+.tableScroll {
+  width: 100%;
+  overflow-x: auto; /* 允许横向滚动 */
+  -webkit-overflow-scrolling: touch; /* 优化iOS滚动体验 */
+  margin-bottom: 30rpx;
+}
+
+/* 表格容器调整：移除固定宽度限制，让表格能自由扩展 */
+.tableContainer {
+  border: 1px solid #eee;
+  border-radius: 5rpx;
+  margin-bottom: 30rpx;
+  overflow: hidden;
+  min-width: 200%; /* 确保表格在内容较少时仍占满屏幕宽度 */
+}
+
+/* 恢复单元格最小宽度，并确保内容不换行 */
+.tableCell {
+  padding: 15rpx 10rpx;
+  border-right: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  font-size: 26rpx;
+  min-width: 110rpx; /* 保留最小宽度，避免表格错乱 */
+  
+  /* 移除 word-break: break-all; 避免内容自动换行导致宽度异常 */
 }

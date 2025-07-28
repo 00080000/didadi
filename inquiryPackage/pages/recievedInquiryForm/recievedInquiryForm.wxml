@@ -15,7 +15,7 @@
         <form catchsubmit="inputQuotation" style="width: 100%;height: 100%">
           <view style="display: flex;align-items: center;width: 100%;height: 100%;justify-content: space-around;">
             <view class="inputArea">
-              <input style="width: 490rpx;" model:value="{{keyword}}" bindconfirm="inputQuotation"/>
+              <input style="width: 490rpx;" model:value="{{keyword}}" bindconfirm="inputQuotation" placeholder="搜索询价单名称"/>
               <image src="/static/cancel.png" bind:tap="showSearch"></image>
             </view>
             <view style="display: flex;align-items: center;">
@@ -46,28 +46,42 @@
   <view class="add" bind:tap="goToAddQuotation">
     新建  
   </view>
+
+  <!-- 询价单列表（核心：适配接口数据） -->
   <view class="cardList">
-    <view class="card" wx:for="{{filterQuotation}}" wx:key="index" wx:item="item">
+    <!-- 加载状态 -->
+    <view class="loading" wx:if="{{loading}}">
+      <text>加载中...</text>
+    </view>
+
+    <!-- 列表内容 -->
+    <view class="card" wx:for="{{filterQuotation}}" wx:key="id" wx:for-item="item">
       <view class="cardLeft">
         <view style="font-size: 22rpx;margin-top: 20rpx;">接收时间</view>
-        <view style="font-size: 20rpx;">{{item.date}}</view>
-        <view style="font-size: 20rpx;margin-bottom: 20rpx;">{{item.time}}</view>
+        <view style="font-size: 20rpx;">{{item.createTime | formatDate}}</view>
+        <view style="font-size: 20rpx;margin-bottom: 20rpx;">{{item.createTime | formatTime}}</view>
       </view>
       <view class="cardRight">
         <view class="title">
-          {{item.name}}
+          {{item.quoteName || '未命名询价单'}}
         </view>
         <view class="operation">
-          <button bind:tap="goToViewRecievedQuotation" class="notDisabledButton" size="mini">
+          <button bind:tap="goToViewRecievedQuotation" data-id="{{item.id}}" class="notDisabledButton" size="mini">
           预览</button>
           <button class="disabledButton" size="mini">编辑</button>
           <button class="disabledButton" size="mini">复制</button>
           <button class="disabledButton" size="mini">分享</button>
-          <image src="/static/delete.png" bind:tap="confirmDelete"></image>
+          <image src="/static/delete.png" bind:tap="confirmDelete" data-id="{{item.id}}"></image>
         </view>
       </view>
     </view>
+
+    <!-- 空状态 -->
+    <view class="empty" wx:if="{{!loading && filterQuotation.length === 0}}">
+      <text>暂无询价单数据</text>
+    </view>
   </view>
+
   <view class="tabBar">
     <view class="notSelectedNavigateBar" bind:tap="navigateToMain">
       <image mode="heightFix" src="/static/home-gray.png"></image>
@@ -86,4 +100,4 @@
       商家
     </view>
   </view>
-</view>  
+</view>

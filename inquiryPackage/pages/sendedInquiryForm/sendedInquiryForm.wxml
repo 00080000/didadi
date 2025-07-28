@@ -47,11 +47,10 @@
     新建  
   </view>
   <view class="cardList">
-    <view class="card" wx:for="{{filterQuotation}}" wx:key="index" wx:item="item">
+    <view class="card" wx:for="{{filterQuotation}}" wx:key="id" wx:item="item">
       <view class="cardLeft">
         <view style="font-size: 22rpx;margin-top: 20rpx;">询价时间</view>
         <view style="font-size: 20rpx;line-height: 55rpx;">{{item.quoteDate}}</view>
-       
       </view>
       <view class="cardRight">
         <view class="title">
@@ -61,13 +60,50 @@
           <view style="font-size: 23rpx;color: {{item.status==1?'blue':'orange'}};">{{item.status==1? '已提交':'已过期'}}</view>
         </view>
         <view class="operation">
-          <button class="{{item.status==1? 'notDisabledButton':'disabledButton'}}" size="mini" disabled="{{item.status==0? true:false}}" bind:tap="goToViewRecievedQuotation">预览</button>
-          <button class="notDisabledButton" size="mini" bind:tap="edit">编辑</button>
-          <button class="notDisabledButton" size="mini" bind:tap="copy">复制</button>
-          <button class="{{item.status==1? 'notDisabledButton':'disabledButton'}}" size="mini"  bind:tap="share" disabled="{{item.status==0? true:false}}">分享</button>
-        <image src="/static/delete.png" bind:tap="confirmDelete"></image>
+          <button 
+            class="{{item.status==1? 'notDisabledButton':'disabledButton'}}" 
+            size="mini" 
+            disabled="{{item.status==0? true:false}}" 
+            bind:tap="goToView"
+            data-id="{{item.id}}" 
+          >
+            预览
+          </button>
+          <button 
+            class="notDisabledButton" 
+            size="mini" 
+            bind:tap="edit"
+            data-id="{{item.id}}"  
+          >
+            编辑
+          </button>
+          <button 
+            class="notDisabledButton" 
+            size="mini" 
+            bind:tap="copy"
+            data-id="{{item.id}}"
+          >
+            复制
+          </button>
+          <button 
+            class="{{item.status==1? 'notDisabledButton':'disabledButton'}}" 
+            size="mini"  
+            bind:tap="share" 
+            disabled="{{item.status==0? true:false}}"
+            data-id="{{item.id}}"  
+          >
+            分享
+          </button>
+          <image 
+            src="/static/delete.png" 
+            bind:tap="confirmDelete"
+            data-id="{{item.id}}" 
+          ></image>
+        </view>
       </view>
-      </view>
+    </view>
+    <view wx:if="{{filterQuotation.length === 0 && !isLoading}}" class="empty-tip">
+      暂无询价单数据
     </view>
   </view>
   <view class="tabBar">
@@ -88,4 +124,4 @@
       商家
     </view>
   </view>
-</view>  
+</view>

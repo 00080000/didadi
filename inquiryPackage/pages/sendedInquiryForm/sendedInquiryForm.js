@@ -11,149 +11,210 @@ Page({
     isLoading: true,
     // 总条数（后端返回的total）
     total: 0,
-    // 分页相关（新增）
-    pageNum: 1,        // 当前页码（默认第1页）
-    pageSize: 10,      // 每页条数（默认10条，与接口一致）
-    hasMore: true,     // 是否还有更多数据（用于加载更多）
-    // 接口请求参数（适配后端：包含分页+业务参数）
+    // 分页相关（因pageSize=9999，实际为一次性加载，简化分页逻辑）
+    pageNum: 1,
+    pageSize: 9999,
+    hasMore: false, // 因一次性加载，默认无更多数据
+    // 接口请求参数
     requestParams: {
-      // 分页参数（必传，新增）
       pageNum: 1,
-      pageSize: 10,
-      // 用真实用户信息填充（从登录态获取）
-      userId: 18, 
+      pageSize: 9999,
+      userId: 18,
       templateId: 36,
-      // 文本参数填空，不做筛选（业务参数）
       linkMan: "",
       linkTel: "",
       name: "",
-      // 时间参数用大范围，覆盖所有数据（业务参数）
       quoteDate: "",
       validityTime: "",
-      // 类型固定为2（询价单，业务参数）
       type: 2
     }
   },
 
   onLoad() {
-    // 页面加载时请求第一页数据
+    // 检查全局配置是否存在（避免serverUrl/token未定义）
+    const app = getApp();
+    if (!app.globalData.serverUrl || !app.globalData.token) {
+      this.setData({
+        isLoading: false
+      });
+      wx.showToast({
+        title: "配置错误，缺少服务器地址或token",
+        icon: "none",
+        duration: 3000
+      });
+      return;
+    }
+    // 加载数据
     this.getInquiryList();
   },
 
-  // 监听页面滚动到底部（新增：加载更多数据）
+  // 移除冗余的onReachBottom（因pageSize=9999，无需加载更多）
   onReachBottom() {
-    // 如果正在加载，或没有更多数据，不触发请求
-    if (this.data.isLoading || !this.data.hasMore) return;
-    // 页码+1，请求下一页
-    this.setData({
-      pageNum: this.data.pageNum + 1,
-      "requestParams.pageNum": this.data.pageNum + 1
-    }, () => {
-      this.getInquiryList(true); // 传入true表示加载更多
-    });
+    // 因一次性加载所有数据，无需处理加载更多
+    return;
   },
 
-  // 请求询价单列表（适配分页：支持首次加载和加载更多）
+  // 请求询价单列表（优化错误处理和日志）
   getInquiryList(isLoadMore = false) {
     this.setData({ isLoading: true });
+    const app = getApp();
 
     wx.request({
-      url:  `${getApp().globalData.serverUrl}/diServer/inQuote/list`,
+      url: `${app.globalData.serverUrl}/diServer/inQuote/list`,
       method: "GET",
       header: {
-        // 注意：Bearer前缀需要添加（与接口请求头一致）
-        'Authorization': `Bearer ${getApp().globalData.token}`,
+        'Authorization': `Bearer ${app.globalData.token}`,
         "accept": "*/*"
       },
-      data: this.data.requestParams, // 包含分页参数和业务参数
+      data: this.data.requestParams,
       success: (res) => {
+        // 打印接口响应（方便调试）
+        console.log("询价单列表接口响应：", res);
+
+        // 处理接口返回（兼容不同格式的错误码）
+        if (res.statusCode !== 200) {
+          // HTTP状态码非200（如404、500）
+          this.handleLoadError(`接口请求失败（${res.statusCode}）`);
+          return;
+        }
+
         if (res.data.code === 200) {
           const newData = res.data.rows || [];
-          // 判断是否还有更多数据（当前页码*每页条数 < 总条数）
-          const hasMore = this.data.pageNum * this.data.pageSize < res.data.total;
-
           this.setData({
-            // 如果是加载更多，拼接数据；否则覆盖数据
-            quotation: isLoadMore ? [...this.data.quotation, ...newData] : newData,
-            // 筛选列表同步更新
-            filterQuotation: isLoadMore ? [...this.data.quotation, ...newData] : newData,
-            total: res.data.total, // 总条数
-            hasMore: hasMore,     // 更新是否有更多数据
+            quotation: newData, // 因一次性加载，无需拼接
+            filterQuotation: newData,
+            total: res.data.total || 0,
+            hasMore: false, // 一次性加载后无更多数据
             isLoading: false
           });
+
+          // 空数据提示
+          if (newData.length === 0) {
+            wx.showToast({
+              title: "暂无询价单数据",
+              icon: "none"
+            });
+          }
         } else {
-          wx.showToast({
-            title: "数据加载失败",
-            icon: "none"
-          });
-          this.setData({ isLoading: false });
+          // 接口返回业务错误（如code≠200）
+          this.handleLoadError(res.data.msg || "数据加载失败（业务错误）");
         }
       },
-      fail: () => {
-        wx.showToast({
-          title: "网络错误，请重试",
-          icon: "none"
-        });
-        this.setData({ isLoading: false });
+      fail: (err) => {
+        // 请求失败（如网络错误、跨域）
+        console.error("询价单列表请求失败：", err);
+        this.handleLoadError("网络错误，无法连接服务器");
       }
     });
   },
 
-  // 搜索功能（重置分页，重新请求第一页）
+  // 统一处理加载错误
+  handleLoadError(msg) {
+    this.setData({
+      isLoading: false,
+      quotation: [],
+      filterQuotation: [],
+      total: 0
+    });
+    wx.showToast({
+      title: msg,
+      icon: "none",
+      duration: 3000
+    });
+  },
+
+  // 搜索功能（优化参数传递）
   inputQuotation() {
     const { keyword } = this.data;
-    // 重置页码为1，重新请求
+    // 去空格处理，避免空字符串搜索
+    const searchKey = keyword.trim();
     this.setData({
       pageNum: 1,
       "requestParams.pageNum": 1,
-      // 如果有搜索词，通过name参数传给后端（减少前端筛选压力）
-      "requestParams.name": keyword.trim() || ""
+      "requestParams.name": searchKey
     }, () => {
-      // 调用接口重新获取数据（后端直接返回筛选结果）
       this.getInquiryList();
     });
   },
 
-  // 切换搜索框显示/隐藏（重置搜索状态）
+  // 切换搜索框显示/隐藏（优化重置逻辑）
   showSearch() {
+    // 如果当前已显示搜索框，隐藏时才重置搜索
+    const needReset = this.data.ifShowSearch;
     this.setData({
       ifShowSearch: !this.data.ifShowSearch,
-      keyword: "", 
-      // 重置搜索参数，显示全部数据
-      "requestParams.name": "",
-      pageNum: 1,
-      "requestParams.pageNum": 1
-    }, () => {
-      // 重新请求第一页数据
-      this.getInquiryList();
+      keyword: ""
     });
+
+    // 仅在隐藏搜索框时，重置参数并重新加载
+    if (needReset) {
+      this.setData({
+        "requestParams.name": "",
+        pageNum: 1,
+        "requestParams.pageNum": 1
+      }, () => {
+        this.getInquiryList();
+      });
+    }
   },
 
-  // 预览询价单（携带ID跳转）
+  // 预览询价单（增加参数校验）
   goToView(e) {
     const { id } = e.currentTarget.dataset;
+    if (!id) {
+      wx.showToast({
+        title: "缺少询价单ID",
+        icon: "none"
+      });
+      return;
+    }
     wx.navigateTo({
-      url: `/inquiryPackage/pages/viewInquiry/viewInquiry?id=${id}`
+      url: `/inquiryPackage/pages/viewInquiryTemplate/viewInquiryTemplate?id=${id}`
     });
   },
 
-  // 编辑询价单
+  // 编辑询价单（增加参数校验）
   edit(e) {
     const { id } = e.currentTarget.dataset;
+    if (!id) {
+      wx.showToast({
+        title: "缺少询价单ID",
+        icon: "none"
+      });
+      return;
+    }
     wx.navigateTo({
       url: `/inquiryPackage/pages/addInquiry/addInquiry?id=${id}`
     });
   },
 
-  // 复制询价单
+  // 复制询价单（提示需对接接口）
   copy(e) {
     const { id } = e.currentTarget.dataset;
-    wx.showToast({ title: "询价单已复制", icon: "none" });
+    if (!id) {
+      wx.showToast({
+        title: "缺少询价单ID",
+        icon: "none"
+      });
+      return;
+    }
+    // 实际项目中需调用复制接口，此处仅提示
+    wx.showToast({
+      title: "询价单已复制（模拟）",
+      icon: "none"
+    });
   },
 
-  // 分享询价单
+  // 分享询价单（增加参数校验）
   share(e) {
     const { id } = e.currentTarget.dataset;
+    if (!id) {
+      wx.showToast({
+        title: "缺少询价单ID",
+        icon: "none"
+      });
+      return;
+    }
     wx.showActionSheet({
       itemList: ["系统内发送", "生成二维码", "复制链接", "发送邮件"],
       success: (res) => {
@@ -178,26 +239,76 @@ Page({
     });
   },
 
-  // 删除确认
-  confirmDelete(e) {
-    const { id } = e.currentTarget.dataset;
-    wx.showModal({
-      title: "确认删除",
-      content: "删除后不可恢复，是否继续？",
-      success: (res) => {
-        if (res.confirm) {
-          // 模拟删除（实际需调用删除接口）
-          const newList = this.data.quotation.filter(item => item.id !== id);
-          this.setData({
-            quotation: newList,
-            filterQuotation: newList,
-            total: newList.length
-          });
-          wx.showToast({ title: "删除成功", icon: "none" });
-        }
-      }
+ // 删除确认（对接真实删除接口）
+confirmDelete(e) {
+  const { id } = e.currentTarget.dataset;
+  // 1. 校验ID是否存在
+  if (!id) {
+    wx.showToast({
+      title: "缺少询价单ID",
+      icon: "none"
     });
-  },
+    return;
+  }
+
+  // 2. 显示确认弹窗
+  wx.showModal({
+    title: "确认删除",
+    content: "删除后不可恢复，是否继续？",
+    success: (res) => {
+      if (res.confirm) {
+        // 3. 调用删除接口
+        this.setData({ isLoading: true }); // 显示加载状态
+
+        wx.request({
+          url: `${getApp().globalData.serverUrl}/diServer/inQuote/${id}`, // 接口地址拼接ID
+          method: "DELETE", // 请求方法为DELETE
+          header: {
+            'Authorization': `Bearer ${getApp().globalData.token}`, // 携带token
+            "accept": "*/*"
+          },
+          success: (res) => {
+            this.setData({ isLoading: false }); // 关闭加载状态
+
+            // 4. 处理接口响应
+            if (res.data.code === 200) {
+              // 4.1 接口删除成功：更新本地列表（移除删除的项）
+              const newQuotation = this.data.quotation.filter(item => item.id !== id);
+              const newFilterQuotation = this.data.filterQuotation.filter(item => item.id !== id);
+
+              this.setData({
+                quotation: newQuotation,
+                filterQuotation: newFilterQuotation,
+                total: newQuotation.length // 更新总条数
+              });
+
+              // 提示成功
+              wx.showToast({
+                title: "删除成功",
+                icon: "none"
+              });
+            } else {
+              // 4.2 接口返回业务错误（如无权限、ID不存在）
+              wx.showToast({
+                title: res.data.msg || "删除失败",
+                icon: "none"
+              });
+            }
+          },
+          fail: (err) => {
+            // 5. 请求失败（如网络错误）
+            this.setData({ isLoading: false });
+            console.error("删除接口请求失败：", err);
+            wx.showToast({
+              title: "网络错误，删除失败",
+              icon: "none"
+            });
+          }
+        });
+      }
+    }
+  });
+},
 
   // 新建询价单
   goToAddQuotation() {
