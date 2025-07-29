@@ -5,7 +5,7 @@ Page({
     time: '',
     validityTime: '',
     merchant: {
-      firm: '长沙好好信息科技有限公司123333',
+      firm: '长沙',
       firmId: '',  // 新增：公司ID
       name: '黄老板',
       phone: '13900009999',
@@ -266,6 +266,17 @@ Page({
           wx.showToast({ title: '保存成功' });
           // 保存成功后返回上一页
           setTimeout(() => {
+            // 获取当前页面栈
+            const pages = getCurrentPages();
+            // 上一页是列表页（索引为pages.length - 2）
+            const prevPage = pages[pages.length - 2];
+            
+            // 如果上一页存在，调用其刷新数据的方法
+            if (prevPage && typeof prevPage.getInquiryList === 'function') {
+              prevPage.getInquiryList(); // 调用列表页的获取数据方法
+            }
+            
+            // 返回上一页
             wx.navigateBack();
           }, 1500);
         } else {
