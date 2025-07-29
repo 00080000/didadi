@@ -7,7 +7,7 @@
       <view class="information">
         <view style="font-size: 30rpx;font-weight: bolder;">{{item.name}}</view>
         <view style="font-size: 27rpx;margin-top: 30rpx;">{{item.projectName}}</view>
-        <view style="font-size: 27rpx;margin-top: 30rpx;">报价日期：{{item.createTime}}</view>
+        <view style="font-size: 27rpx;margin-top: 30rpx;">报价日期：{{item.quoteDate}}</view>
       </view>
       <view class="editButton">
         <button size="mini" bind:tap="goToEditFileInformation">修改文档信息</button>
