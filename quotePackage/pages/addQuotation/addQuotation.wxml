@@ -5,9 +5,9 @@
     <header></header>
     <view class="content">
       <view class="information">
-        <view style="font-size: 35rpx;font-weight: bolder;">{{fileName}}</view>
-        <view style="font-size: 27rpx;margin-top: 30rpx;">{{project}}</view>
-        <view style="font-size: 27rpx;margin-top: 30rpx;">建档日期：{{time}}</view>
+        <view style="font-size: 30rpx;font-weight: bolder;">{{item.name}}</view>
+        <view style="font-size: 27rpx;margin-top: 30rpx;">{{item.projectName}}</view>
+        <view style="font-size: 27rpx;margin-top: 30rpx;">报价日期：{{item.createTime}}</view>
       </view>
       <view class="editButton">
         <button size="mini" bind:tap="goToEditFileInformation">修改文档信息</button>
@@ -15,19 +15,19 @@
     </view>
   </view>
   <view class="list">
-    <view class="item" wx:if="{{merchant==null}}" bind:tap="goToChooseMerchant">
+    <view class="item" wx:if="{{item==null}}" bind:tap="goToChooseMerchant">
       <view class="graySidebar"></view>
         <view class="add">
           添加商家
         <image src="/static/rightArrow-gray.png"></image>
         </view>
     </view>
-    <view class="item" wx:if="{{merchant!=null}}" bind:tap="goToChooseMerchant">
+    <view class="item" wx:if="{{item!=null}}" bind:tap="goToChooseMerchant">
       <view class="cardLeft">
         <view class="blueSideBar"></view>
         <view class="cardContent">
-          <view style="font-size: 25rpx;">{{merchant.firm}}</view>
-          <view style="font-size: 22rpx;">{{merchant.name}}，{{merchant.phone}}</view>
+          <view style="font-size: 25rpx;">{{item.companyName}}</view>
+          <view style="font-size: 22rpx;">{{item.linkMan}}，{{item.linkTel}}</view>
         </view>
       </view>
       <view class="add">
@@ -46,7 +46,7 @@
         <view class="blueSideBar"></view>
         <view class="cardContent">
           <view style="font-size: 25rpx;">
-            合计：￥ {{totalAmount}} 元
+            合计：￥ {{item.amountPrice}} 元
           </view>
         </view>
       </view>

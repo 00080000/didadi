@@ -17,6 +17,21 @@ Page({
       }
     ]
   },
+  onLoad(){
+    const app = getApp();
+    const quoteFileList = app.globalData.submitData.quoteFileList;
+    const fileList = quoteFileList.map(file => {
+        const fileType = file.fileType || file.fileName.split('.').pop() || '';
+        return {
+            fileName: file.fileName,       // 文件名
+          type: fileType.toLowerCase() // 文件类型（转为小写）
+        };
+      });
+      this.setData({
+        file : fileList
+    });
+    console.log(this.data.file);
+  },
   confirmDelete(){
     wx.showModal({
       title: '确认',
