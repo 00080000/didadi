@@ -5,35 +5,41 @@
   <view class="form">
     <view class="inputArea">
       <view class="label">文档名称</view>
-      <input placeholder="请输入文档名称" class="input" style="width: 450rpx;" model:value="{{file.fileName}}"/>
+      <input placeholder="请输入文档名称" class="input" style="width: 450rpx;" model:value="{{fileName}}"/>
     </view>
     <view class="inputArea">
       <view class="label">项目名称</view>
-      <input placeholder="请输入项目名称" class="input" style="width: 450rpx;" model:value="{{file.projectName}}"/>
+      <input placeholder="请输入项目名称" class="input" style="width: 450rpx;" model:value="{{projectName}}"/>
     </view>
+    
+    <!-- 报价日期（支持精确到秒） -->
     <view class="pickerArea">
-      <view class="label">建档日期</view>
-      <picker bindchange="dateChange" mode="date" value="{{file.time}}" class="picker-area">
+      <view class="label">报价日期</view>
+      <view class="picker-area" bindtap="openDatePicker">
         <view class="showPickerValue">
-          <view>{{file.date}}</view>
+          <view>{{date}}</view>
           <image src="/static/date.png"></image>
         </view>
-      </picker>
+      </view>
     </view>
+    
+    <!-- 文档有效期（支持精确到秒） -->
     <view class="pickerArea">
       <view class="label">文档有效期</view>
-      <picker bindchange="selectorChange" mode="selector" value="{{index}}" range="{{pickerValue}}"	 class="picker-area">
+      <view class="picker-area" bindtap="openValidityPicker">
         <view class="showPickerValue">
-          <view>{{pickerValue[index]}}</view>
-          <image src="/static/downArrow-gray.png"></image>
+          <view>{{validity}}</view>
+          <image src="/static/date.png"></image>
         </view>
-      </picker>
+      </view>
     </view>
+    
     <view class="textArea">
-      <view class="label">文档描述</view>
-      <textarea placeholder="请输入文档描述" style="width: 450rpx;font-size: 27rpx;font-weight: lighter;"></textarea>
+      <view class="label">报价描述</view>
+      <textarea placeholder="请输入报价描述" style="width: 450rpx;font-size: 27rpx;font-weight: lighter;" model:value="{{description}}"></textarea>
     </view>
   </view>
+  
   <view class="buttonGroup">
     <view class="cancelButton" bind:tap="cancel">
       取消
@@ -42,4 +48,75 @@
       确定
     </view>
   </view>
+
+  <!-- 报价日期选择器弹窗 -->
+  <view class="picker-mask" wx:if="{{showDatePicker}}" bindtap="closeDatePicker"></view>
+  <view class="time-picker" wx:if="{{showDatePicker}}" catchtap>
+    <view class="picker-title">
+      <view class="picker-cancel" bindtap="closeDatePicker">取消</view>
+      <view class="picker-confirm" bindtap="confirmQuoteDate">确定</view>
+    </view>
+    <view class="date-picker">
+      <picker 
+        bindchange="quoteDateChange" 
+        mode="date" 
+        value="{{quoteDate}}"
+        class="date-picker-inner"
+      >
+        <view class="date-picker-text">{{quoteDate}}</view>
+      </picker>
+    </view>
+    <picker-view 
+      indicator-style="height: 50rpx;"
+      style="width: 100%; height: 300rpx;"
+      value="{{[quoteHourIndex, quoteMinuteIndex, quoteSecondIndex]}}"
+      bindchange="quotePickerChange"
+    >
+      <picker-view-column>
+        <view wx:for="{{hours}}" wx:key="*this" class="picker-item">{{item}}</view>
+      </picker-view-column>
+      <picker-view-column>
+        <view wx:for="{{minutes}}" wx:key="*this" class="picker-item">{{item}}</view>
+      </picker-view-column>
+      <picker-view-column>
+        <view wx:for="{{seconds}}" wx:key="*this" class="picker-item">{{item}}</view>
+      </picker-view-column>
+    </picker-view>
+  </view>
+
+  <!-- 文档有效期选择器弹窗 -->
+  <view class="picker-mask" wx:if="{{showValidityPicker}}" bindtap="closeValidityPicker"></view>
+  <view class="time-picker" wx:if="{{showValidityPicker}}" catchtap>
+    <view class="picker-title">
+      <view class="picker-cancel" bindtap="closeValidityPicker">取消</view>
+      <view class="picker-confirm" bindtap="confirmValidity">确定</view>
+    </view>
+    <view class="date-picker">
+      <picker 
+        bindchange="validityDateChange" 
+        mode="date" 
+        value="{{validityDate}}"
+        class="date-picker-inner"
+      >
+        <view class="date-picker-text">{{validityDate}}</view>
+      </picker>
+    </view>
+    <picker-view 
+      indicator-style="height: 50rpx;"
+      style="width: 100%; height: 300rpx;"
+      value="{{[validityHourIndex, validityMinuteIndex, validitySecondIndex]}}"
+      bindchange="validityPickerChange"
+    >
+      <picker-view-column>
+        <view wx:for="{{hours}}" wx:key="*this" class="picker-item">{{item}}</view>
+      </picker-view-column>
+      <picker-view-column>
+        <view wx:for="{{minutes}}" wx:key="*this" class="picker-item">{{item}}</view>
+      </picker-view-column>
+      <picker-view-column>
+        <view wx:for="{{seconds}}" wx:key="*this" class="picker-item">{{item}}</view>
+      </picker-view-column>
+    </picker-view>
+  </view>
 </view>
+    

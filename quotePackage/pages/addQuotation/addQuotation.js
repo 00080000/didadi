@@ -4,7 +4,7 @@ Page({
     fileName:'小喇叭公司报价单',
     project:'系统集成扩容二期采购项目',
     time:'2024-07-08',
-    merchant:{
+    item:{
       firm:'长沙好好信息科技有限公司',
       name:'黄老板',
       phone:'13900009999'
@@ -33,11 +33,51 @@ Page({
   },
   onLoad(options){
       console.log('id:',options.id);
+      this.setData({
+        id: options.id
+      });
+      this.loadQuotationData();
   },
   onShow(){
-    this.setData({
-      totalAmount:this.getTotalAmount()
-    })
+    const app = getApp();
+    if (app.globalData && app.globalData.submitData) {
+      const submitData = app.globalData.submitData;
+      this.setData({
+        submitData: submitData,
+        item: submitData.quote || this.data.item, 
+        attachment: submitData.quoteFileList || this.data.attachment 
+      });
+    }
+  },
+  loadQuotationData() {
+    wx.request({
+      url: `${getApp().globalData.serverUrl}/diServer/quote/${this.data.id}`,
+      method: 'GET',
+      header: {
+        'Authorization': `Bearer ${getApp().globalData.token}`
+      },
+      success: (res) => {
+        if (res.statusCode === 200 && res.data.code === 200) {
+          const viewData = res.data.data || {};
+          console.log('viewData:', viewData);
+          this.setData({
+              submitData: viewData,
+            item: viewData.quote || {}, // 修正数据层级，从quote字段获取主数据
+            attachment: viewData.quoteFileList || []
+          });
+          const app = getApp();
+          app.globalData.submitData = this.data.submitData;
+        } else {
+          // 请求失败
+          this.setData({
+            errorMsg: res.data.message || '获取数据失败'
+          });
+        }
+      },
+      fail: (err) => {
+        console.error(err);
+      }
+    });
   },
   getTotalAmount(){
     let total=0;
@@ -70,6 +110,7 @@ Page({
     wx.navigateBack()
   },
   confirm(){
+      console.log('submitData:',this.data.submitData);
     wx.navigateBack()
   }
 })
