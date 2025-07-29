@@ -52,8 +52,8 @@ Page({
     console.log('forwardUrl:',forwardUrl);
     // 绘制二维码
     drawQrcode({
-      width: 400, // 二维码宽度（rpx）
-      height: 400, // 二维码高度（rpx）
+      width: 200, // 二维码宽度（rpx）
+      height: 200, // 二维码高度（rpx）
       canvasId: 'qrCode',
       text: forwardUrl, // 二维码内容
       background: '#ffffff', // 背景色
@@ -81,22 +81,39 @@ Page({
   },
   // 复制二维码
   copyQrCode() {
-    if (!this.data.qrCodePath) {
-      wx.showToast({
-        title: '二维码生成中，请稍后',
-        icon: 'none'
-      });
-      return;
-    }
-    
-    // 复制图片到剪贴板
-    wx.setClipboardData({
-      data: this.data.qrCodePath,
-      success: () => {
+    const { qrCodePath } = this.data;
+    wx.saveImageToPhotosAlbum({
+      filePath: qrCodePath,
+      success(res) {
         wx.showToast({
-          title: '二维码已复制',
+          title: '已保存到相册，可粘贴相册图片',
           icon: 'success'
         });
+      },
+      fail(err) {
+        wx.showToast({
+          title: '保存失败，请授权相册权限',
+          icon: 'none'
+        });
+        // 如果用户拒绝过权限，可引导重新授权
+        if (err.errMsg.includes('auth deny')) {
+          wx.openSetting({
+            success(settingRes) {
+              if (settingRes.authSetting['scope.writePhotosAlbum']) {
+                // 重新调用保存方法
+                wx.saveImageToPhotosAlbum({
+                  filePath: qrCodePath,
+                  success(res) {
+                    wx.showToast({
+                      title: '已保存到相册',
+                      icon: 'success'
+                    });
+                  }
+                });
+              }
+            }
+          });
+        }
       }
     });
   },
