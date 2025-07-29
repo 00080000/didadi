@@ -20,13 +20,13 @@ Page({
       pageNum: 1,
       pageSize: 9999,
       userId: 18,
-      templateId: 36,
+      
       linkMan: "",
       linkTel: "",
       name: "",
       quoteDate: "",
       validityTime: "",
-      type: 2
+  
     }
   },
 

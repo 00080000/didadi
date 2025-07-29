@@ -1,4 +1,3 @@
-<!--quotePackage/pages/addQuotation/addQuotation.wxml-->
 <view class="container">
   <!-- 上方的Logo与文字提示部分 -->
   <view class="topArea">
@@ -7,7 +6,9 @@
       <view class="information">
         <view style="font-size: 35rpx;font-weight: bolder;">{{fileName}}</view>
         <view style="font-size: 27rpx;margin-top: 30rpx;">{{project}}</view>
-        <view style="font-size: 27rpx;margin-top: 30rpx;">建档日期：{{time}}</view>
+        <view style="font-size: 27rpx;margin-top: 15rpx;">建档日期：{{time}}</view>
+        <view style="font-size: 27rpx;margin-top: 15rpx;">有效期至：{{validityTime}}</view>
+        <view style="font-size: 27rpx;margin-top: 15rpx;">总金额：¥{{totalPrice}}</view>
       </view>
       <view class="editButton">
         <button size="mini" bind:tap="goToEditFileInformation">修改文档信息</button>
@@ -15,19 +16,20 @@
     </view>
   </view>
   <view class="list">
-    <view class="item" wx:if="{{merchant==null}}" bind:tap="goToChooseMerchant">
+    <view class="item" wx:if="{{!merchant || !merchant.firm}}" bind:tap="goToChooseMerchant">
       <view class="graySidebar"></view>
         <view class="add">
           添加商家
         <image src="/static/rightArrow-gray.png"></image>
         </view>
     </view>
-    <view class="item" wx:if="{{merchant!=null}}" bind:tap="goToChooseMerchant">
+    <view class="item" wx:if="{{merchant && merchant.firm}}" bind:tap="goToChooseMerchant">
       <view class="cardLeft">
         <view class="blueSideBar"></view>
         <view class="cardContent">
           <view style="font-size: 25rpx;">{{merchant.firm}}</view>
           <view style="font-size: 22rpx;">{{merchant.name}}，{{merchant.phone}}</view>
+          <view style="font-size: 22rpx;" wx:if="{{merchant.email}}">邮箱：{{merchant.email}}</view>
         </view>
       </view>
       <view class="add">
@@ -46,7 +48,10 @@
         <view class="blueSideBar"></view>
         <view class="cardContent">
           <view style="font-size: 25rpx;">
-            商品： {{totalAmount}} 个
+            商品：{{totalAmount}} 个
+          </view>
+          <view style="font-size: 22rpx;">
+            总金额：¥{{totalPrice}}
           </view>
         </view>
       </view>
@@ -68,6 +73,9 @@
           <view style="font-size: 25rpx;">
             附件文件：{{attachment.length}} 个
           </view>
+          <view style="font-size: 22rpx;" wx:if="{{attachment[0]}}">
+            {{attachment[0].name}}{{attachment.length > 1 ? ' 等' : ''}}
+          </view>
         </view>
       </view>
       <view class="add">
@@ -84,3 +92,4 @@
     </view>
   </view>
 </view>
+    
