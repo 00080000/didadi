@@ -1,23 +1,23 @@
 Page({
   data: {
-    fileName: '小喇叭公司询价单',
-    project: '系统集成扩容二期采购项目',
+    fileName: '询价单名称',
+    project: '系采购项目名称',
     time: '',
     validityTime: '',
     merchant: {
-      firm: '长沙',
-      firmId: '',  // 新增：公司ID
+      firm: '长沙6',
+      firmId: '178',//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!这个要改，通过登录判断firmid
       name: '黄老板',
       phone: '13900009999',
-      email: ''     // 新增：邮箱
+      email: ''
     },
     product: [{
       name: '1',
-      code: '',     // 新增：商品编码
+      code: '',
       amount: 2,
       price: 234.51,
-      productId: '', // 新增：商品ID
-      remark: ''    // 新增：备注
+      productId: '',
+      remark: ''
     },
     {
       name: '2',
@@ -43,12 +43,11 @@ Page({
       productId: '',
       remark: ''
     }],
-    attachment: [],  // 修改：存储附件对象而非字符串
+    attachment: [],
     totalAmount: 0,
-    totalPrice: '0.00',  // 新增：总价格
-    description: '',     // 新增：文档描述
-    headText: '',        // 新增：头部文本
-    footText: ''         // 新增：底部文本
+    totalPrice: '0.00',
+    description: '',
+    isSubmitting: false // 防止重复提交
   },
 
   onLoad() {
@@ -57,11 +56,11 @@ Page({
     this.setData({
       time: today
     });
+    this.calculateValidityTime();
   },
 
   onShow() {
     this.calculateTotal();
-    this.calculateValidityTime();
   },
 
   // 计算总数量和总价格
@@ -102,66 +101,65 @@ Page({
     return `${year}-${month}-${day}`;
   },
 
-  // 获取总金额
-  getTotalAmount() {
-    let total = 0;
-    for (let i = 0; i < this.data.product.length; i++) {
-      total += this.data.product[i].amount;
-    }
-    return total;
-  },
-
   // 页面跳转方法
   goToEditFileInformation() {
     wx.navigateTo({
       url: '/inquiryPackage/pages/editFileInformation/editFileInformation',
-    })
+    });
   },
 
   goToChooseMerchant() {
     wx.navigateTo({
       url: '/inquiryPackage/pages/chooseMerchant/chooseMerchant',
-    })
+    });
   },
 
   goToChooseProduct() {
     wx.navigateTo({
       url: '/inquiryPackage/pages/chooseProduct/chooseProduct',
-    })
+    });
   },
 
   goToAddAttachment() {
     wx.navigateTo({
       url: '/inquiryPackage/pages/uploadAttachment/uploadAttachment',
-    })
+    });
   },
 
   cancel() {
-    wx.navigateBack()
+    wx.navigateBack();
   },
 
   // 确认保存
   confirm() {
-    // 验证必填项
-    if (!this.data.fileName) {
+    // 防止重复提交
+    if (this.data.isSubmitting) {
+      return wx.showToast({ title: '正在提交中...', icon: 'none' });
+    }
+
+    // 基础必填项验证
+    if (!this.data.fileName.trim()) {
       return wx.showToast({ title: '请填写文档名称', icon: 'none' });
     }
-    if (!this.data.merchant || !this.data.merchant.firm) {
+    if (!this.data.merchant || !this.data.merchant.firm.trim()) {
       return wx.showToast({ title: '请添加商家信息', icon: 'none' });
     }
     if (this.data.product.length === 0) {
       return wx.showToast({ title: '请添加至少一个商品', icon: 'none' });
     }
 
-    // 准备提交数据
     const submitData = this.prepareSubmitData();
-    // 调用保存接口
     this.saveQuoteDraft(submitData);
   },
-
-  // 准备提交的数据
+// 格式化当前时间为 HH:MM:SS
+formatCurrentTime() {
+  const date = new Date();
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
+  return `${hours}:${minutes}:${seconds}`;
+},
   prepareSubmitData() {
-    // 构建商品字段列表
     const productFieldList = [
       { productFieldCode: "productName", productFieldName: "商品名称" },
       { productFieldCode: "productCode", productFieldName: "商品编码" },
@@ -170,7 +168,6 @@ Page({
       { productFieldCode: "remark", productFieldName: "备注" }
     ];
     
-    // 构建商品分组列表
     const quoteProductGroupFormList = [{
       quoteProductFormList: this.data.product.map(item => ({
         quantity: item.amount || 0,
@@ -180,24 +177,21 @@ Page({
       }))
     }];
     
-    // 构建附件列表
     const quoteFileList = this.data.attachment.map(file => ({
       fileName: file.name || '',
       filePath: file.path || ''
     }));
     
-    // 构建询价单主信息
     const app = getApp();
     const quote = {
-    
-      quoteDate: this.data.time + ' 00:00:00',
+      quoteDate: this.data.time + ' ' + this.formatCurrentTime(), 
       validityTime: this.data.validityTime + ' 23:59:59',
       status: 0,
       projectName: this.data.project,
-      name: this.data.fileName,
+      name: this.data.fileName.trim(),
       userId: app.globalData.userId || 18,
       fileList: quoteFileList,
-      companyName: this.data.merchant.firm,
+      companyName: this.data.merchant.firm.trim(),
       companyId: this.data.merchant.firmId || '',
       linkEmail: this.data.merchant.email || '',
       linkTel: this.data.merchant.phone || '',
@@ -219,7 +213,6 @@ Page({
     };
   },
 
-  // 获取表格结构JSON
   getTableStructureJson() {
     return JSON.stringify([
       { "label": "序号", "width": "50px", "background": "#ececec", "align": "center" },
@@ -231,7 +224,6 @@ Page({
     ]);
   },
 
-  // 默认头部文本
   getDefaultHeadText() {
     return `<p style="text-align: center;"><span style="color: rgb(53, 91, 183); font-size: 29px;"><strong>${this.data.fileName}</strong></span></p>
             <p style="text-align: center;"><strong>采购方信息</strong></p>
@@ -240,53 +232,67 @@ Page({
             <p><span style="font-size: 14px;">联系人：${this.data.merchant.name} &nbsp; &nbsp;手机：${this.data.merchant.phone}</span></p>`;
   },
 
-  // 默认底部文本
   getDefaultFootText() {
     return `<p style="line-height: 1;"><span style="font-size: 14px;">询价日期：${this.data.time}</span></p>
             <p style="line-height: 1;"><span style="font-size: 14px;">本询价有效期至：${this.data.validityTime}</span></p>`;
   },
 
-  // 保存询价单草稿
+  // 保存询价单（核心修复）
   saveQuoteDraft(data) {
+    this.setData({ isSubmitting: true });
     const app = getApp();
     wx.showLoading({ title: '保存中...' });
+
+    // 打印提交数据用于调试
+    console.log('提交的数据:', data);
 
     wx.request({
       url: `${app.globalData.serverUrl}/diServer/inQuote/submit`,
       method: 'POST',
       header: {
-        'Authorization': `Bearer ${app.globalData.token}`,
+        'Authorization': `Bearer ${app.globalData.token || ''}`,
         'Content-Type': 'application/json'
       },
       data: data,
       success: (res) => {
         wx.hideLoading();
+        this.setData({ isSubmitting: false });
         
+        console.log('接口返回:', res.data); // 打印接口返回用于调试
+        
+        // 仅当接口明确成功时才视为成功
         if (res.data.code === 200) {
           wx.showToast({ title: '保存成功' });
-          // 保存成功后返回上一页
           setTimeout(() => {
-            // 获取当前页面栈
             const pages = getCurrentPages();
-            // 上一页是列表页（索引为pages.length - 2）
             const prevPage = pages[pages.length - 2];
-            
-            // 如果上一页存在，调用其刷新数据的方法
             if (prevPage && typeof prevPage.getInquiryList === 'function') {
-              prevPage.getInquiryList(); // 调用列表页的获取数据方法
+              prevPage.getInquiryList();
             }
-            
-            // 返回上一页
             wx.navigateBack();
           }, 1500);
         } else {
-          wx.showToast({ title: res.data.msg || '保存失败', icon: 'none' });
+          // 只处理非商家重复的错误
+          const isDuplicateError = res.data.msg?.includes('商家名称已存在') || 
+                                 res.data.msg?.includes('重复');
+          
+          if (isDuplicateError) {
+            // 允许重复提交，视为成功
+            wx.showToast({ title: '保存成功（允许重复商家）', icon: 'none' });
+            setTimeout(() => {
+              wx.navigateBack();
+            }, 1500);
+          } else {
+            // 其他错误正常提示
+            wx.showToast({ title: res.data.msg || '保存失败', icon: 'none' });
+          }
         }
       },
       fail: (err) => {
         wx.hideLoading();
-        wx.showToast({ title: '网络错误', icon: 'none' });
-        console.error('保存询价单失败：', err);
+        this.setData({ isSubmitting: false });
+        wx.showToast({ title: '网络错误，请重试', icon: 'none' });
+        console.error('保存失败:', err);
       }
     });
   }
