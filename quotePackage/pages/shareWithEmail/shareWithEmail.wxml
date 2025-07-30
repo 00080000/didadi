@@ -27,7 +27,7 @@
       </view>
     </view>
 
-    <!-- 联系人 -->
+    <!-- 联系人（优化选择逻辑） -->
     <view class="pickerArea">
       <view class="label">联系人</view>
       <picker 
@@ -36,9 +36,12 @@
         value="{{contactIndex}}" 
         range="{{contactPickerValue}}" 
         class="picker-area"
+        disabled="{{!firm}}" 
       >
         <view class="showPickerValue">
-          <view>{{contactIndex==null? "请选择联系人":contactPickerValue[contactIndex]}}</view>
+          <view>
+            {{contactIndex == null ? "请选择联系人" : contactPickerValue[contactIndex]}}
+          </view>
           <image src="/static/downArrow-gray.png"></image>
         </view>
       </picker>
