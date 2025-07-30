@@ -1,4 +1,3 @@
-<!--merchantPackage/pages/contacts/contacts.wxml-->
 <view class="container">
   <!-- 上方的Logo与文字提示部分 -->
   <view class="topArea">
@@ -19,7 +18,12 @@
         <view style="display: flex;align-items: center;">
           <view class="inputArea">
             <image src="/static/search.png"></image>
-            <input model:value="{{merchantKeyword}}" style="width: 250rpx;" placeholder="输入名称关键字" bindconfirm="inputMerchant"/>
+            <input 
+              model:value="{{merchantKeyword}}" 
+              style="width: 250rpx;" 
+              placeholder="输入商家名称关键字" 
+              bindconfirm="inputMerchant"
+            />
           </view>
           <button formType="submit" size="mini" style="font-size: 32rpx;">搜索</button>
         </view>
@@ -30,78 +34,120 @@
         <view style="display: flex;align-items: center;">
           <view class="inputArea">
             <image src="/static/search.png"></image>
-            <input model:value="{{contactKeyword}}" style="width: 250rpx;" placeholder="输入名称关键字" bindconfirm="inputContact"/>
+            <input 
+              model:value="{{contactKeyword}}" 
+              style="width: 250rpx;" 
+              placeholder="输入联系人名称关键字" 
+              bindconfirm="inputContact"
+            />
           </view>
           <button formType="submit" size="mini" style="font-size: 32rpx;">搜索</button>
         </view>
       </form>
     </view>
   </view>
+  
   <view class="add" wx:if="{{index==1}}" bind:tap="addNew">
     新建  
   </view>
   <view class="add" wx:if="{{index==2}}" bind:tap="addNew">
     新建  
   </view>
+  
+  <!-- 商家列表 -->
   <view class="merchantList" wx:if="{{index==1}}">
-    <view class="merchantCard" wx:for="{{filterMerchant}}" wx:key="index" wx:for-item="item">
-      <view data-index="{{item.id}}" style="height:100%" wx:if="{{item.select==false}}" bind:tap="chooseMerchant">
+    <view class="merchantCard" wx:for="{{filterMerchant}}" wx:key="id" wx:for-item="item">
+      <view 
+        data-id="{{item.id}}" 
+        style="height:100%" 
+        wx:if="{{!selectedMerchant || selectedMerchant.id != item.id}}" 
+        bind:tap="chooseMerchant"
+      >
         <view class="cardLeft">
           <view class="graySideBar">
             <view></view>
           </view>
           <view class="information" style="color: gray">
-            <view style="font-size: 25rpx;">{{item.firm}}</view>
-            <view style="font-size: 22rpx;">{{item.name}}，{{item.phone}}</view>
-          </view>
-        </view>
-      </view>
-      <view data-index="{{item.id}}" style="height:100%" wx:if="{{item.select==true}}" bind:tap="cancelChoice">
-        <view class="cardLeft">
-          <view class="blueSideBar">
-            <view>
-              ✔
+            <!-- 直接显示商家名称 -->
+            <view style="font-size: 25rpx;">{{item.companyName}}</view>
+            <!-- 直接显示预加载好的默认联系人信息 -->
+            <view style="font-size: 22rpx;">
+              {{item.defaultContactName}}，{{item.defaultContactPhone}}
             </view>
           </view>
+        </view>
+      </view>
+      <view 
+        data-id="{{item.id}}" 
+        style="height:100%" 
+        wx:if="{{selectedMerchant && selectedMerchant.id == item.id}}" 
+        bind:tap="cancelChoice"
+      >
+        <view class="cardLeft">
+          <view class="blueSideBar">
+            <view>✔</view>
+          </view>
           <view class="information" style="color: #23394D;">
-            <view style="font-size: 25rpx;">{{item.firm}}</view>
-            <view style="font-size: 22rpx;">{{item.name}}，{{item.phone}}</view>
+            <view style="font-size: 25rpx;">{{item.companyName}}</view>
+            <view style="font-size: 22rpx;">
+              {{item.defaultContactName}}，{{item.defaultContactPhone}}
+            </view>
           </view>
         </view>
       </view>
-      <view class="operation" wx:if="{{item.select==true}}">
+      <view class="operation" wx:if="{{selectedMerchant && selectedMerchant.id == item.id}}">
         <button size="mini" bind:tap="goToChooseContact">换联系人</button>
       </view>
     </view>
+    <view wx:if="{{filterMerchant.length == 0}}" class="empty-tip">
+      没有找到匹配的商家
+    </view>
   </view>
+  
+  <!-- 联系人列表 -->
   <view class="contactList" wx:if="{{index==2}}">
-    <view class="contactCard" wx:for="{{filterContact}}" wx:key="index" wx:for-item="item">
-      <view data-index="{{item.id}}" style="height:100%" wx:if="{{item.select==false}}" bind:tap="chooseMerchant">
+    <view wx:if="{{!selectedMerchant}}" class="empty-tip">
+      请先在商家库选择一个商家
+    </view>
+    
+    <view class="contactCard" wx:for="{{filterContact}}" wx:key="id" wx:for-item="item" wx:if="{{selectedMerchant}}">
+      <view 
+        data-id="{{item.id}}" 
+        style="height:100%" 
+        wx:if="{{!selectedContact || selectedContact.id != item.id}}" 
+        bind:tap="chooseContact"
+      >
         <view class="cardLeft">
           <view class="graySideBar">
             <view></view>
           </view>
           <view class="information" style="color: gray">
-            <view style="font-size: 25rpx;">{{item.name}}，{{item.phone}}</view>
-            <view style="font-size: 22rpx;">{{item.firm}}</view>
+            <view style="font-size: 25rpx;">{{item.userName}}，{{item.tel}}</view>
+            <view style="font-size: 22rpx;">{{item.companyName}}</view>
           </view>
         </view>
       </view>
-      <view data-index="{{item.id}}" style="height:100%" wx:if="{{item.select==true}}">
+      <view 
+        data-id="{{item.id}}" 
+        style="height:100%" 
+        wx:if="{{selectedContact && selectedContact.id == item.id}}"
+      >
         <view class="cardLeft">
           <view class="blueSideBar">
-            <view>
-              ✔
-            </view>
+            <view>✔</view>
           </view>
           <view class="information" style="color: #23394D;">
-            <view style="font-size: 25rpx;">{{item.name}}，{{item.phone}}</view>
-            <view style="font-size: 22rpx;">{{item.firm}}</view>
+            <view style="font-size: 25rpx;">{{item.userName}}，{{item.tel}}</view>
+            <view style="font-size: 22rpx;">{{item.companyName}}</view>
           </view>
         </view>
       </view>
     </view>
+    <view wx:if="{{selectedMerchant && filterContact.length == 0}}" class="empty-tip">
+      该商家没有联系人，请新建
+    </view>
   </view>
+  
   <view class="buttonGroup">
     <view class="cancelButton" bind:tap="cancel">
       取消
@@ -111,3 +157,4 @@
     </view>
   </view>
 </view>
+    

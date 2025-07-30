@@ -1,215 +1,327 @@
-// quotePackage/pages/chooseMerchant/chooseMerchant.js
 Page({
-  data:{
-    merchants:[
-      {
-        name:"黄老板",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司1",
-        select:false,
-        id:1
-      },
-      {
-        name:"黄老板",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司2",
-        select:false,
-        id:2
-      },
-      {
-        name:"黄老板",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司3",
-        select:false,
-        id:3
-      },
-      {
-        name:"黄老板",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司",
-        select:false,
-        id:4
-      },
-      {
-        name:"黄老板",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司",
-        select:false,
-        id:5
-      },
-      {
-        name:"黄老板",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司",
-        select:false,
-        id:6
-      },
-      {
-        name:"黄老板",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司",
-        select:false,
-        id:7
-      },
-      {
-        name:"黄老板",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司",
-        select:false,
-        id:8
-      },
-      {
-        name:"黄老板",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司",
-        select:false,
-        id:9
-      },
-      {
-        name:"黄老板",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司",
-        select:false,
-        id:10
-      },
-    ],
-    contact:[
-      {
-        name:"黄老板1",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司",
-        select:false,
-        id:1
-      },
-      {
-        name:"黄老板2",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司",
-        select:false,
-        id:2
-      },
-      {
-        name:"黄老板3",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司",
-        select:false,
-        id:3
-      },
-      {
-        name:"黄老板",
-        phone:"13900009999",
-        firm:"长沙好好信息科技有限公司",
-        select:false,
-        id:4
-      },
-    ],
-    filterMerchant:[],
-    filterContact:[],
-    index:1,
-    merchantKeyword:'',
-    contactKeyword:''
-  },
-  onLoad(){
-    this.setData({
-      filterMerchant:this.data.merchants,
-      filterContact:this.data.contact,
-    })
-  },
-  switchToContact(){
-    this.setData({
-      index:2
-    })
-  },
-  switchToMerchant(){
-    this.setData({
-      index:1
-    })
-  },
-  inputMerchant(){
-    if(this.data.merchantKeyword==''){
-      this.setData({
-        filterMerchant:this.data.merchants
-      })
-    } else {
-      this.setData({
-        filterMerchant:this.data.merchants.filter(item => item.firm.includes(this.data.merchantKeyword))
-      })
-    }
-  },
-  inputContact(){
-    if(this.data.contactKeyword=='') {
-      this.setData({
-        filterContact:this.data.contact
-      })
-    } else {
-      this.setData({
-        filterContact:this.data.contact.filter(item => item.name.includes(this.data.contactKeyword))
-      })
-    }
-  },
-  chooseMerchant(e){
-    this.data.merchants.forEach(item=>{
-      item.select=false
-      if(this.data.index==1&&e.currentTarget.dataset.index==item.id) {
-        item.select=true
+    data: {
+      merchants: [], // 商家列表（含默认联系人字段）
+      allContacts: [], // 所有联系人（按商家ID分组）
+      filterMerchant: [], // 筛选后的商家
+      filterContact: [], // 筛选后的联系人
+      index: 1, // 1:商家库 2:联系人库
+      merchantKeyword: '', // 商家搜索关键词
+      contactKeyword: '', // 联系人搜索关键词
+      selectedMerchant: null, // 选中的商家
+      selectedContact: null, // 选中的联系人
+      quoteId: '' // 报价单ID
+    },
+  
+    onLoad(options) {
+      this.setData({ quoteId: options.quoteId || '' });
+      this.fetchMerchants();
+    },
+  
+    // 获取商家列表
+    fetchMerchants() {
+      wx.showLoading({ title: '加载商家...' });
+      wx.request({
+        url: `${getApp().globalData.serverUrl}/diServer/company/list?pageNum=1&pageSize=100`,
+        method: 'GET',
+        header: { 'Authorization': `Bearer ${getApp().globalData.token}` },
+        success: (res) => {
+          wx.hideLoading();
+          if (res.statusCode === 200 && res.data.code === 200) {
+            let merchants = res.data.rows || [];
+            console.log('merchants:', res.data.rows);
+  
+            // 为每个商家添加默认联系人字段
+            var tempMerchants = [];
+            for (var i = 0; i < merchants.length; i++) {
+              var merchant = merchants[i];
+              var newMerchant = Object.assign({}, merchant, {
+                defaultContactName: '加载中...',
+                defaultContactPhone: '加载中...'
+              });
+              tempMerchants.push(newMerchant);
+            }
+  
+            this.setData({
+              merchants: tempMerchants,
+              filterMerchant: tempMerchants
+            });
+  
+            // 加载每个商家的联系人
+            for (var j = 0; j < tempMerchants.length; j++) {
+              this.fetchContactsByCompanyId(tempMerchants[j].id);
+            }
+          } else {
+            wx.showToast({ title: '加载商家失败', icon: 'none' });
+          }
+        },
+        fail: (err) => {
+          wx.hideLoading();
+          console.error('加载商家失败：', err);
+          wx.showToast({ title: '网络错误', icon: 'none' });
+        }
+      });
+    },
+  
+    // 加载商家的联系人并更新默认信息
+    fetchContactsByCompanyId(companyId) {
+      wx.request({
+        url: `${getApp().globalData.serverUrl}/diServer/companyLinkman/list?companyId=${companyId}`,
+        method: 'GET',
+        header: { 'Authorization': `Bearer ${getApp().globalData.token}` },
+        success: (res) => {
+          if (res.statusCode === 200 && res.data.code === 200) {
+            const contacts = res.data.rows || [];
+            const defaultContact = contacts[0] || {};
+  
+            // 更新商家列表中的默认联系人信息
+            var { merchants } = this.data;
+            var updatedMerchants = [];
+            for (var i = 0; i < merchants.length; i++) {
+              var merchant = merchants[i];
+              if (String(merchant.id) === String(companyId)) {
+                var updatedMerchant = Object.assign({}, merchant, {
+                  defaultContactName: defaultContact.userName || '无联系人',
+                  defaultContactPhone: defaultContact.tel || '无电话'
+                });
+                updatedMerchants.push(updatedMerchant);
+              } else {
+                updatedMerchants.push(merchant);
+              }
+            }
+  
+            // 更新联系人分组数据
+            var { allContacts } = this.data;
+            var isExist = false;
+            for (var j = 0; j < allContacts.length; j++) {
+              if (allContacts[j].companyId === String(companyId)) {
+                allContacts[j].contacts = contacts;
+                isExist = true;
+                break;
+              }
+            }
+            if (!isExist) {
+              allContacts.push({ companyId: String(companyId), contacts: contacts });
+            }
+  
+            // 刷新数据
+            this.setData({
+              merchants: updatedMerchants,
+              filterMerchant: updatedMerchants,
+              allContacts: allContacts
+            });
+  
+            // 如果当前选中该商家，同步更新联系人列表
+            if (this.data.selectedMerchant && String(this.data.selectedMerchant.id) === String(companyId)) {
+              this.setData({ filterContact: contacts });
+            }
+          }
+        }
+      });
+    },
+  
+    // 切换到商家库
+    switchToMerchant() {
+      this.setData({ index: 1 });
+    },
+  
+    // 切换到联系人库
+    switchToContact() {
+      this.setData({ index: 2 });
+    },
+  
+    // 搜索商家
+    inputMerchant() {
+      var { merchants, merchantKeyword } = this.data;
+      if (!merchantKeyword) {
+        this.setData({ filterMerchant: merchants });
+        return;
       }
-    })
-    this.data.contact.forEach(item=>{
-      item.select=false
-      if(this.data.index==2&&e.currentTarget.dataset.index==item.id) {
-        item.select=true
+      var filtered = [];
+      for (var i = 0; i < merchants.length; i++) {
+        if (merchants[i].companyName.indexOf(merchantKeyword) !== -1) {
+          filtered.push(merchants[i]);
+        }
       }
-    })
-    if(this.data.merchantKeyword==''&&this.data.contactKeyword==''){
+      this.setData({ filterMerchant: filtered });
+    },
+  
+    // 搜索联系人
+    inputContact() {
+      var { allContacts, contactKeyword, selectedMerchant } = this.data;
+      if (!selectedMerchant) return;
+  
+      var strCompanyId = String(selectedMerchant.id);
+      var merchantContacts = [];
+      for (var i = 0; i < allContacts.length; i++) {
+        if (allContacts[i].companyId === strCompanyId) {
+          merchantContacts = allContacts[i].contacts;
+          break;
+        }
+      }
+  
+      if (!contactKeyword) {
+        this.setData({ filterContact: merchantContacts });
+        return;
+      }
+  
+      var filtered = [];
+      for (var j = 0; j < merchantContacts.length; j++) {
+        if (merchantContacts[j].userName.indexOf(contactKeyword) !== -1) {
+          filtered.push(merchantContacts[j]);
+        }
+      }
+      this.setData({ filterContact: filtered });
+    },
+  
+    // 选择商家
+    chooseMerchant(e) {
+      var merchantId = e.currentTarget.dataset.id;
+      var { merchants } = this.data;
+      var selectedMerchant = null;
+  
+      for (var i = 0; i < merchants.length; i++) {
+        if (String(merchants[i].id) === String(merchantId)) {
+          selectedMerchant = merchants[i];
+          break;
+        }
+      }
+  
+      if (selectedMerchant) {
+        var { allContacts } = this.data;
+        var filterContact = [];
+        for (var j = 0; j < allContacts.length; j++) {
+          if (allContacts[j].companyId === String(merchantId)) {
+            filterContact = allContacts[j].contacts;
+            break;
+          }
+        }
+  
         this.setData({
-          merchants:this.data.merchants,
-          contact:this.data.contact,
-          filterMerchant:this.data.merchants,
-          filterContact:this.data.contact
-        })
-    } else if(this.data.merchantKeyword!=''&&this.data.contactKeyword==''){
+          selectedMerchant: selectedMerchant,
+          selectedContact: null,
+          filterContact: filterContact
+        });
+      }
+    },
+  
+    // 选择联系人
+    chooseContact(e) {
+      var contactId = e.currentTarget.dataset.id;
+      var { filterContact } = this.data;
+      var selectedContact = null;
+  
+      for (var i = 0; i < filterContact.length; i++) {
+        if (String(filterContact[i].id) === String(contactId)) {
+          selectedContact = filterContact[i];
+          break;
+        }
+      }
+  
+      if (selectedContact) {
+        this.setData({ selectedContact: selectedContact });
+      }
+    },
+  
+    // 取消选择
+    cancelChoice() {
       this.setData({
-        merchants:this.data.merchants,
-        contact:this.data.contact,
-        filterMerchant:this.data.merchants.filter(item => item.firm.includes(this.data.merchantKeyword)),
-        filterContact:this.data.contact
-      })
-    } else if(this.data.merchantKeyword==''&&this.data.contactKeyword!=''){
-      this.setData({
-        merchants:this.data.merchants,
-        contact:this.data.contact,
-        filterMerchant:this.data.merchants,
-        filterContact:this.data.contact.filter(item => item.name.includes(this.data.contactKeyword))
-      })
-    } else if(this.data.merchantKeyword!=''&&this.data.contactKeyword!=''){
-      this.setData({
-        merchants:this.data.merchants,
-        contact:this.data.contact,
-        filterMerchant:this.data.merchants.filter(item => item.firm.includes(this.data.merchantKeyword)),
-        filterContact:this.data.contact.filter(item => item.name.includes(this.data.contactKeyword))
-      })
-    }
-  },
-  goToChooseContact(){
-    wx.navigateTo({
-      url: '/quotePackage/pages/chooseContactOfMerchant/chooseContactOfMerchant',
-    })
-  },
-  addNew(){
-    if(this.data.index==1) {
+        selectedMerchant: null,
+        selectedContact: null,
+        filterContact: []
+      });
+    },
+  
+    // 跳转到选择联系人页面
+    goToChooseContact() {
       wx.navigateTo({
-        url: '/merchantPackage/pages/editInformation/editInformation',
-      })
-    } else {
+        url: `/quotePackage/pages/chooseContactOfMerchant/chooseContactOfMerchant?companyId=${this.data.selectedMerchant.id}`
+      });
+    },
+  
+    // 跳转到编辑商家页面（新建/编辑共用）
+    goToEditMerchant(e) {
+      // 获取点击事件中的商家数据，新建时为空对象
+      const item = e.currentTarget.dataset.item || {};
       wx.navigateTo({
-        url: '/merchantPackage/pages/addContact/addContact',
-      })
+        url: `/merchantPackage/pages/editInformation/editInformation`,
+        events: {},
+        success: function(res) {
+          // 将商家数据传递给编辑页面
+          res.eventChannel.emit('acceptDataFromOpenerPage', { data: item });
+        }
+      });
+    },
+  
+    // 新建按钮点击事件
+    addNew() {
+      if (this.data.index === 1) {
+        // 商家库点击新建：调用编辑页面并传递空数据
+        this.goToEditMerchant({ currentTarget: { dataset: { item: {} } } });
+      } else {
+        // 联系人库点击新建
+        if (this.data.selectedMerchant) {
+          wx.navigateTo({
+            url: `/merchantPackage/pages/addContact/addContact?companyId=${this.data.selectedMerchant.id}`
+          });
+        } else {
+          wx.showToast({ title: '请先选择商家', icon: 'none' });
+        }
+      }
+    },
+  
+    // 取消
+    cancel() {
+      wx.navigateBack();
+    },
+  
+    // 确定选择
+    confirm() {
+      var app = getApp();
+      var { selectedMerchant, selectedContact } = this.data;
+      var result = null;
+  
+      if (selectedMerchant && selectedContact) {
+        result = {
+          companyId: selectedMerchant.id,
+          companyName: selectedMerchant.companyName,
+          contactId: selectedContact.id,
+          contactName: selectedContact.userName,
+          contactTel: selectedContact.tel
+        };
+      } else if (selectedMerchant) {
+        var strCompanyId = String(selectedMerchant.id);
+        var { allContacts } = this.data;
+        var merchantContacts = [];
+        for (var i = 0; i < allContacts.length; i++) {
+          if (allContacts[i].companyId === strCompanyId) {
+            merchantContacts = allContacts[i].contacts;
+            break;
+          }
+        }
+        var defaultContact = merchantContacts[0] || {};
+        result = {
+          companyId: selectedMerchant.id,
+          companyName: selectedMerchant.companyName,
+          contactId: defaultContact.id || '',
+          contactName: defaultContact.userName || '无联系人',
+          contactTel: defaultContact.tel || '无电话'
+        };
+      } else if (selectedContact) {
+        result = {
+          companyId: selectedContact.companyId,
+          companyName: selectedContact.companyName,
+          contactId: selectedContact.id,
+          contactName: selectedContact.userName,
+          contactTel: selectedContact.tel
+        };
+      }
+  
+      if (result) {
+        app.globalData.shareSystemSelectedData = result;
+        wx.navigateBack();
+      } else {
+        wx.showToast({ title: '请选择商家或联系人', icon: 'none' });
+      }
     }
-  },
-  cancel(){
-    wx.navigateBack()
-  },
-  confirm(){
-    wx.navigateBack()
-  }
-})
+  });
+  
