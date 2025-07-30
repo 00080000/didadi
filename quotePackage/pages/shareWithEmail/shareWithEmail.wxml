@@ -10,38 +10,66 @@
       </view>
     </view>
   </view>
+
   <view class="form">
+    <!-- 商家名称 -->
     <view class="inputArea">
       <view class="label">商家名称</view>
       <view style="height: 100%;width: 500rpx;display: flex;align-items: center;justify-content: space-between;">
-        <input placeholder="请选择商家" class="input" style="width: 390rpx;" disabled="true"/>
+        <input 
+          placeholder="请选择商家" 
+          class="input" 
+          style="width: 390rpx;" 
+          disabled="true" 
+          value="{{firm}}" 
+        />
         <image src="/static/rightArrow-gray.png" bind:tap="chooseMerchant"></image>
       </view>
     </view>
+
+    <!-- 联系人 -->
     <view class="pickerArea">
       <view class="label">联系人</view>
-      <picker bindchange="contactPickerChange" mode="selector" value="{{contactIndex}}" range="{{contactPickerValue}}"	 class="picker-area">
+      <picker 
+        bindchange="contactPickerChange" 
+        mode="selector" 
+        value="{{contactIndex}}" 
+        range="{{contactPickerValue}}" 
+        class="picker-area"
+      >
         <view class="showPickerValue">
           <view>{{contactIndex==null? "请选择联系人":contactPickerValue[contactIndex]}}</view>
           <image src="/static/downArrow-gray.png"></image>
         </view>
       </picker>
     </view>
+
+    <!-- 联系人邮箱 -->
     <view class="inputArea">
       <view class="label">联系人邮箱</view>
-      <input placeholder="请输入联系人邮箱" class="input" style="width: 450rpx;"/>
+      <input 
+        placeholder="请输入联系人邮箱" 
+        class="input" 
+        style="width: 450rpx;" 
+        value="{{email}}" 
+        bindinput="onEmailInput" 
+      />
     </view>
+
+    <!-- 邮件主题 -->
     <view class="textArea">
       <view class="label">邮件主题</view>
-      <textarea placeholder="请输入邮件主题" style="width: 450rpx;font-size: 27rpx;font-weight: lighter;"></textarea>
+      <textarea 
+        placeholder="请输入邮件主题" 
+        style="width: 450rpx;font-size: 27rpx;font-weight: lighter;"
+        value="{{mailSubject}}" 
+        bindinput="onSubjectInput"
+      ></textarea>
     </view>
   </view>
+
   <view class="buttonGroup">
-    <view class="cancelButton" bind:tap="cancel">
-      取消
-    </view>
-    <view class="confirmButton" bind:tap="confirm">
-      确定
-    </view>
+    <view class="cancelButton" bind:tap="cancel">取消</view>
+    <view class="confirmButton" bind:tap="confirm">确定</view>
   </view>
-</view>  
+</view>

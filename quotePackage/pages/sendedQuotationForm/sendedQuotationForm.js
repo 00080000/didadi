@@ -189,7 +189,7 @@ Page({
             }
             case 3: {
               wx.navigateTo({
-                url: `/quotePackage/pages/shareWithEmail/shareWithEmail?name=${item.name}`,
+                url: `/quotePackage/pages/shareWithEmail/shareWithEmail?id=${id}`,
               });
               break;
             }
