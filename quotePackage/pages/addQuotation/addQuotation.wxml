@@ -1,52 +1,33 @@
-<!--quotePackage/pages/addQuotation/addQuotation.wxml-->
 <view class="container">
-  <!-- 上方的Logo与文字提示部分 -->
+  <!-- 顶部区域：标题和基本信息 -->
   <view class="topArea">
     <header></header>
     <view class="content">
       <view class="information">
-        <view style="font-size: 30rpx;font-weight: bolder;">{{item.name}}</view>
-        <view style="font-size: 27rpx;margin-top: 30rpx;">{{item.projectName}}</view>
-        <view style="font-size: 27rpx;margin-top: 30rpx;">报价日期：{{item.quoteDate}}</view>
+        <view style="font-size: 30rpx;font-weight: bolder;">{{item.name || fileName}}</view>
+        <view style="font-size: 27rpx;margin-top: 30rpx;">{{item.projectName || '请填写项目名称'}}</view>
+        <view style="font-size: 27rpx;margin-top: 30rpx;">报价日期：{{time}}</view>
       </view>
       <view class="editButton">
-        <button size="mini" bind:tap="goToEditFileInformation">修改文档信息</button>
+        <button size="mini" bind:tap="goToEditFileInformation">
+          {{isNew ? '填写文档信息' : '修改文档信息'}}
+        </button>
       </view>
     </view>
   </view>
+
+  <!-- 主要内容列表 -->
   <view class="list">
-    <view class="item" wx:if="{{item==null}}" bind:tap="goToChooseMerchant">
-      <view class="graySidebar"></view>
-        <view class="add">
-          添加商家
-        <image src="/static/rightArrow-gray.png"></image>
-        </view>
-    </view>
-    <view class="item" wx:if="{{item!=null}}" bind:tap="goToChooseMerchant">
+    <!-- 商家信息 -->
+    <view class="item" bind:tap="goToChooseMerchant">
       <view class="cardLeft">
-        <view class="blueSideBar"></view>
-        <view class="cardContent">
-          <view style="font-size: 25rpx;">{{item.companyName}}</view>
-          <view style="font-size: 22rpx;">{{item.linkMan}}，{{item.linkTel}}</view>
-        </view>
-      </view>
-      <view class="add">
-        <image src="/static/rightArrow-gray.png"></image>
-      </view>
-    </view>
-    <view class="item" wx:if="{{product.length==0}}" bind:tap="goToChooseProduct">
-      <view class="graySidebar"></view>
-      <view class="add">
-        添加商品
-        <image src="/static/rightArrow-gray.png"></image>
-      </view>
-    </view>
-    <view class="item" wx:if="{{product.length!=0}}" bind:tap="goToChooseProduct">
-      <view class="cardLeft">
-        <view class="blueSideBar"></view>
+        <view class="{{item.companyId ? 'blueSideBar' : 'graySidebar'}}"></view>
         <view class="cardContent">
           <view style="font-size: 25rpx;">
-            合计：￥ {{item.amountPrice}} 元
+            {{item.companyName || '请选择商家'}}
+          </view>
+          <view style="font-size: 22rpx;" wx:if="{{item.linkMan}}">
+            {{item.linkMan}}，{{item.linkTel}}
           </view>
         </view>
       </view>
@@ -54,19 +35,32 @@
         <image src="/static/rightArrow-gray.png"></image>
       </view>
     </view>
-    <view class="item" wx:if="{{attachment.length==0}}" bind:tap="goToAddAttachment">
-      <view class="graySidebar"></view>
+
+    <!-- 商品信息 -->
+    <view class="item" bind:tap="goToChooseProduct">
+      <view class="cardLeft">
+        <view class="{{product.length > 0 ? 'blueSideBar' : 'graySidebar'}}"></view>
+        <view class="cardContent">
+          <view style="font-size: 25rpx;">
+            {{product.length > 0 ? '已添加 ' + product.length + ' 件商品' : '请添加商品'}}
+          </view>
+          <view style="font-size: 22rpx;" wx:if="{{product.length > 0}}">
+            合计：￥ {{getTotalAmount()}} 元
+          </view>
+        </view>
+      </view>
       <view class="add">
-        添加附件
         <image src="/static/rightArrow-gray.png"></image>
       </view>
     </view>
-    <view class="item" wx:if="{{attachment.length!=0}}" bind:tap="goToAddAttachment">
+
+    <!-- 附件信息 -->
+    <view class="item" bind:tap="goToAddAttachment">
       <view class="cardLeft">
-        <view class="blueSideBar"></view>
+        <view class="{{attachment.length > 0 ? 'blueSideBar' : 'graySidebar'}}"></view>
         <view class="cardContent">
           <view style="font-size: 25rpx;">
-            附件文件：{{attachment.length}} 个
+            {{attachment.length > 0 ? '附件文件：' + attachment.length + ' 个' : '请添加附件'}}
           </view>
         </view>
       </view>
@@ -75,12 +69,14 @@
       </view>
     </view>
   </view>
+
+  <!-- 底部按钮组 -->
   <view class="buttonGroup">
     <view class="cancelButton" bind:tap="cancel">
       取消
     </view>
     <view class="confirmButton" bind:tap="confirm">
-      保存/分享
+      {{isNew ? '创建报价单' : '保存修改'}}
     </view>
   </view>
 </view>

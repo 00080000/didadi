@@ -46,6 +46,7 @@ Page({
         success: (res) => {
           if (res.statusCode === 200 && res.data.code === 200) {
               const data = res.data.rows || []; 
+              console.log('companyLinkman:',data);
             this.setData({
                 filterContact:data,
                 contacts:data
