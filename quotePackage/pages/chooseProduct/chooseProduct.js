@@ -12,6 +12,17 @@ Page({
       console.log('页面参数:', options);
       
       const app = getApp();
+      // 确保全局数据存在
+      if (!app.globalData) {
+        app.globalData = {};
+      }
+      if (!app.globalData.submitData) {
+        app.globalData.submitData = {};
+      }
+      if (!app.globalData.selectedProducts) {
+        app.globalData.selectedProducts = [];
+      }
+      
       console.log('全局数据中的submitData:', app.globalData.submitData);
       
       // 从submitData获取商品数据（与addQuotation保持一致）
@@ -36,6 +47,7 @@ Page({
           originalProducts: [...normalizedProducts] // 备份原始数据
         }, () => {
           console.log('setData完成，当前商品列表:', this.data.product);
+          this.calculateTotal(); // 确保计算总价
         });
       } else {
         // 新建场景：初始为空
@@ -43,10 +55,10 @@ Page({
         this.setData({
           product: [],
           originalProducts: []
+        }, () => {
+          this.calculateTotal(); // 确保计算总价
         });
       }
-      // 计算初始总价
-      this.calculateTotal();
     },
   
     // 标准化商品数据结构（用于展示）
@@ -54,7 +66,19 @@ Page({
       console.log('===== 开始标准化商品数据（展示用） =====');
       console.log('标准化前的数据:', products);
       
+      // 防止空数据
+      if (!products || !Array.isArray(products)) {
+        console.warn('传入的商品数据不是有效的数组，返回空数组');
+        return [];
+      }
+      
       const normalized = products.map((item, index) => {
+        // 确保item是对象
+        if (!item || typeof item !== 'object') {
+          console.warn(`第${index}个商品数据无效，使用默认值`);
+          item = {};
+        }
+        
         console.log(`处理第${index}个商品，原始数据:`, item);
         
         // 解析productData（如果存在）
@@ -65,15 +89,16 @@ Page({
             console.log(`解析productData成功:`, productData);
           } catch (e) {
             console.error(`解析productData失败:`, e);
+            productData = {}; // 解析失败时使用空对象
           }
         } else if (typeof item.productData === 'object') {
-          productData = item.productData;
+          productData = item.productData || {};
         }
         
         // 确保所有商品都有基础字段，优先从productData获取，其次从item获取
         const baseItem = {
           id: item.id || `item-${Date.now()}-${index}`,
-          name: productData.productName || item.productName || '未命名商品',
+          name: productData.productName || item.productName || item.name || '未命名商品',
           type: this.getProductType(item.type || productData.type) || 'singleProduct',
           price: Number(productData.unitPrice) || Number(item.unitPrice) || Number(item.price) || 0,
           number: Number(item.quantity) || Number(item.number) || 1,
@@ -97,6 +122,9 @@ Page({
           case 'groupRow':
             baseItem.description = item.description || '';
             break;
+          case 'blankRow':
+            baseItem.isEmpty = true;
+            break;
         }
   
         console.log(`标准化后的数据(展示用):`, baseItem);
@@ -111,7 +139,19 @@ Page({
     convertToSubmitFormat(products) {
       console.log('===== 开始转换商品数据为submitData格式 =====');
       
+      // 防止空数据
+      if (!products || !Array.isArray(products)) {
+        console.warn('传入的商品数据不是有效的数组，返回空数组');
+        return [];
+      }
+      
       const submitProducts = products.map((item) => {
+        // 确保item是对象
+        if (!item || typeof item !== 'object') {
+          console.warn(`商品数据项无效，跳过`);
+          return null;
+        }
+        
         // 基于原始数据进行修改，保持与submitData一致的格式
         const submitItem = item.originalData ? JSON.parse(JSON.stringify(item.originalData)) : {};
         
@@ -128,7 +168,7 @@ Page({
         productData.remark = item.remark;
         
         // 保持productData的数据类型（与submitData一致）
-        submitItem.productData = typeof item.originalData.productData === 'string' 
+        submitItem.productData = typeof item.originalData?.productData === 'string' 
           ? JSON.stringify(productData) 
           : productData;
         
@@ -140,7 +180,7 @@ Page({
         
         console.log(`转换后的数据项:`, submitItem);
         return submitItem;
-      });
+      }).filter(Boolean); // 过滤掉null值
       
       console.log('===== 商品数据转换为submitData格式完成 =====');
       return submitProducts;
@@ -152,7 +192,9 @@ Page({
         0: 'singleProduct',    // 普通商品
         1: 'combinationProduct', // 组合商品
         2: 'customProduct',    // 自定义商品
-        3: 'feeName'           // 费用项
+        3: 'feeName',          // 费用项
+        4: 'blankRow',         // 空白行
+        5: 'groupRow'          // 分组行
       };
       return typeMap[originalType] || originalType;
     },
@@ -162,8 +204,21 @@ Page({
       console.log('===== 开始计算总价 =====');
       console.log('当前商品列表:', this.data.product);
       
+      // 防止空数据
+      if (!this.data.product || !Array.isArray(this.data.product)) {
+        console.warn('商品列表数据无效，总价设为0');
+        this.setData({ totalAmount: '0.00' });
+        return;
+      }
+      
       let total = 0;
       this.data.product.forEach((item, index) => {
+        // 跳过无效项
+        if (!item || typeof item !== 'object') {
+          console.warn(`第${index}个商品数据无效，跳过计算`);
+          return;
+        }
+        
         let itemTotal = 0;
         
         if (item.type === "singleProduct" || item.type === 'customProduct') {
@@ -176,6 +231,7 @@ Page({
           itemTotal = (item.price || 0) * (item.total || 0);
           console.log(`第${index}个费用项[${item.name}]，单价:${item.price}，数量:${item.total}，小计:${itemTotal}`);
         }
+        // 空白行和分组行不计算总价
         
         total += itemTotal;
       });
@@ -231,8 +287,15 @@ Page({
   
     // 计算原始数据的总价（用于取消操作）
     calculateOriginalTotal() {
+      // 防止空数据
+      if (!this.data.originalProducts || !Array.isArray(this.data.originalProducts)) {
+        return '0.00';
+      }
+      
       let total = 0;
       this.data.originalProducts.forEach(item => {
+        if (!item || typeof item !== 'object') return;
+        
         if (item.type === "singleProduct" || item.type === 'customProduct') {
           total += (item.price || 0) * (item.number || 0);
         } else if (item.type === 'combinationProduct') {
@@ -247,6 +310,9 @@ Page({
     // 添加新商品（确保符合submitData格式）
     goToAddProduct() {
       console.log('===== 点击添加新商品 =====');
+      
+      // 隐藏操作菜单
+      this.setData({ ifShow: false });
       
       wx.navigateTo({
         url: `/quotePackage/pages/addNewProduct/addNewProduct?length=${this.data.product.length}`,
@@ -293,30 +359,35 @@ Page({
         'singleProduct': 0,
         'combinationProduct': 1,
         'customProduct': 2,
-        'feeName': 3
+        'feeName': 3,
+        'blankRow': 4,
+        'groupRow': 5
       };
       return typeMap[displayType] || 0;
     },
   
-    // 其他原有方法保持不变...
+    // 跳转到设置表单样式
     goToSetFormStyle() {
       wx.navigateTo({
         url: '/quotePackage/pages/setFormStyle/setFormStyle',
       });
     },
   
+    // 跳转到选择商品字段
     goToChooseProductFields() {
       wx.navigateTo({
         url: '/quotePackage/pages/chooseProductFields/chooseProductFields',
       });
     },
   
+    // 切换新增菜单显示状态
     setIfShow() {
       this.setData({
         ifShow: !this.data.ifShow
       });
     },
   
+    // 向上移动商品
     changeUp(e) {
       const index = e.currentTarget.dataset.index;
       if (index <= 0) return;
@@ -326,6 +397,7 @@ Page({
       this.setData({ product }, () => this.calculateTotal());
     },
   
+    // 向下移动商品
     changeDown(e) {
       const index = e.currentTarget.dataset.index;
       if (index >= this.data.product.length - 1) return;
@@ -335,27 +407,35 @@ Page({
       this.setData({ product }, () => this.calculateTotal());
     },
   
+    // 跳转到编辑商品页面
     navigate(e) {
       const index = e.currentTarget.dataset.index;
       const item = this.data.product[index];
       console.log(`===== 点击编辑第${index}个商品 =====`);
       console.log('编辑的商品数据:', item);
       
+      // 隐藏操作菜单
+      this.setData({ ifShow: false });
+      
       wx.navigateTo({
         url: `/quotePackage/pages/editChoosed${this.getEditPageName(item.type)}/editChoosed${this.getEditPageName(item.type)}?index=${index}&item=${encodeURIComponent(JSON.stringify(item))}`
       });
     },
   
+    // 获取编辑页面名称
     getEditPageName(type) {
       const pageMap = {
         singleProduct: 'SingleProduct',
         combinationProduct: 'CombinationProduct',
         customProduct: 'CuntomProduct',
-        feeName: 'Fee'
+        feeName: 'Fee',
+        groupRow: 'GroupRow',
+        blankRow: 'BlankRow'
       };
       return pageMap[type] || 'SingleProduct';
     },
   
+    // 添加空白行
     addBlankRow() {
       const newRow = {
         id: `blank-${Date.now()}`,
@@ -374,6 +454,7 @@ Page({
       this.setData({ product, ifShow: false }, () => this.calculateTotal());
     },
   
+    // 添加分组行
     addGroupRow() {
       const newRow = {
         id: `group-${Date.now()}`,
@@ -401,6 +482,7 @@ Page({
       this.setData({ product, ifShow: false }, () => this.calculateTotal());
     },
   
+    // 添加费用行
     addFeeRow() {
       const newRow = {
         id: `fee-${Date.now()}`,
@@ -431,4 +513,3 @@ Page({
       this.setData({ product, ifShow: false }, () => this.calculateTotal());
     }
   });
-      

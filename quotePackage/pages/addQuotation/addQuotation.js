@@ -17,9 +17,19 @@ Page({
       const hasId = !!options.id; // 判断是否有ID参数
       const app = getApp();
   
+      // 确保全局数据存在
+      if (!app.globalData) {
+        app.globalData = {};
+      }
+      
       // 初始化全局submitData（确保存在）
       if (!app.globalData.submitData) {
-        app.globalData.submitData = {};
+        app.globalData.submitData = {
+          quote: {},
+          productGroupList: [],
+          quoteFileList: [],
+          selectedProducts: []
+        };
       }
   
       // 新建模式时重置相关全局数据
@@ -67,12 +77,24 @@ Page({
       const app = getApp();
       const { isNew } = this.data;
   
-      // 同步全局submitData到本地
-      if (app.globalData.submitData) {
-        this.setData({
-          submitData: app.globalData.submitData
-        });
+      // 确保全局数据存在
+      if (!app.globalData) {
+        app.globalData = {};
       }
+      
+      if (!app.globalData.submitData) {
+        app.globalData.submitData = {
+          quote: {},
+          productGroupList: [],
+          quoteFileList: [],
+          selectedProducts: []
+        };
+      }
+  
+      // 同步全局submitData到本地
+      this.setData({
+        submitData: app.globalData.submitData
+      });
   
       // 新建模式处理
       if (isNew) {
@@ -108,8 +130,8 @@ Page({
       }
   
       // 编辑模式处理
-      if (app.globalData.submitData) {
-        const submitData = app.globalData.submitData;
+      const submitData = app.globalData.submitData;
+      if (submitData) {
         const newItem = { ...this.data.item, ...submitData.quote || {} };
         
         this.setData({
@@ -159,8 +181,10 @@ Page({
       
       // 格式化商品数据，确保与接口返回格式一致
       const formattedProducts = products.map(product => {
-        // 计算商品小计
-        const itemTotal = (product.unitPrice || 0) * (product.quantity || 0);
+        // 计算商品小计（兼容不同字段名）
+        const price = Number(product.price || product.unitPrice || 0);
+        const quantity = Number(product.number || product.quantity || 0);
+        const itemTotal = price * quantity;
         totalPrice += itemTotal;
         
         // 确保productData为字符串格式（与接口返回一致）
@@ -170,6 +194,8 @@ Page({
         
         return {
           ...product,
+          unitPrice: price,
+          quantity: quantity,
           productData: productData,
           calcPrice: itemTotal.toFixed(2) // 计算小计
         };
@@ -230,16 +256,33 @@ Page({
                 if (group.quoteProductList && group.quoteProductList.length) {
                   // 解析每个商品的详细数据
                   group.quoteProductList.forEach(product => {
-                    const productData = product.productData ? JSON.parse(product.productData) : {};
-                    productList.push({
-                      ...product,
-                      ...productData,
-                      // 保留提交所需的核心字段
-                      id: product.id,
-                      unitPrice: Number(product.unitPrice || 0),
-                      quantity: Number(product.quantity || 0),
-                      calcPrice: Number(product.calcPrice || 0)
-                    });
+                    try {
+                      const productData = product.productData ? JSON.parse(product.productData) : {};
+                      productList.push({
+                        ...product,
+                        ...productData,
+                        // 保留提交所需的核心字段
+                        id: product.id,
+                        name: productData.productName || product.name || '未知商品',
+                        price: Number(product.unitPrice || 0),
+                        unitPrice: Number(product.unitPrice || 0),
+                        quantity: Number(product.quantity || 0),
+                        number: Number(product.quantity || 0), // 兼容number字段
+                        calcPrice: Number(product.calcPrice || 0)
+                      });
+                    } catch (e) {
+                      console.error('解析商品数据失败:', e);
+                      // 解析失败时仍添加基础信息
+                      productList.push({
+                        ...product,
+                        name: product.name || '未知商品',
+                        price: Number(product.unitPrice || 0),
+                        unitPrice: Number(product.unitPrice || 0),
+                        quantity: Number(product.quantity || 0),
+                        number: Number(product.quantity || 0),
+                        calcPrice: Number(product.calcPrice || 0)
+                      });
+                    }
                   });
                 }
               });
@@ -434,4 +477,3 @@ Page({
       });
     }
   })
-      
