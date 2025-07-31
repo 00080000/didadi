@@ -50,7 +50,7 @@
                             wx:for="{{item.quoteProductList}}" 
                             wx:for-item="product" 
                             wx:for-index="productIdx" 
-                            wx:key="product.id"
+                            wx:key="id"
                             style="display: flex; width: 100%; border-bottom: 1px solid #eee;"
                         >
                             <view class="tableCell" style="min-width: 60px; width: 60px; text-align: center; background: #fff; padding: 8px; box-sizing: border-box; border: 1px solid #eee; border-top: none;">

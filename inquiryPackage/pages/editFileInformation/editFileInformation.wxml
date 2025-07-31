@@ -5,15 +5,34 @@
   <view class="form">
     <view class="inputArea">
       <view class="label">文档名称</view>
-      <input placeholder="请输入文档名称" class="input" style="width: 450rpx;" model:value="{{file.fileName}}"/>
+      <!-- 关键修复：使用正确的双向绑定语法 -->
+      <input 
+        placeholder="请输入文档名称" 
+        class="input" 
+        style="width: 450rpx;" 
+        value="{{file.fileName}}"
+        bindinput="updateFileName"  
+      />
     </view>
     <view class="inputArea">
       <view class="label">项目名称</view>
-      <input placeholder="请输入项目名称" class="input" style="width: 450rpx;" model:value="{{file.projectName}}"/>
+      <!-- 关键修复：使用正确的双向绑定语法 -->
+      <input 
+        placeholder="请输入项目名称" 
+        class="input" 
+        style="width: 450rpx;" 
+        value="{{file.projectName}}"
+        bindinput="updateProjectName"  
+      />
     </view>
     <view class="pickerArea">
       <view class="label">建档日期</view>
-      <picker bindchange="dateChange" mode="date" value="{{file.time}}" class="picker-area">
+      <picker 
+        bindchange="dateChange" 
+        mode="date" 
+        value="{{file.date}}" 
+        class="picker-area"
+      >
         <view class="showPickerValue">
           <view>{{file.date}}</view>
           <image src="/static/date.png"></image>
@@ -22,7 +41,13 @@
     </view>
     <view class="pickerArea">
       <view class="label">文档有效期</view>
-      <picker bindchange="selectorChange" mode="selector" value="{{index}}" range="{{pickerValue}}"	 class="picker-area">
+      <picker 
+        bindchange="selectorChange" 
+        mode="selector" 
+        value="{{index}}" 
+        range="{{pickerValue}}"	
+        class="picker-area"
+      >
         <view class="showPickerValue">
           <view>{{pickerValue[index]}}</view>
           <image src="/static/downArrow-gray.png"></image>
@@ -31,15 +56,17 @@
     </view>
     <view class="textArea">
       <view class="label">文档描述</view>
-      <textarea placeholder="请输入文档描述" style="width: 450rpx;font-size: 27rpx;font-weight: lighter;"></textarea>
+      <textarea 
+        placeholder="请输入文档描述" 
+        style="width: 450rpx;font-size: 27rpx;font-weight: lighter;"
+        value="{{file.description}}"
+        bindinput="onDescriptionInput"
+      ></textarea>
     </view>
   </view>
   <view class="buttonGroup">
-    <view class="cancelButton" bind:tap="cancel">
-      取消
-    </view>
-    <view class="confirmButton" bind:tap="confirm">
-      确定
-    </view>
+    <view class="cancelButton" bind:tap="cancel">取消</view>
+    <view class="confirmButton" bind:tap="confirm">确定</view>
   </view>
 </view>
+    
