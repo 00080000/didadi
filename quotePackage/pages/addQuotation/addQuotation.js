@@ -17,11 +17,22 @@ Page({
       const hasId = !!options.id; // 判断是否有ID参数
       const app = getApp();
   
-      // 关键修复1：新建模式时强制清空全局数据
+      // 初始化全局submitData（确保存在）
+      if (!app.globalData.submitData) {
+        app.globalData.submitData = {};
+      }
+  
+      // 新建模式时重置相关全局数据
       if (!hasId) {
-        app.globalData.submitData = null;
+        app.globalData.submitData = {
+          quote: {},
+          productGroupList: [],
+          quoteFileList: [],
+          selectedProducts: []
+        };
         app.globalData.shareSystemSelectedData = null;
         app.globalData.isCreateNewQuote = null;
+        app.globalData.selectedProducts = []; // 清空商品全局数据
       }
   
       // 初始化模式状态
@@ -34,18 +45,20 @@ Page({
       if (hasId) {
         this.loadQuotationData();
       } else {
-        // 新建模式：强制初始化空数据
+        // 新建模式：初始化空数据
         this.setData({
           item: {
             companyName: '请选择商家',
             linkMan: '',
             linkTel: '',
-            projectName: ''
+            projectName: '',
+            amountPrice: '0.00', // 初始化总价
+            totalPrice: '0.00'   // 初始化合计价
           },
           time: this.formatDate(new Date()), // 新建默认当前日期
           product: [],
           attachment: [],
-          submitData: {} // 确保本地提交数据为空
+          submitData: app.globalData.submitData // 关联全局submitData
         });
       }
     },
@@ -54,40 +67,52 @@ Page({
       const app = getApp();
       const { isNew } = this.data;
   
-      // 关键修复2：新建模式单独处理，确保数据隔离
+      // 同步全局submitData到本地
+      if (app.globalData.submitData) {
+        this.setData({
+          submitData: app.globalData.submitData
+        });
+      }
+  
+      // 新建模式处理
       if (isNew) {
-        // 只处理从选择商家页面返回的新数据
+        // 处理商家选择返回数据
         if (app.globalData.shareSystemSelectedData) {
           const selectedData = app.globalData.shareSystemSelectedData;
           console.log('新建模式 - 选择的商家联系人:', selectedData);
           
-          // 更新商家和联系人信息
-          const updatedItem = Object.assign({}, this.data.item, {
+          const updatedItem = {
+            ...this.data.item,
             companyId: selectedData.companyId,
             companyName: selectedData.companyName || this.data.item.companyName,
             linkMan: selectedData.contactName || this.data.item.linkMan,
             linkTel: selectedData.contactTel || this.data.item.linkTel,
             linkEmail: selectedData.contactEmail || this.data.item.linkEmail
-          });
+          };
   
-          this.setData({
-            item: updatedItem
-          });
-  
-          // 清空选择数据，避免重复处理
+          this.setData({ item: updatedItem });
+          // 更新到全局submitData
+          app.globalData.submitData.quote = updatedItem;
           app.globalData.shareSystemSelectedData = null;
         }
-        // 新建模式不处理其他全局数据，防止污染
+  
+        // 处理商品选择返回数据（核心同步点）
+        if (app.globalData.selectedProducts) {
+          this.setData({
+            product: app.globalData.selectedProducts
+          });
+          // 同步到全局submitData并更新总价
+          this.syncProductsToSubmitData(app.globalData.selectedProducts);
+        }
         return;
       }
   
-      // 编辑模式正常处理全局数据
-      if (app.globalData && app.globalData.submitData) {
+      // 编辑模式处理
+      if (app.globalData.submitData) {
         const submitData = app.globalData.submitData;
-        const newItem = Object.assign({}, this.data.item, submitData.quote || {});
+        const newItem = { ...this.data.item, ...submitData.quote || {} };
         
         this.setData({
-          submitData: submitData,
           item: newItem,
           attachment: submitData.quoteFileList || this.data.attachment,
           project: newItem.projectName || this.data.project,
@@ -95,30 +120,92 @@ Page({
         });
       }
   
+      // 处理商家选择返回数据（编辑模式）
       if (app.globalData.shareSystemSelectedData) {
         const selectedData = app.globalData.shareSystemSelectedData;
         console.log('编辑模式 - 选择的商家联系人:', selectedData);
         
-        const updatedItem = Object.assign({}, this.data.item, {
+        const updatedItem = {
+          ...this.data.item,
           companyId: selectedData.companyId,
           companyName: selectedData.companyName || this.data.item.companyName,
           linkMan: selectedData.contactName || this.data.item.linkMan,
           linkTel: selectedData.contactTel || this.data.item.linkTel,
           linkEmail: selectedData.contactEmail || this.data.item.linkEmail
-        });
+        };
   
-        const updatedSubmitData = Object.assign({}, this.data.submitData, {
-          quote: updatedItem
-        });
+        // 更新到全局submitData
+        app.globalData.submitData.quote = updatedItem;
         
-        this.setData({
-          item: updatedItem,
-          submitData: updatedSubmitData
-        });
-  
-        app.globalData.submitData = updatedSubmitData;
+        this.setData({ item: updatedItem });
         app.globalData.shareSystemSelectedData = null;
       }
+  
+      // 处理商品选择返回数据（编辑模式 - 核心同步点）
+      if (app.globalData.selectedProducts) {
+        this.setData({
+          product: app.globalData.selectedProducts
+        });
+        // 同步到全局submitData并更新总价
+        this.syncProductsToSubmitData(app.globalData.selectedProducts);
+      }
+    },
+  
+    // 同步商品数据到submitData并更新总价
+    syncProductsToSubmitData(products) {
+      const app = getApp();
+      // 计算总价
+      let totalPrice = 0;
+      
+      // 格式化商品数据，确保与接口返回格式一致
+      const formattedProducts = products.map(product => {
+        // 计算商品小计
+        const itemTotal = (product.unitPrice || 0) * (product.quantity || 0);
+        totalPrice += itemTotal;
+        
+        // 确保productData为字符串格式（与接口返回一致）
+        const productData = typeof product.productData === 'object' 
+          ? JSON.stringify(product.productData)
+          : product.productData || '{}';
+        
+        return {
+          ...product,
+          productData: productData,
+          calcPrice: itemTotal.toFixed(2) // 计算小计
+        };
+      });
+      
+      // 更新全局submitData
+      app.globalData.submitData = {
+        ...app.globalData.submitData,
+        selectedProducts: formattedProducts,
+        // 更新productGroupList（保持与接口返回结构一致）
+        productGroupList: app.globalData.submitData.productGroupList 
+          ? app.globalData.submitData.productGroupList.map(group => ({
+              ...group,
+              quoteProductList: formattedProducts
+            }))
+          : [{
+              quoteProductList: formattedProducts
+            }]
+      };
+      
+      // 更新报价单总价
+      const updatedQuote = {
+        ...app.globalData.submitData.quote,
+        amountPrice: totalPrice.toFixed(2),
+        totalPrice: totalPrice.toFixed(2)
+      };
+      app.globalData.submitData.quote = updatedQuote;
+      
+      // 更新本地数据
+      this.setData({
+        item: updatedQuote,
+        submitData: app.globalData.submitData
+      });
+      
+      console.log('商品数据同步完成，总价:', totalPrice.toFixed(2));
+      console.log('同步后的selectedProducts:', formattedProducts);
     },
   
     // 加载报价单详情数据（仅编辑模式）
@@ -136,18 +223,48 @@ Page({
             const viewData = res.data.data || {};
             const quote = viewData.quote || {};
             
+            // 从productGroupList中提取商品数据（与接口返回格式保持一致）
+            let productList = [];
+            if (viewData.productGroupList && viewData.productGroupList.length) {
+              viewData.productGroupList.forEach(group => {
+                if (group.quoteProductList && group.quoteProductList.length) {
+                  // 解析每个商品的详细数据
+                  group.quoteProductList.forEach(product => {
+                    const productData = product.productData ? JSON.parse(product.productData) : {};
+                    productList.push({
+                      ...product,
+                      ...productData,
+                      // 保留提交所需的核心字段
+                      id: product.id,
+                      unitPrice: Number(product.unitPrice || 0),
+                      quantity: Number(product.quantity || 0),
+                      calcPrice: Number(product.calcPrice || 0)
+                    });
+                  });
+                }
+              });
+            }
+  
+            // 更新全局submitData（完全匹配接口返回结构）
+            const app = getApp();
+            app.globalData.submitData = {
+              ...viewData,
+              selectedProducts: productList // 存储商品列表
+            };
+  
+            // 更新本地数据
             this.setData({
-              submitData: viewData,
+              submitData: app.globalData.submitData,
               item: quote,
-              product: viewData.productList || [],
+              product: productList, // 设置解析后的商品列表
               attachment: viewData.quoteFileList || [],
               project: quote.projectName || '',
               time: quote.quoteDate || this.formatDate(new Date())
             });
   
-            // 同步到全局
-            const app = getApp();
-            app.globalData.submitData = this.data.submitData;
+            // 同步商品数据到全局selectedProducts
+            app.globalData.selectedProducts = productList;
+            console.log('编辑模式初始化 - 同步商品数据到全局:', app.globalData.selectedProducts);
           } else {
             this.setData({
               errorMsg: res.data.message || '获取报价单数据失败'
@@ -164,16 +281,6 @@ Page({
       });
     },
   
-    // 计算商品总价
-    getTotalAmount() {
-      let total = 0;
-      for (let i = 0; i < this.data.product.length; i++) {
-        const item = this.data.product[i];
-        total += (item.price || 0) * (item.amount || 0);
-      }
-      return total.toFixed(2); // 保留两位小数
-    },
-  
     // 格式化日期为yyyy-mm-dd
     formatDate(date) {
       const year = date.getFullYear();
@@ -184,6 +291,8 @@ Page({
   
     // 跳转编辑文档信息
     goToEditFileInformation() {
+      // 先保存当前数据到全局submitData
+      this.saveToSubmitData();
       wx.navigateTo({
         url: '/quotePackage/pages/editFileInformation/editFileInformation'
       });
@@ -191,6 +300,8 @@ Page({
   
     // 选择商家
     goToChooseMerchant() {
+      // 先保存当前数据到全局submitData
+      this.saveToSubmitData();
       wx.navigateTo({
         url: '/quotePackage/pages/chooseMerchant/chooseMerchant'
       });
@@ -198,6 +309,8 @@ Page({
   
     // 选择商品
     goToChooseProduct() {
+      // 先保存当前数据到全局submitData
+      this.saveToSubmitData();
       wx.navigateTo({
         url: '/quotePackage/pages/chooseProduct/chooseProduct'
       });
@@ -205,9 +318,23 @@ Page({
   
     // 添加附件
     goToAddAttachment() {
+      // 先保存当前数据到全局submitData
+      this.saveToSubmitData();
       wx.navigateTo({
         url: '/quotePackage/pages/uploadAttachment/uploadAttachment'
       });
+    },
+  
+    // 保存数据到全局submitData
+    saveToSubmitData() {
+      const app = getApp();
+      app.globalData.submitData = {
+        ...app.globalData.submitData,
+        quote: this.data.item,
+        quoteFileList: this.data.attachment,
+        selectedProducts: this.data.product
+      };
+      console.log('保存数据到全局submitData:', app.globalData.submitData);
     },
   
     // 取消操作
@@ -215,10 +342,10 @@ Page({
       wx.navigateBack();
     },
   
-    // 确认提交（新建/保存）
+    // 确认提交（使用submitData提交）
     confirm() {
       const app = getApp();
-      const { isNew, item, product, attachment, submitData } = this.data;
+      const { isNew, item, product, attachment } = this.data;
       
       // 校验必填项
       if (!item.companyId || item.companyName === '请选择商家') {
@@ -231,37 +358,45 @@ Page({
         return wx.showToast({ title: '请填写项目名称', icon: 'none' });
       }
   
-      // 准备提交数据
-      const postData = Object.assign({}, submitData.quote || {}, {
-        // 基础信息
-        companyId: item.companyId,
-        companyName: item.companyName,
-        linkMan: item.linkMan || '',
-        linkTel: item.linkTel || '',
-        linkEmail: item.linkEmail || '',
-        projectName: item.projectName || '',
-        quoteDate: item.quoteDate || this.data.time,
-        
-        // 商品和价格
-        amountPrice: this.getTotalAmount(),
-        productList: product,
-        
-        // 附件
-        fileList: attachment
-      });
+      // 最终保存数据到全局submitData
+      this.saveToSubmitData();
+  
+      // 提交前输出完整的submitData
+      console.log('===== 保存修改 - 提交前的submitData =====');
+      console.log(JSON.stringify(app.globalData.submitData, null, 2));
+  
+      // 准备提交数据（与接口返回结构完全一致）
+      const submitData = {
+        ...app.globalData.submitData,
+        quote: {
+          ...app.globalData.submitData.quote,
+          // 基础信息
+          companyId: item.companyId,
+          companyName: item.companyName,
+          linkMan: item.linkMan || '',
+          linkTel: item.linkTel || '',
+          linkEmail: item.linkEmail || '',
+          projectName: item.projectName || '',
+          quoteDate: item.quoteDate || this.data.time,
+          // 价格信息
+          amountPrice: item.amountPrice || '0.00',
+          totalPrice: item.totalPrice || '0.00'
+        },
+        // 商品数据（保持与接口返回结构一致）
+        productGroupList: app.globalData.submitData.productGroupList,
+        // 附件数据
+        quoteFileList: attachment
+      };
+  
+      // 编辑模式添加ID
+      if (!isNew) {
+        submitData.quote.id = this.data.id;
+      }
   
       // 区分接口地址
-      let url = '';
-      if (isNew) {
-        // 新建报价单接口
-        url = `${getApp().globalData.serverUrl}/diServer/quote/create`;
-        app.globalData.isCreateNewQuote = true; // 全局标识：新建
-      } else {
-        // 编辑报价单接口（需携带ID）
-        url = `${getApp().globalData.serverUrl}/diServer/quote/update`;
-        postData.id = this.data.id;
-        app.globalData.isCreateNewQuote = false; // 全局标识：编辑
-      }
+      const url = isNew 
+        ? `${getApp().globalData.serverUrl}/diServer/quote/create`
+        : `${getApp().globalData.serverUrl}/diServer/quote/update`;
   
       // 发送请求
       wx.showLoading({ title: isNew ? '创建中...' : '保存中...' });
@@ -272,7 +407,7 @@ Page({
           'Authorization': `Bearer ${getApp().globalData.token}`,
           'Content-Type': 'application/json'
         },
-        data: postData,
+        data: submitData, // 提交完整的submitData结构
         success: (res) => {
           wx.hideLoading();
           if (res.statusCode === 200 && res.data.code === 200) {
@@ -281,7 +416,6 @@ Page({
               icon: 'success',
               duration: 1500
             });
-            // 延迟返回，确保用户看到提示
             setTimeout(() => {
               wx.navigateBack();
             }, 1500);
@@ -300,4 +434,4 @@ Page({
       });
     }
   })
-  
+      

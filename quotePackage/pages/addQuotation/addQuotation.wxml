@@ -45,7 +45,7 @@
             {{product.length > 0 ? '已添加 ' + product.length + ' 件商品' : '请添加商品'}}
           </view>
           <view style="font-size: 22rpx;" wx:if="{{product.length > 0}}">
-            合计：￥ {{getTotalAmount()}} 元
+            合计：￥ {{item.amountPrice || '0.00'}} 元
           </view>
         </view>
       </view>

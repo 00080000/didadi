@@ -12,71 +12,104 @@
         <button size="mini" bind:tap="goToChooseProductFields">选择商品字段</button>
       </view>  
     </view>
-  
   </view>
+
   <view class="add" bind:tap="setIfShow">
     <view>新增</view>
     <view>商品</view> 
   </view>
+
   <view class="addNewItem" wx:if="{{ifShow}}">
     <view class='newItem' bind:tap="goToAddProduct"> 
       <image src="/static/newProductRow.png"></image>
       加商品行
     </view>
-    <view class='newItem'>
+    <view class='newItem' bind:tap="addBlankRow">
       <image src="/static/newBlankRow.png"></image>
       加空白行
     </view>
-    <view class='newItem'>
+    <view class='newItem' bind:tap="addGroupRow">
       <image src="/static/newGroupRow.png"></image>
       加分组行
     </view>
-    <view class='newItem'>
+    <view class='newItem' bind:tap="addFeeRow">
       <image src="/static/newMonnyRow.png"></image>
       加费用行
     </view>
   </view>
+
   <view class="productList">
-    <view wx:if="{{product.length==0}}" style="font-size: 27rpx;color: gray;margin-top: 40%;">
-      <view>暂无商品</view>
-      <view style="margin-top: 20rpx;">请点击右上角添加商品</view>
-    </view>
-    <view wx:if="{{product.length>0}}" class="card" wx:for="{{product}}" wx:for-item="item" wx:key="index">
-      <view class="cardLeft">
-        <view class="blueSidebar">
-          <image src="/static/upArrow2-gray.png" wx:if="{{index==0}}"></image>
-          <image src="/static/upArrow2-white.png" wx:if="{{index>0}}" bind:tap="changeUp" data-index="{{index}}"></image>
-          <image src="/static/downArrow2-gray.png" wx:if="{{index==product.length-1}}"></image>
-          <image src="/static/downArrow2-white.png" wx:if="{{index<product.length-1}}" bind:tap="changeDown" data-index="{{index}}"></image>
-        </view>
-        <view class="productInformation"> 
-          <view class="name">
-            {{item.name}}
-          </view>
-          <view class="price">
-            <view wx:if="{{item.type=='singleProduct'||item.type=='customProduct'}}">
-              × {{item.number}}
-            </view>
-            <view wx:if="{{item.type=='feeName'}}">
-              合计×{{item.total}}
-            </view>
-            <view>
-              ￥{{item.price}}元
-            </view>
-          </view>
-        </view>
+    <!-- 条件判断容器 -->
+    <view>
+      <!-- 空状态提示：新建或无商品时显示 -->
+      <view wx:if="{{product.length === 0}}" style="font-size: 27rpx;color: gray;margin-top: 40%;text-align: center;">
+        <view>暂无商品</view>
+        <view style="margin-top: 20rpx;">请点击"新增商品"添加</view>
       </view>
-      <view class="cardRight" bind:tap="navigate" data-index="{{index}}">
-        <image src="/static/apostrophe.png"></image>
+
+      <!-- 商品列表：有商品时显示 -->
+      <view wx:else>
+        <view class="card" wx:for="{{product}}" wx:for-item="item" wx:key="id">
+          <view class="cardLeft">
+            <view class="blueSidebar">
+              <image src="/static/upArrow2-gray.png" wx:if="{{index==0}}"></image>
+              <image src="/static/upArrow2-white.png" wx:if="{{index>0}}" bind:tap="changeUp" data-index="{{index}}"></image>
+              <image src="/static/downArrow2-gray.png" wx:if="{{index==product.length-1}}"></image>
+              <image src="/static/downArrow2-white.png" wx:if="{{index<product.length-1}}" bind:tap="changeDown" data-index="{{index}}"></image>
+            </view>
+            <view class="productInformation"> 
+              <!-- 商品名称 -->
+              <view class="name">
+                {{item.name}}
+                <!-- 组合商品显示子商品数量 -->
+                <view wx:if="{{item.type === 'combinationProduct'}}" style="font-size: 24rpx;color: #666;">
+                  （包含{{item.products.length || 0}}个子商品）
+                </view>
+                <!-- 分组行显示描述 -->
+                <view wx:if="{{item.type === 'groupRow' && item.description}}" style="font-size: 24rpx;color: #666;">
+                  {{item.description}}
+                </view>
+              </view>
+              
+              <!-- 商品详情信息 -->
+              <view class="price">
+                <!-- 标准商品显示数量和单价 - 优化显示格式 -->
+                <view wx:if="{{item.type=='singleProduct'||item.type=='customProduct'}}">
+                  {{item.number}}{{item.unit || '个'}} 
+                  <view style="display: inline-block; margin-left: 10rpx;">
+                    单价：￥{{item.price}}元/{{item.unit || '个'}}
+                  </view>
+                </view>
+                <!-- 费用行显示 -->
+                <view wx:if="{{item.type=='feeName'}}">
+                  数量：{{item.total}}单位 
+                  <view style="display: inline-block; margin-left: 10rpx;">
+                    单价：￥{{item.price}}元/单位
+                  </view>
+                </view>
+                <!-- 组合商品显示总价 -->
+                <view wx:if="{{item.type=='combinationProduct'}}">
+                  组合价：￥{{item.price}}元
+                </view>
+              </view>
+              
+              <!-- 商品备注 -->
+              <view wx:if="{{item.remark}}" style="font-size: 24rpx;color: #999;margin-top: 8rpx;">
+                备注：{{item.remark}}
+              </view>
+            </view>
+          </view>
+          <view class="cardRight" bind:tap="navigate" data-index="{{index}}">
+            <image src="/static/apostrophe.png"></image>
+          </view>
+        </view>
       </view>
     </view>
   </view>
+
   <view class="buttonGroup">
-    <view class="cancelButton" bind:tap="cancel">
-      取消
-    </view>
-    <view class="confirmButton" bind:tap="confirm">
-      确定
-    </view>
+    <view class="cancelButton" bind:tap="cancel">取消</view>
+    <view class="confirmButton" bind:tap="confirm">确认</view>
   </view>
 </view>
+    
