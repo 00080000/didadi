@@ -226,9 +226,9 @@ formatCurrentTime() {
 
   getDefaultHeadText() {
     return `<p style="text-align: center;"><span style="color: rgb(53, 91, 183); font-size: 29px;"><strong>${this.data.fileName}</strong></span></p>
-            <p style="text-align: center;"><strong>采购方信息</strong></p>
-            <p><span style="font-size: 14px;">供应商：${this.data.merchant.firm}</span></p>
-            <p><span style="font-size: 14px;">客户您好！我是来自 ${this.data.merchant.firm}，任何疑问可随时与我联系，希望合作愉快！</span></p>
+            <p style="text-align: center;"><strong>采购清单</strong></p>
+            <p><span style="font-size: 14px;">采购商：${this.data.merchant.firm}</span></p>
+            <p><span style="font-size: 14px;">商家您好！我是来自 ${this.data.merchant.firm}的${this.data.merchant.name}，我司预采购下列物品，请贵公司给予报价。任何疑问可随时与我联系，希望合作愉快！</span></p>
             <p><span style="font-size: 14px;">联系人：${this.data.merchant.name} &nbsp; &nbsp;手机：${this.data.merchant.phone}</span></p>`;
   },
 
