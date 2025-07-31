@@ -10,12 +10,13 @@
         <button size="mini" bind:tap="goToChooseProductFields">选择商品字段</button>
       </view>  
     </view>
-  
   </view>
+
   <view class="add" bind:tap="setIfShow">
     <view>新增</view>
     <view>商品</view> 
   </view>
+
   <view class="addNewItem" wx:if="{{ifShow}}">
     <view class='newItem' bind:tap="goToAddProduct"> 
       <image src="/static/newProductRow.png"></image>
@@ -34,12 +35,14 @@
       加费用行
     </view>
   </view>
+
   <view class="productList">
     <view wx:if="{{product.length==0}}" style="font-size: 27rpx;color: gray;margin-top: 40%;">
       <view>暂无商品</view>
       <view style="margin-top: 20rpx;">请点击右上角添加商品</view>
     </view>
-    <view wx:if="{{product.length>0}}" class="card" wx:for="{{product}}" wx:for-item="item" wx:key="index">
+    
+    <view wx:if="{{product.length>0}}" class="card" wx:for="{{product}}" wx:for-item="item" wx:key="id">
       <view class="cardLeft">
         <view class="blueSidebar">
           <image src="/static/upArrow2-gray.png" wx:if="{{index==0}}"></image>
@@ -66,6 +69,7 @@
       </view>
     </view>
   </view>
+
   <view class="buttonGroup">
     <view class="cancelButton" bind:tap="cancel">
       取消

@@ -71,7 +71,7 @@
           </view>
           <view class="information" style="color: #23394D;">
             <view style="font-size: 25rpx;">{{item.name}}</view>
-            <view style="font-size: 22rpx;">{{item.type}}</view>
+            <view style="font-size: 22rpx;">{{item.price}}</view>
           </view>
         </view>
         <view class="operation">
@@ -93,7 +93,7 @@
           </view>
           <view class="information" style="color: gray">
             <view style="font-size: 25rpx;">{{item.name}}</view>
-            <view style="font-size: 22rpx;">{{item.type}}</view>
+            <view style="font-size: 22rpx;">{{item.price}}</view>
           </view>
         </view>
       </view>

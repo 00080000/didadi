@@ -11,38 +11,7 @@ Page({
       phone: '13900009999',
       email: ''
     },
-    product: [{
-      name: '1',
-      code: '',
-      amount: 2,
-      price: 234.51,
-      productId: '',
-      remark: ''
-    },
-    {
-      name: '2',
-      code: '',
-      amount: 2,
-      price: 234.51,
-      productId: '',
-      remark: ''
-    },
-    {
-      name: '3',
-      code: '',
-      amount: 2,
-      price: 234.51,
-      productId: '',
-      remark: ''
-    },
-    {
-      name: '4',
-      code: '',
-      amount: 2,
-      price: 234.51,
-      productId: '',
-      remark: ''
-    }],
+    product: [],
     attachment: [],
     totalAmount: 0,
     totalPrice: '0.00',
@@ -65,17 +34,26 @@ Page({
 
   // 计算总数量和总价格
   calculateTotal() {
-    let totalAmount = 0;
-    let totalPrice = 0;
+    let totalAmount = 0; // 总数量
+    let totalPrice = 0; // 总金额
     
     this.data.product.forEach(item => {
-      totalAmount += item.amount || 0;
-      totalPrice += (item.amount || 0) * (item.price || 0);
+      // 处理数量：单商品/临时商品有number字段，组合商品默认1
+      const quantity = item.type === 'combinationProduct' 
+        ? 1 
+        : (item.number || 1); // 优先用number，兼容旧数据用amount
+      
+      // 处理单价：确保价格为数字类型
+      const price = Number(item.price) || 0;
+      
+      // 累加总数量和总金额
+      totalAmount += quantity;
+      totalPrice += quantity * price;
     });
     
     this.setData({
       totalAmount,
-      totalPrice: totalPrice.toFixed(2)
+      totalPrice: totalPrice.toFixed(2) // 保留两位小数
     });
   },
 
@@ -167,7 +145,7 @@ formatCurrentTime() {
       { productFieldCode: "quantity", productFieldName: "数量" },
       { productFieldCode: "remark", productFieldName: "备注" }
     ];
-    
+ 
     const quoteProductGroupFormList = [{
       quoteProductFormList: this.data.product.map(item => ({
         quantity: item.amount || 0,
