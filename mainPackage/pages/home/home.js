@@ -194,7 +194,9 @@ Page({
     })
   },
   goToAddInquiry(){
-    
+    wx.navigateTo({
+      url: '/inquiryPackage/pages/addInquiry/addInquiry',
+    })
   },
   goToAddMerchant(){
     wx.navigateTo({
