@@ -52,6 +52,7 @@
         <view class="cardContent">
           <view style="font-size: 25rpx;">
             商品：{{totalAmount}} 个
+            12{{product.productName}}
           </view>
           <view style="font-size: 22rpx;">
             总金额：¥{{totalPrice}}

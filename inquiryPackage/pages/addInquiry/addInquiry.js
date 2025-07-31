@@ -6,7 +6,7 @@ Page({
     validityTime: '',
     merchant: {
       firm: '长沙6',
-      firmId: '178',//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!这个要改，通过登录判断firmid
+      firmId: '178',// 通过登录判断firmid
       name: '黄老板',
       phone: '13900009999',
       email: ''
@@ -29,6 +29,7 @@ Page({
   },
 
   onShow() {
+    console.log('当前页面的商品数据:', this.data.product);
     this.calculateTotal();
   },
 
@@ -38,6 +39,7 @@ Page({
     let totalPrice = 0; // 总金额
     
     this.data.product.forEach(item => {
+      
       // 处理数量：单商品/临时商品有number字段，组合商品默认1
       const quantity = item.type === 'combinationProduct' 
         ? 1 
@@ -129,15 +131,19 @@ Page({
     const submitData = this.prepareSubmitData();
     this.saveQuoteDraft(submitData);
   },
-// 格式化当前时间为 HH:MM:SS
-formatCurrentTime() {
-  const date = new Date();
-  const hours = date.getHours().toString().padStart(2, '0');
-  const minutes = date.getMinutes().toString().padStart(2, '0');
-  const seconds = date.getSeconds().toString().padStart(2, '0');
-  return `${hours}:${minutes}:${seconds}`;
-},
+  
+  // 格式化当前时间为 HH:MM:SS
+  formatCurrentTime() {
+    const date = new Date();
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`;
+  },
+  
+  // 核心修复：对齐网页端提交数据结构
   prepareSubmitData() {
+    // 1. 商品字段配置（与表格结构对应）
     const productFieldList = [
       { productFieldCode: "productName", productFieldName: "商品名称" },
       { productFieldCode: "productCode", productFieldName: "商品编码" },
@@ -145,21 +151,24 @@ formatCurrentTime() {
       { productFieldCode: "quantity", productFieldName: "数量" },
       { productFieldCode: "remark", productFieldName: "备注" }
     ];
- 
+
+    // 2. 商品列表仅保留后端需要的核心字段（对齐网页端）
     const quoteProductGroupFormList = [{
-      quoteProductFormList: this.data.product.map(item => ({
-        quantity: item.amount || 0,
-        unitPrice: (item.price || 0).toFixed(2),
-        productId: item.productId || '',
-        remark: item.remark || ''
+      quoteProductFormList: this.data.product.map((item) => ({
+        productId: item.id || item.productId, // 核心：传递正确的商品ID（后端通过此查询名称和编码）
+        quantity: item.type === 'combinationProduct' ? 1 : (item.number || 1),
+        unitPrice: (Number(item.price) || 0).toFixed(2)
       }))
     }];
     
+    // 3. 附件信息
     const quoteFileList = this.data.attachment.map(file => ({
       fileName: file.name || '',
-      filePath: file.path || ''
+      filePath: file.path || '',
+      fileType: file.type || ''
     }));
     
+    // 4. 询价单主信息
     const app = getApp();
     const quote = {
       quoteDate: this.data.time + ' ' + this.formatCurrentTime(), 
@@ -179,9 +188,11 @@ formatCurrentTime() {
       footText: this.data.footText || this.getDefaultFootText(),
       dataJson: this.getTableStructureJson(),
       totalUnitType: 1,
-      templateId: 36
+      templateId: 36,
+      totalPrice: this.data.totalPrice
     };
     
+    // 移除版本字段，对齐网页端请求结构
     return {
       costCategoryFormList: [],
       productFieldList,
@@ -191,6 +202,7 @@ formatCurrentTime() {
     };
   },
 
+  // 表格结构保持不变
   getTableStructureJson() {
     return JSON.stringify([
       { "label": "序号", "width": "50px", "background": "#ececec", "align": "center" },
@@ -215,30 +227,30 @@ formatCurrentTime() {
             <p style="line-height: 1;"><span style="font-size: 14px;">本询价有效期至：${this.data.validityTime}</span></p>`;
   },
 
-  // 保存询价单（核心修复）
+  // 保存询价单
   saveQuoteDraft(data) {
     this.setData({ isSubmitting: true });
     const app = getApp();
     wx.showLoading({ title: '保存中...' });
 
     // 打印提交数据用于调试
-    console.log('提交的数据:', data);
+    console.log('提交的商品数据:', data.quoteProductGroupFormList[0].quoteProductFormList);
+    console.log('提交的表格结构:', data.quote.dataJson);
 
     wx.request({
       url: `${app.globalData.serverUrl}/diServer/inQuote/submit`,
       method: 'POST',
       header: {
         'Authorization': `Bearer ${app.globalData.token || ''}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json;charset=UTF-8'
       },
       data: data,
       success: (res) => {
         wx.hideLoading();
         this.setData({ isSubmitting: false });
         
-        console.log('接口返回:', res.data); // 打印接口返回用于调试
+        console.log('接口返回:', res.data);
         
-        // 仅当接口明确成功时才视为成功
         if (res.data.code === 200) {
           wx.showToast({ title: '保存成功' });
           setTimeout(() => {
@@ -250,18 +262,15 @@ formatCurrentTime() {
             wx.navigateBack();
           }, 1500);
         } else {
-          // 只处理非商家重复的错误
           const isDuplicateError = res.data.msg?.includes('商家名称已存在') || 
                                  res.data.msg?.includes('重复');
           
           if (isDuplicateError) {
-            // 允许重复提交，视为成功
             wx.showToast({ title: '保存成功（允许重复商家）', icon: 'none' });
             setTimeout(() => {
               wx.navigateBack();
             }, 1500);
           } else {
-            // 其他错误正常提示
             wx.showToast({ title: res.data.msg || '保存失败', icon: 'none' });
           }
         }
@@ -275,4 +284,3 @@ formatCurrentTime() {
     });
   }
 })
-    

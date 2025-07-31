@@ -50,7 +50,7 @@ Page({
     });
   },
 
-  // 1. 获取单商品列表（核心修复：价格字段兼容）
+  // 1. 获取单商品列表（添加productCode字段）
   fetchSingleProducts() {
     this.setData({ isLoading: true, errorMsg: '' });
     const { enterpriseId, keyword } = this.data;
@@ -70,18 +70,19 @@ Page({
       },
       success: (res) => {
         if (res.statusCode === 200 && res.data.code === 200) {
-          // 打印接口返回的原始数据（用于调试价格字段）
+          // 打印接口返回的原始数据（检查编码字段）
           console.log('单商品接口原始数据:', res.data.rows);
 
-          // 格式化数据（重点：多字段兼容获取价格）
+          // 格式化数据（新增productCode字段）
           const formattedData = (res.data.rows || []).map(item => ({
             id: item.id,
             name: item.productName || '未知商品',
             type: item.type || item.specs || '无型号',
-            // 核心修复：兼容可能的价格字段（根据接口实际返回调整）
-            price: this.getValidPrice(item), 
+            price: this.getValidPrice(item),
             number: 1,
-            select: false
+            select: false,
+            // 提取商品编码（优先用productCode，其次用code，兼容接口差异）
+            productCode: item.productCode || item.code || '无编码'
           }));
           this.setData({
             singleProduct: formattedData,
@@ -100,7 +101,7 @@ Page({
     });
   },
 
-  // 2. 获取组合商品列表（核心修复：价格字段兼容）
+  // 2. 获取组合商品列表（添加productCode字段）
   fetchCombinationProducts() {
     this.setData({ isLoading: true, errorMsg: '' });
     const { enterpriseId, combinationKeyword } = this.data;
@@ -119,17 +120,18 @@ Page({
       },
       success: (res) => {
         if (res.statusCode === 200 && res.data.code === 200) {
-          // 打印接口返回的原始数据（用于调试价格字段）
+          // 打印接口返回的原始数据（检查编码字段）
           console.log('组合商品接口原始数据:', res.data.rows);
 
-          // 格式化数据（重点：多字段兼容获取价格）
+          // 格式化数据（新增productCode字段）
           const formattedData = (res.data.rows || []).map(item => ({
             id: item.id,
             name: item.name || '未知组合商品',
-            // 核心修复：兼容可能的价格字段
-            price: this.getValidPrice(item), 
+            price: this.getValidPrice(item),
             number: 1,
-            select: false
+            select: false,
+            // 提取商品编码（兼容接口可能的字段名）
+            productCode: item.productCode || item.code || '组合无编码'
           }));
           this.setData({
             combinationProduct: formattedData,
@@ -148,7 +150,7 @@ Page({
     });
   },
 
-  // 3. 获取临时商品列表（核心修复：价格字段兼容）
+  // 3. 获取临时商品列表（添加productCode字段）
   fetchTemporaryProducts() {
     this.setData({ isLoading: true, errorMsg: '' });
     const { enterpriseId, temporaryKeyword } = this.data;
@@ -168,17 +170,18 @@ Page({
       },
       success: (res) => {
         if (res.statusCode === 200 && res.data.code === 200) {
-          // 打印接口返回的原始数据（用于调试价格字段）
+          // 打印接口返回的原始数据（检查编码字段）
           console.log('临时商品接口原始数据:', res.data.rows);
 
-          // 格式化数据（重点：多字段兼容获取价格）
+          // 格式化数据（新增productCode字段）
           const formattedData = (res.data.rows || []).map(item => ({
             id: item.id,
             name: item.productName || '未知临时商品',
-            // 核心修复：兼容可能的价格字段
-            price: this.getValidPrice(item), 
+            price: this.getValidPrice(item),
             number: 1,
-            select: false
+            select: false,
+            // 提取商品编码（兼容接口可能的字段名）
+            productCode: item.productCode || item.code || '临时无编码'
           }));
           this.setData({
             temporaryProduct: formattedData,
@@ -199,17 +202,13 @@ Page({
 
   // 核心工具函数：从接口返回的商品数据中提取有效价格
   getValidPrice(item) {
-    // 步骤1：尝试从常见的价格字段中获取（根据接口实际返回调整字段名）
     const priceFields = ['price', 'unitPrice', 'totalPrice', 'salePrice', 'retailPrice'];
     for (const field of priceFields) {
       if (item[field] !== undefined && item[field] !== null) {
-        // 步骤2：转换为数字（处理字符串价格，如"99.9"）
         const numericPrice = Number(item[field]);
-        // 步骤3：确保价格有效（≥0）
         return isNaN(numericPrice) ? 0 : Math.max(0, numericPrice);
       }
     }
-    // 步骤4：如果所有字段都没有，返回0并提示
     console.warn(`商品[${item.name || item.id}]未找到有效价格字段`, item);
     return 0;
   },
@@ -383,9 +382,9 @@ Page({
     wx.navigateBack();
   },
 
-  // 确认选择，返回上一页并传递数据
+  // 确认选择，返回上一页并传递数据（包含productCode）
   confirm() {
-    // 收集所有已选中的商品，并添加类型标识
+    // 收集所有已选中的商品，并添加类型标识（自动包含productCode）
     const selected = [
       ...this.data.singleProduct
         .filter(item => item.select)
@@ -403,11 +402,11 @@ Page({
       return;
     }
 
-    // 打印选中商品的价格信息（用于调试）
-    console.log('选中的商品及价格:', selected.map(item => ({
+    // 打印选中商品的编码信息（验证是否包含productCode）
+    console.log('选中的商品及编码:', selected.map(item => ({
       name: item.name,
-      price: item.price,
-      number: item.number
+      productCode: item.productCode, // 确认编码已存在
+      price: item.price
     })));
 
     // 获取上一页实例并传递数据

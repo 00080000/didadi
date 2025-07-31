@@ -12,6 +12,7 @@ Page({
 
   // 从商品选择页返回时更新数据
   onShow() {
+    console.log('当前页面的商品数据:', this.data.product);
     const pages = getCurrentPages();
     const addProductPage = pages.find(page => page.route === 'quotePackage/pages/addNewProduct/addNewProduct');
     
