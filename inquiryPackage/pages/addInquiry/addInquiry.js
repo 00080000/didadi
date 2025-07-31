@@ -95,8 +95,11 @@ Page({
   },
 
   goToChooseProduct() {
+    // 关键修改：始终携带当前最新的商品列表到第二个页面
+    const currentProducts = encodeURIComponent(JSON.stringify(this.data.product));
     wx.navigateTo({
-      url: '/inquiryPackage/pages/chooseProduct/chooseProduct',
+      // 注意：这里路径需与第二个页面实际路径一致（根据你的项目调整）
+      url: `/inquiryPackage/pages/chooseProduct/chooseProduct?currentProducts=${currentProducts}`,
     });
   },
 
