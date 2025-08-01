@@ -139,26 +139,25 @@ Page({
   
     // 复制功能
     copy(e) {
-      const index = e.currentTarget.dataset.index;
-      const item = this.data.filterQuotation[index];
-      const textToCopy = `名称: ${item.name}\n日期: ${item.date}\n时间: ${item.time}\n金额: ${item.amount}\n状态: ${item.status === 1 ? '已处理' : '未处理'}`;
-      
-      wx.setClipboardData({
-        data: textToCopy,
-        success: function () {
-          wx.showToast({
-            title: '复制成功',
-            icon: 'none'
-          });
-        },
-        fail: function () {
-          wx.showToast({
-            title: '复制失败',
-            icon: 'none'
-          });
-        }
-      });
-    },
+        const id = e.currentTarget.dataset.id;
+        const app = getApp();
+        
+        // 重置全局数据，但保留复制源ID用于初始化
+        app.globalData.submitData = {
+          quote: {},
+          productGroupList: [],
+          quoteFileList: [],
+          selectedProducts: []
+        };
+        app.globalData.shareSystemSelectedData = null;
+        app.globalData.isCreateNewQuote = true; // 仍然是新建模式
+        app.globalData.copyFromId = id; // 记录复制源ID
+        
+        wx.navigateTo({
+          // 传递参数标记为复制模式，原id作为复制源
+          url: `/quotePackage/pages/addQuotation/addQuotation?id=${id}`
+        });
+      },
   
     // 分享功能
     share(e) {
@@ -307,10 +306,22 @@ goToViewRecievedQuotation(e) {
     },
   
     goToAddQuotation() {
-      wx.navigateTo({
-        url: '/quotePackage/pages/addQuotation/addQuotation',
-      });
-    },
+        const app = getApp();
+        // 重置全局数据，确保新建模式的纯净性
+        app.globalData.submitData = {
+          quote: {},
+          productGroupList: [],
+          quoteFileList: [],
+          selectedProducts: []
+        };
+        app.globalData.shareSystemSelectedData = null;
+        app.globalData.isCreateNewQuote = true; // 标记为新建
+        app.globalData.selectedProducts = [];
+        
+        wx.navigateTo({
+          url: '/quotePackage/pages/addQuotation/addQuotation'
+        });
+      },
   
     navigateToMain() {
       wx.redirectTo({

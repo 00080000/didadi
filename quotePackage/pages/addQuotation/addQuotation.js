@@ -2,7 +2,7 @@ Page({
     data: {
       fileName: '小喇叭公司报价单',
       project: '', // 项目名称
-      time: '', // 报价日期
+      time: '', // 报价日期（精确到秒）
       item: {}, // 商家和联系人信息
       product: [], // 商品列表
       attachment: [], // 附件列表
@@ -55,7 +55,8 @@ Page({
       if (hasId) {
         this.loadQuotationData();
       } else {
-        // 新建模式：初始化空数据
+        // 新建模式：初始化空数据，时间精确到秒
+        const currentTime = this.formatDateTime(new Date());
         this.setData({
           item: {
             companyName: '请选择商家',
@@ -63,13 +64,19 @@ Page({
             linkTel: '',
             projectName: '',
             amountPrice: '0.00', // 初始化总价
-            totalPrice: '0.00'   // 初始化合计价
+            totalPrice: '0.00',   // 初始化合计价
+            quoteDate: currentTime // 初始化报价日期（带秒）
           },
-          time: this.formatDate(new Date()), // 新建默认当前日期
+          time: currentTime, // 新建默认当前精确时间
           product: [],
           attachment: [],
           submitData: app.globalData.submitData // 关联全局submitData
         });
+        // 同步时间到全局数据
+        app.globalData.submitData.quote = {
+          ...app.globalData.submitData.quote,
+          quoteDate: currentTime
+        };
       }
     },
   
@@ -89,6 +96,18 @@ Page({
           quoteFileList: [],
           selectedProducts: []
         };
+      }
+
+      // 关键修复：强制从全局数据同步时间到页面
+      const globalQuoteDate = app.globalData.submitData.quote?.quoteDate;
+      if (globalQuoteDate) {
+        this.setData({
+          time: globalQuoteDate,
+          item: {
+            ...this.data.item,
+            quoteDate: globalQuoteDate
+          }
+        });
       }
   
       // 同步全局submitData到本地
@@ -132,13 +151,22 @@ Page({
       // 编辑模式处理
       const submitData = app.globalData.submitData;
       if (submitData) {
-        const newItem = { ...this.data.item, ...submitData.quote || {} };
+        // 确保时间格式正确（使用带秒的格式）
+        const quoteDate = submitData.quote?.quoteDate 
+          ? this.formatDateTime(new Date(submitData.quote.quoteDate))
+          : this.formatDateTime(new Date());
+          
+        const newItem = { 
+          ...this.data.item, 
+          ...submitData.quote || {},
+          quoteDate: quoteDate // 确保时间存在且格式正确
+        };
         
         this.setData({
           item: newItem,
           attachment: submitData.quoteFileList || this.data.attachment,
           project: newItem.projectName || this.data.project,
-          time: newItem.quoteDate || this.data.time
+          time: quoteDate // 显示格式化后的时间
         });
       }
   
@@ -201,7 +229,7 @@ Page({
         };
       });
       
-      // 更新全局submitData
+      // 更新全局submitData，确保时间存在
       app.globalData.submitData = {
         ...app.globalData.submitData,
         selectedProducts: formattedProducts,
@@ -213,14 +241,19 @@ Page({
             }))
           : [{
               quoteProductList: formattedProducts
-            }]
+            }],
+        quote: {
+          ...app.globalData.submitData.quote,
+          quoteDate: app.globalData.submitData.quote?.quoteDate || this.formatDateTime(new Date())
+        }
       };
       
       // 更新报价单总价
       const updatedQuote = {
         ...app.globalData.submitData.quote,
         amountPrice: totalPrice.toFixed(2),
-        totalPrice: totalPrice.toFixed(2)
+        totalPrice: totalPrice.toFixed(2),
+        quoteDate: app.globalData.submitData.quote?.quoteDate || this.formatDateTime(new Date())
       };
       app.globalData.submitData.quote = updatedQuote;
       
@@ -248,6 +281,11 @@ Page({
           if (res.statusCode === 200 && res.data.code === 200) {
             const viewData = res.data.data || {};
             const quote = viewData.quote || {};
+            
+            // 处理时间格式，确保精确到秒
+            const quoteDate = quote.quoteDate 
+              ? this.formatDateTime(new Date(quote.quoteDate))
+              : this.formatDateTime(new Date());
             
             // 从productGroupList中提取商品数据（与接口返回格式保持一致）
             let productList = [];
@@ -292,17 +330,24 @@ Page({
             const app = getApp();
             app.globalData.submitData = {
               ...viewData,
-              selectedProducts: productList // 存储商品列表
+              selectedProducts: productList, // 存储商品列表
+              quote: {
+                ...quote,
+                quoteDate: quoteDate // 确保时间精确到秒
+              }
             };
   
             // 更新本地数据
             this.setData({
               submitData: app.globalData.submitData,
-              item: quote,
+              item: {
+                ...quote,
+                quoteDate: quoteDate // 确保时间精确到秒
+              },
               product: productList, // 设置解析后的商品列表
               attachment: viewData.quoteFileList || [],
               project: quote.projectName || '',
-              time: quote.quoteDate || this.formatDate(new Date())
+              time: quoteDate // 显示精确到秒的时间
             });
   
             // 同步商品数据到全局selectedProducts
@@ -330,6 +375,51 @@ Page({
       const month = (date.getMonth() + 1).toString().padStart(2, '0');
       const day = date.getDate().toString().padStart(2, '0');
       return `${year}-${month}-${day}`;
+    },
+  
+    // 格式化日期时间为yyyy-mm-dd hh:mm:ss（精确到秒）
+    formatDateTime(date) {
+      const year = date.getFullYear();
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, '0');
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      const seconds = date.getSeconds().toString().padStart(2, '0');
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    },
+  
+    // 打开日期时间选择器
+    openDateTimePicker() {
+      const currentDate = this.data.time 
+        ? new Date(this.data.time)
+        : new Date();
+        
+      wx.showDateTimePicker({
+        startYear: 2020,
+        endYear: 2030,
+        date: currentDate,
+        success: (res) => {
+          const selectedTime = this.formatDateTime(new Date(res.date));
+          // 更新本地时间
+          this.setData({ 
+            time: selectedTime,
+            item: {
+              ...this.data.item,
+              quoteDate: selectedTime
+            }
+          });
+          // 强制更新全局数据（关键修复）
+          const app = getApp();
+          app.globalData.submitData = {
+            ...app.globalData.submitData,
+            quote: {
+              ...app.globalData.submitData.quote,
+              quoteDate: selectedTime
+            }
+          };
+          console.log('时间已更新到全局数据:', app.globalData.submitData.quote.quoteDate);
+        }
+      });
     },
   
     // 跳转编辑文档信息
@@ -371,13 +461,19 @@ Page({
     // 保存数据到全局submitData
     saveToSubmitData() {
       const app = getApp();
+      // 关键修复：强制使用页面最新的time值
+      const currentTime = this.data.time || this.formatDateTime(new Date());
+      
       app.globalData.submitData = {
         ...app.globalData.submitData,
-        quote: this.data.item,
+        quote: {
+          ...this.data.item,
+          quoteDate: currentTime // 使用页面显示的时间
+        },
         quoteFileList: this.data.attachment,
         selectedProducts: this.data.product
       };
-      console.log('保存数据到全局submitData:', app.globalData.submitData);
+      console.log('保存数据到全局submitData，时间:', currentTime);
     },
   
     // 取消操作
@@ -400,6 +496,10 @@ Page({
       if (!item.projectName || item.projectName.trim() === '') {
         return wx.showToast({ title: '请填写项目名称', icon: 'none' });
       }
+      // 验证时间是否存在
+      if (!item.quoteDate) {
+        return wx.showToast({ title: '请设置报价时间', icon: 'none' });
+      }
   
       // 最终保存数据到全局submitData
       this.saveToSubmitData();
@@ -420,7 +520,7 @@ Page({
           linkTel: item.linkTel || '',
           linkEmail: item.linkEmail || '',
           projectName: item.projectName || '',
-          quoteDate: item.quoteDate || this.data.time,
+          quoteDate: item.quoteDate || this.data.time, // 确保提交带秒的时间
           // 价格信息
           amountPrice: item.amountPrice || '0.00',
           totalPrice: item.totalPrice || '0.00'
