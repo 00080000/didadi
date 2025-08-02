@@ -3,14 +3,14 @@
   <view class="topArea">
     <header></header>
     <view class="information">
-      {{name}}
+      {{quoteData.quote.name || '未命名报价单'}}
     </view>
     <view class="fileLength">
-      文档格式：{{file.length}} 种
+      文档格式：{{downloadFormats.length}} 种
     </view>
   </view>
   <view class="fileList">
-    <view class="fileCard" wx:for="{{file}}" wx:for-item="item" wx:key="index" data-index="index">
+    <view class="fileCard" wx:for="{{downloadFormats}}" wx:for-item="item" wx:key="type" data-type="{{item.type}}" bindtap="downloadFile">
       <view class="fileInformation">
         <image src="/static/word.png" wx:if="{{item.type=='doc'}}"></image>
         <image src="/static/PDF.png" wx:if="{{item.type=='pdf'}}"></image>
@@ -20,4 +20,19 @@
       <image src="/static/download.png"></image>
     </view>
   </view>
+  
+  <!-- 加载遮罩（保留功能） -->
+  <view wx:if="{{loading}}" class="loading-mask">
+    <view class="loading-content">
+      <view class="loading-spinner"></view>
+      <view class="loading-text">正在准备文件...</view>
+    </view>
+  </view>
+  
+  <!-- 错误提示（保留功能） -->
+  <view wx:if="{{errorMsg}}" class="error-message">
+    {{errorMsg}}
+    <button bindtap="closeError" class="close-btn">关闭</button>
+  </view>
 </view>
+    
