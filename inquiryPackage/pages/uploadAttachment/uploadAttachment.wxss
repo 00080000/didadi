@@ -31,6 +31,16 @@ page{
   justify-content: space-around;
   color: #23394D;
 }  
+.confirmBtn{
+  width: 30%;
+  height: 20%;
+  font-size: 30rpx;
+  background-color: #F9B712;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 .editButton {
   float: right;

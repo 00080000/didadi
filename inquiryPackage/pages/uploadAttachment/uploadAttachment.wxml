@@ -1,27 +1,37 @@
 <view class="container">
-  <!-- 上方的Logo与文字提示部分 -->
+  <!-- 标题与项目信息 -->
   <view class="topArea">
-    <header></header>
     <view class="content">
       <view class="information">
         <view style="font-size: 35rpx;font-weight: bolder;">{{name}}</view>
         <view style="font-size: 27rpx;margin-top: 30rpx;">{{project}}</view>
-        <view style="font-size: 27rpx;margin-top: 30rpx;">附件文件：{{file.length}} 个</view>
+        <view style="font-size: 27rpx;margin-top: 30rpx;">已上传附件：{{file.length}} 个</view>
       </view>
       <view class="editButton">
         <button size="mini" bind:tap="goToEditFileInformation">上传附件</button>
       </view>
     </view>
   </view>
+
+  <!-- 上传的附件列表 -->
   <view class="fileList">
-    <view class="fileCard" wx:for="{{file}}" wx:for-item="item" wx:key="index" data-index="index">
+    <view class="fileCard" wx:for="{{file}}" wx:for-item="item" wx:key="item.id" data-index="{{index}}">
       <view class="fileInformation">
-        <image src="/static/word.png" wx:if="{{item.type=='doc'}}"></image>
+        <!-- 根据文件类型显示图标 -->
+        <image src="/static/word.png" wx:if="{{item.type=='doc' || item.type=='docx'}}"></image>
         <image src="/static/PDF.png" wx:if="{{item.type=='pdf'}}"></image>
-        <image src="/static/Excel.png" wx:if="{{item.type=='xls'}}"></image>
-        <view>{{item.name}}</view>
+        <image src="/static/Excel.png" wx:if="{{item.type=='xls' || item.type=='xlsx'}}"></image>
+        <image src="/static/image.png" wx:if="{{item.type=='jpg' || item.type=='png'}}"></image>
+        <image src="/static/other.png" wx:else></image>
+        
+        <view class="fileName">{{item.name}}</view>
       </view>
-      <image src="/static/delete.png" bind:tap="confirmDelete"></image>
+      <image src="/static/delete.png" bind:tap="confirmDelete" class="deleteBtn"></image>
     </view>
+  </view>
+
+  <!-- 确定按钮 -->
+  <view >
+    <button class="confirmBtn" bind:tap="confirm">确定</button>
   </view>
 </view>
