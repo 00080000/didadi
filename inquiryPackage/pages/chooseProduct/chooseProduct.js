@@ -79,7 +79,7 @@ Page({
 
   goToAddProduct() {
     wx.navigateTo({
-      url: '/quotePackage/pages/addNewProduct/addNewProduct',
+      url: '/inquiryPackage/pages/addNewProduct/addNewProduct',
     });
   },
 
