@@ -207,34 +207,63 @@ Page({
 
   // 分享询价单（增加参数校验）
   share(e) {
-    const { id } = e.currentTarget.dataset;
-    if (!id) {
-      wx.showToast({
-        title: "缺少询价单ID",
-        icon: "none"
-      });
-      return;
-    }
+    const id = e.currentTarget.dataset.id;
+    
     wx.showActionSheet({
-      itemList: ["系统内发送", "生成二维码", "复制链接", "发送邮件"],
-      success: (res) => {
+      itemList: ['系统内发送', '生成二维码', '复制链接', '发送邮件', '分享至微信'],
+      success: function (res) {
         switch (res.tapIndex) {
-          case 0:
-            wx.navigateTo({ url: `/pages/shareSystem/shareSystem?id=${id}` });
-            break;
-          case 1:
-            wx.navigateTo({ url: `/pages/shareQrCode/shareQrCode?id=${id}` });
-            break;
-          case 2:
-            wx.setClipboardData({
-              data: `https://app.didadi.vip/inquiry/${id}`,
-              success: () => wx.showToast({ title: "链接已复制", icon: "none" })
+          case 0: {
+            wx.navigateTo({
+              url: `/quotePackage/pages/shareWithSystem/shareWithSystem?id=${id}`,
             });
             break;
-          case 3:
-            wx.navigateTo({ url: `/pages/shareEmail/shareEmail?id=${id}` });
+          }
+          case 1: {
+            wx.navigateTo({
+              url: `/quotePackage/pages/shareWithCode/shareWithCode?id=${id}`,
+            });
             break;
+          }
+          case 2: {
+            wx.showToast({
+              title: '复制成功',
+              icon: 'none',
+            });
+            break;
+          }
+          case 3: {
+            wx.navigateTo({
+              url: `/quotePackage/pages/shareWithEmail/shareWithEmail?id=${id}`,
+            });
+            break;
+          }
+          case 4: {
+            wx.updateShareMenu({
+              withShareTicket: true,
+              success: () => {
+                wx.showToast({
+                  title: '请点击右上角“···”分享到微信',
+                  icon: 'none',
+                  duration: 3000
+                });
+              },
+              fail: (err) => {
+                wx.showToast({
+                  title: err.errMsg + '，请稍后重试',
+                  icon: 'none'
+                });
+              }
+            });
+            break;
+          }
         }
+      },
+      fail: function (err) {
+        wx.showToast({
+          title: err.errMsg + '，请稍后重试',
+          icon: 'none',
+        });
       }
     });
   },

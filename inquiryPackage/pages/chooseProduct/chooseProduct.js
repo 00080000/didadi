@@ -6,7 +6,22 @@ Page({
     ifShow: false
   },
 
-  onLoad() {
+  onLoad(options) {
+    // 接收第一个页面传递的历史商品数据
+    if (options && options.currentProducts) {
+      try {
+        // 解析并加载已添加的商品
+        const historyProducts = JSON.parse(decodeURIComponent(options.currentProducts));
+        this.setData({
+          product: historyProducts
+        }, () => {
+          this.calculateTotal();
+          console.log('加载的历史商品:', this.data.product);
+        });
+      } catch (err) {
+        console.error('解析历史商品数据失败:', err);
+      }
+    }
     this.calculateTotal();
   },
 
@@ -17,7 +32,7 @@ Page({
     const addProductPage = pages.find(page => page.route === 'quotePackage/pages/addNewProduct/addNewProduct');
     
     if (addProductPage && addProductPage.data.selectedProducts) {
-      // 去重处理
+      // 去重处理：排除已存在的商品
       const newProducts = addProductPage.data.selectedProducts.filter(newItem => {
         return !this.data.product.some(existItem => 
           existItem.id === newItem.id && existItem.type === newItem.type
@@ -25,38 +40,36 @@ Page({
       });
 
       if (newProducts.length > 0) {
+        // 合并新商品并更新
         this.setData({
           product: [...this.data.product, ...newProducts]
         }, () => {
           this.calculateTotal();
+          console.log('新增商品后的数据:', this.data.product);
         });
       }
 
-      // 清空选择页的已选数据
+      // 清空选择页的已选数据，避免重复添加
       addProductPage.setData({ selectedProducts: [] });
     }
 
     this.calculateTotal();
   },
 
-  // 核心修复：正确计算当前页面商品的总金额
+  // 计算总金额
   calculateTotal() {
     let totalAmount = 0;
     
-    // 遍历当前页面的product数组（而非其他页面的数组）
     this.data.product.forEach(item => {
-      // 确保价格和数量为数字类型
       const price = Number(item.price) || 0;
       let quantity = 1;
 
-      // 根据商品类型计算数量
       if (item.type === "singleProduct" || item.type === 'customProduct') {
-        quantity = Number(item.number) || 1; // 单商品/临时商品取number
+        quantity = Number(item.number) || 1;
       } else if (item.type === "combinationProduct") {
-        quantity = 1; // 组合商品固定为1
+        quantity = 1;
       }
 
-      // 累加总金额（保留4位小数避免精度问题）
       totalAmount += Number((price * quantity).toFixed(4));
     });
 
@@ -78,8 +91,10 @@ Page({
   },
 
   goToAddProduct() {
+    // 携带当前页面的商品数据到选择页（用于去重）
+    const currentProducts = encodeURIComponent(JSON.stringify(this.data.product));
     wx.navigateTo({
-      url: '/inquiryPackage/pages/addNewProduct/addNewProduct',
+      url: `/inquiryPackage/pages/addNewProduct/addNewProduct?currentProducts=${currentProducts}`,
     });
   },
 
@@ -150,9 +165,7 @@ Page({
     wx.navigateBack();
   },
 
-  // 修复确认按钮逻辑：使用当前页面的product数组
   confirm() {
-    // 1. 验证商品是否为空
     if (this.data.product.length === 0) {
       return wx.showToast({
         title: '请至少选择一个商品',
@@ -160,14 +173,12 @@ Page({
       });
     }
 
-    // 2. 处理当前页面的商品数据（统一格式）
     const selected = this.data.product.map(item => ({
       ...item,
-      price: Number(item.price) || 0, // 确保价格为数字
+      price: Number(item.price) || 0,
       amount: item.type === 'combinationProduct' ? 1 : (Number(item.number) || 1)
     }));
 
-    // 3. 检查是否有0价格商品
     const zeroPriceItems = selected.filter(item => item.price === 0);
     if (zeroPriceItems.length > 0) {
       wx.showModal({
@@ -186,17 +197,22 @@ Page({
     }
   },
   
-  // 传递数据到上一页
+  // 修复核心：只传递新增商品而非全部商品
   passDataToPrevPage(selected) {
     const pages = getCurrentPages();
     const prevPage = pages[pages.length - 2];
     if (prevPage) {
-      // 容错处理：如果上一页没有product数组则初始化
-      const prevProducts = prevPage.data.product || [];
+      // 获取主页面原始商品ID
+      const originalIds = prevPage.data.originalProductIds || [];
+      
+      // 筛选出新增的商品（不在原始ID列表中的商品）
+      const newAddedProducts = selected.filter(item => !originalIds.includes(item.id));
+      
+      // 仅将新增商品传递给主页面
       prevPage.setData({
-        product: [...prevProducts, ...selected]
+        product: [...prevPage.data.product, ...newAddedProducts]
       }, () => {
-        // 触发上一页的计算方法
+        // 触发上一页的计算方法更新总金额
         if (typeof prevPage.calculateTotal === 'function') {
           prevPage.calculateTotal();
         }
@@ -205,3 +221,4 @@ Page({
     }
   }
 });
+    

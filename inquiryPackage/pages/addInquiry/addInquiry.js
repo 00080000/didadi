@@ -1,62 +1,48 @@
 Page({
   data: {
-    fileName: '询价单名称',
+    fileName: '询价单询价单名称',
     project: '系采购项目名称',
     time: '',
     validityTime: '',
     merchant: {
       firm: '',
-      firmId: '178',// 通过登录判断firmid
+      firmId: '178',
       name: '',
       phone: '',
       email: ''
     },
-    product: [], // 商品列表（核心渲染数据）
+    product: [], // 核心商品列表（含原有+新增）
+    originalProductIds: [], // 记录初始商品ID，用于去重
     attachment: [],
     totalAmount: 0,
     totalPrice: '0.00',
     description: '',
-    isSubmitting: false,
-    id: '', // 询价单ID（编辑模式）
+    isSubmitting: false, // 防止重复提交
+    id: '', // 编辑模式的询价单ID
     isNew: true, // 是否为新建模式
-    submitData: {}
+    tableColumns: [] // 表格列配置
   },
 
   onLoad(options) {
     const { id } = options;
-    const app = getApp();
     this.setData({
       id: id || '',
-      isNew: !id
+      isNew: !id,
+      tableColumns: [
+        { label: "序号", width: "50px", background: "#ececec", align: "center" },
+        { label: "商品名称", align: "center", code: "productName" },
+        { label: "商品编码", align: "center", code: "productCode" },
+        { label: "单价", align: "center", code: "unitPrice" },
+        { label: "数量", background: "#ececec", align: "left", code: "quantity" },
+        { label: "备注", background: "#ececec", align: "left", code: "remark", width: "140px" }
+      ]
     });
 
-    // 初始化全局数据
-    if (!app.globalData) app.globalData = {};
-    if (!app.globalData.submitData) {
-      app.globalData.submitData = {
-        quote: {},
-        productGroupList: [],
-        quoteFileList: [],
-        selectedProducts: [],
-        productFieldList: [
-          { productFieldCode: "productName", productFieldName: "商品名称" },
-          { productFieldCode: "productCode", productFieldName: "商品编码" },
-          { productFieldCode: "unitPrice", productFieldName: "单价" },
-          { productFieldCode: "quantity", productFieldName: "数量" },
-          { productFieldCode: "remark", productFieldName: "备注" }
-        ]
-      };
-    }
-
-    // 新建模式初始化
+    // 新建模式初始化日期
     if (this.data.isNew) {
       const today = this.formatDate(new Date());
-      this.setData({
-        time: today,
-        submitData: app.globalData.submitData
-      });
+      this.setData({ time: today });
       this.calculateValidityTime();
-      app.globalData.selectedProducts = [];
     } 
     // 编辑模式加载数据
     else {
@@ -64,20 +50,7 @@ Page({
     }
   },
 
-  onShow() {
-    const app = getApp();
-    // 从全局同步商品数据
-    if (app.globalData.selectedProducts) {
-      this.setData({
-        product: app.globalData.selectedProducts
-      }, () => {
-        this.calculateTotal();
-      });
-    }
-    console.log('当前页面渲染的商品数据:', this.data.product);
-  },
-
-  // 核心修复：根据网页版数据结构解析商品
+  // 编辑模式加载已有询价单数据
   loadInquiryData(id) {
     wx.showLoading({ title: '加载中...' });
     const app = getApp();
@@ -91,64 +64,53 @@ Page({
       success: (res) => {
         wx.hideLoading();
         if (res.data.code === 200) {
-          const data = res.data.data || {};
-          const quote = data.quote || {};
+          const data = res.data.data || res.data;
+          const quote = data.quote || data;
           
-          console.log('接口返回完整数据:', data);
-          
-          // 1. 解析商品数据（适配网页版productGroupList结构）
+          // 解析商品数据（适配chooseProduct格式）
           let productList = [];
-          
-          // 网页版商品数据在productGroupList中
-          if (data.productGroupList && data.productGroupList.length) {
+          if (Array.isArray(data.productGroupList) && data.productGroupList.length > 0) {
             data.productGroupList.forEach(group => {
-              // 每个分组的商品在quoteProductList中
-              if (group.quoteProductList && group.quoteProductList.length) {
-                group.quoteProductList.forEach(product => {
-                  // 解析productData中的详细信息（关键修复）
+              if (Array.isArray(group.quoteProductList) && group.quoteProductList.length > 0) {
+                group.quoteProductList.forEach((item, index) => {
                   let productData = {};
-                  try {
-                    productData = product.productData ? JSON.parse(product.productData) : {};
-                  } catch (e) {
-                    console.error('解析productData失败:', e);
+                  if (item.productData) {
+                    try {
+                      productData = typeof item.productData === 'string' 
+                        ? JSON.parse(item.productData) 
+                        : item.productData;
+                    } catch (e) {
+                      console.error('解析productData失败:', e);
+                    }
                   }
-                  
-                  // 格式化商品数据（确保与前端渲染字段匹配）
+
+                  // 构建与chooseProduct兼容的商品格式
                   productList.push({
-                    id: product.productId || product.id,
-                    name: productData.productName || product.name || '未知商品', // 从productData取名称
-                    productCode: productData.productCode || product.productCode || '',
-                    price: Number(product.unitPrice || 0), // 前端显示用price
-                    unitPrice: Number(product.unitPrice || 0), // 提交用unitPrice
-                    number: Number(product.quantity || 1), // 前端显示用number
-                    quantity: Number(product.quantity || 1), // 提交用quantity
-                    type: product.type || 'singleProduct',
-                    remark: product.remark || '',
-                    // 保留原始数据用于调试
-                    rawData: product
+                    id: item.productId || item.id || `temp_${Date.now()}_${index}`,
+                    name: productData.productName || item.productName || '未知商品',
+                    productCode: productData.productCode || item.productCode || '',
+                    price: Number(item.unitPrice || productData.unitPrice || 0),
+                    number: Number(item.quantity || 1),
+                    type: item.type || 'singleProduct',
+                    remark: item.remark || '',
+                    productName: productData.productName || item.productName || '未知商品',
+                    unitPrice: Number(item.unitPrice || productData.unitPrice || 0).toFixed(2),
+                    quantity: Number(item.quantity || 1)
                   });
                 });
               }
             });
           }
-          
-          console.log('解析后的商品数据:', productList);
-          
-          // 2. 同步商品数据到全局
-          const app = getApp();
-          app.globalData.selectedProducts = productList;
-          app.globalData.submitData = {
-            ...data,
-            selectedProducts: productList,
-            quote: quote
-          };
 
-          // 3. 更新页面数据
+          // 记录初始商品ID（用于去重）
+          const originalProductIds = productList.map(item => item.id);
+
+          // 渲染页面数据
           this.setData({
             fileName: quote.name || '询价单名称',
             project: quote.projectName || '系采购项目名称',
-            time: this.formatDate(new Date(quote.quoteDate)),
-            validityTime: this.formatDate(new Date(quote.validityTime)),
+            time: this.formatDate(new Date(quote.quoteDate || new Date())),
+            validityTime: this.formatDate(new Date(quote.validityTime || new Date())),
             merchant: {
               firm: quote.companyName || '',
               firmId: quote.companyId || '178',
@@ -156,10 +118,10 @@ Page({
               phone: quote.linkTel || '',
               email: quote.linkEmail || ''
             },
-            attachment: data.quoteFileList || [],
-            description: quote.description || '',
-            submitData: app.globalData.submitData,
-            product: productList // 渲染商品列表
+            product: productList,
+            originalProductIds: originalProductIds,
+            attachment: data.quoteFileList || data.fileList || [],
+            description: quote.description || ''
           }, () => {
             this.calculateTotal();
           });
@@ -168,12 +130,43 @@ Page({
           wx.navigateBack();
         }
       },
-      fail: () => {
+      fail: (err) => {
         wx.hideLoading();
+        console.error('接口请求失败:', err);
         wx.showToast({ title: '网络错误', icon: 'none' });
-        wx.navigateBack();
       }
     });
+  },
+
+  onShow() {
+    // 处理从chooseProduct返回的商品（仅添加新商品）
+    const pages = getCurrentPages();
+    const chooseProductPage = pages.find(page => page.route === 'inquiryPackage/pages/chooseProduct/chooseProduct');
+    
+    if (chooseProductPage && chooseProductPage.data.product && chooseProductPage.data.product.length > 0) {
+      const currentProducts = [...this.data.product];
+      const newProductsFromChoose = [...chooseProductPage.data.product];
+      
+      // 过滤：仅保留不在初始列表且不在当前列表的新商品
+      const filteredNewProducts = newProductsFromChoose.filter(newItem => 
+        !this.data.originalProductIds.includes(newItem.id) &&
+        !currentProducts.some(item => item.id === newItem.id)
+      );
+      
+      // 追加新商品
+      if (filteredNewProducts.length > 0) {
+        this.setData({
+          product: [...currentProducts, ...filteredNewProducts]
+        }, () => {
+          this.calculateTotal();
+        });
+      }
+      
+      // 清空选择页数据，避免重复添加
+      chooseProductPage.setData({ product: [] });
+    }
+    
+    this.calculateTotal();
   },
 
   // 计算总数量和总价格
@@ -182,8 +175,8 @@ Page({
     let totalPrice = 0;
     
     this.data.product.forEach(item => {
-      const quantity = item.type === 'combinationProduct' ? 1 : (item.number || 1);
-      const price = Number(item.price) || 0;
+      const quantity = item.number || item.quantity || 1;
+      const price = Number(item.price) || Number(item.unitPrice) || 0;
       totalAmount += quantity;
       totalPrice += quantity * price;
     });
@@ -194,7 +187,7 @@ Page({
     });
   },
 
-  // 计算有效期
+  // 计算有效期（当前日期+7天）
   calculateValidityTime() {
     if (!this.data.time) return;
     const date = new Date(this.data.time);
@@ -202,7 +195,7 @@ Page({
     this.setData({ validityTime: this.formatDate(date) });
   },
 
-  // 格式化日期
+  // 格式化日期为yyyy-mm-dd
   formatDate(date) {
     if (!(date instanceof Date)) date = new Date(date);
     const year = date.getFullYear();
@@ -213,21 +206,15 @@ Page({
 
   // 页面跳转方法
   goToEditFileInformation() {
-    this.saveToGlobalData();
-    wx.navigateTo({
-      url: '/inquiryPackage/pages/editFileInformation/editFileInformation',
-    });
+    wx.navigateTo({ url: '/inquiryPackage/pages/editFileInformation/editFileInformation' });
   },
 
   goToChooseMerchant() {
-    this.saveToGlobalData();
-    wx.navigateTo({
-      url: '/inquiryPackage/pages/chooseMerchant/chooseMerchant',
-    });
+    wx.navigateTo({ url: '/inquiryPackage/pages/chooseMerchant/chooseMerchant' });
   },
 
+  // 跳转至选择商品页面（保持原有参数传递）
   goToChooseProduct() {
-    this.saveToGlobalData();
     const currentProducts = encodeURIComponent(JSON.stringify(this.data.product));
     wx.navigateTo({
       url: `/inquiryPackage/pages/chooseProduct/chooseProduct?currentProducts=${currentProducts}`,
@@ -235,34 +222,15 @@ Page({
   },
 
   goToAddAttachment() {
-    this.saveToGlobalData();
-    wx.navigateTo({
-      url: '/inquiryPackage/pages/uploadAttachment/uploadAttachment',
-    });
+    wx.navigateTo({ url: '/inquiryPackage/pages/uploadAttachment/uploadAttachment' });
   },
 
-  // 保存数据到全局
-  saveToGlobalData() {
-    const app = getApp();
-    app.globalData.submitData = {
-      ...app.globalData.submitData,
-      quote: {
-        ...this.data.merchant,
-        name: this.data.fileName,
-        projectName: this.data.project,
-        quoteDate: this.data.time,
-        validityTime: this.data.validityTime
-      },
-      selectedProducts: this.data.product,
-      quoteFileList: this.data.attachment
-    };
-  },
-
+  // 取消操作
   cancel() {
     wx.navigateBack();
   },
 
-  // 确认保存
+  // 确认保存/提交
   confirm() {
     if (this.data.isSubmitting) {
       return wx.showToast({ title: '正在提交中...', icon: 'none' });
@@ -283,7 +251,7 @@ Page({
     this.saveQuoteDraft(submitData);
   },
   
-  // 格式化当前时间
+  // 格式化当前时间为hh:mm:ss
   formatCurrentTime() {
     const date = new Date();
     const hours = date.getHours().toString().padStart(2, '0');
@@ -292,12 +260,8 @@ Page({
     return `${hours}:${minutes}:${seconds}`;
   },
   
-  // 准备提交数据
+  // 准备提交数据 - 核心修复productData格式
   prepareSubmitData() {
-    const app = getApp();
-    const { product, merchant, fileName, project, time, validityTime, description, id } = this.data;
-
-    // 商品字段配置（与网页版一致）
     const productFieldList = [
       { productFieldCode: "productName", productFieldName: "商品名称" },
       { productFieldCode: "productCode", productFieldName: "商品编码" },
@@ -306,50 +270,59 @@ Page({
       { productFieldCode: "remark", productFieldName: "备注" }
     ];
 
-    // 商品列表（适配网页版productGroupList结构）
+    // 组装商品数据（修复productData格式）
     const quoteProductGroupFormList = [{
-      quoteProductFormList: product.map(item => ({
-        productId: item.id || item.productId,
-        quantity: item.quantity || item.number || 1,
-        unitPrice: (item.unitPrice || item.price || 0).toFixed(2),
-        productData: item.rawData?.productData || JSON.stringify({
-          productName: item.name,
-          productCode: item.productCode,
-          unitPrice: item.price
-        })
-      }))
+      quoteProductFormList: this.data.product.map((item) => {
+        // 构建符合后端LinkedHashMap预期的productData结构
+        const productData = {
+          productName: item.name || item.productName || '',
+          productCode: item.productCode || '',
+          unitPrice: Number(item.price) || Number(item.unitPrice) || 0,
+          // 确保添加所有后端可能需要的字段，避免JSON解析错误
+          quantity: Number(item.number) || Number(item.quantity) || 1,
+          id: item.id || ''
+        };
+        
+        return {
+          productId: item.id,
+          quantity: Number(item.number) || Number(item.quantity) || 1,
+          unitPrice: (Number(item.price) || Number(item.unitPrice) || 0).toFixed(2),
+          // 关键修复：确保productData是纯对象，不包含任何会导致解析失败的类型
+          productData: productData
+        };
+      })
     }];
     
-    // 附件信息
+    // 组装附件数据
     const quoteFileList = this.data.attachment.map(file => ({
       fileName: file.name || '',
       filePath: file.path || '',
       fileType: file.type || ''
     }));
     
-    // 询价单主信息
-    const currentTime = time + ' ' + this.formatCurrentTime();
+    const app = getApp();
+    const currentTime = this.data.time + ' ' + this.formatCurrentTime();
     const quote = {
-      ...(id ? { id } : {}), // 编辑模式携带id
+      ...(this.data.id ? { id: this.data.id } : {}),
       templateId: 36,
       userId: app.globalData.userId || 18,
       enterpriseId: 11,
       type: 2,
       status: this.data.isNew ? 0 : 1,
       totalUnitType: 1,
-      name: fileName.trim(),
-      projectName: project,
+      name: this.data.fileName.trim(),
+      projectName: this.data.project,
       quoteDate: currentTime,
-      validityTime: validityTime + ' 23:59:59',
-      companyId: merchant.firmId || '',
-      companyName: merchant.firm.trim(),
-      linkMan: merchant.name || '',
-      linkTel: merchant.phone || '',
-      linkEmail: merchant.email || '',
-      description: description || '',
-      headText: this.getDefaultHeadText(),
-      footText: this.getDefaultFootText(),
-      dataJson: this.getTableStructureJson(),
+      validityTime: this.data.validityTime + ' 23:59:59',
+      companyId: this.data.merchant.firmId || '',
+      companyName: this.data.merchant.firm.trim(),
+      linkMan: this.data.merchant.name || '',
+      linkTel: this.data.merchant.phone || '',
+      linkEmail: this.data.merchant.email || '',
+      description: this.data.description || '',
+      headText: this.data.headText || this.getDefaultHeadText(),
+      footText: this.data.footText || this.getDefaultFootText(),
+      dataJson: JSON.stringify(this.data.tableColumns),
       totalPrice: this.data.totalPrice,
       amountPrice: this.data.totalPrice,
       fileList: quoteFileList,
@@ -368,18 +341,7 @@ Page({
     };
   },
 
-  // 表格结构
-  getTableStructureJson() {
-    return JSON.stringify([
-      { "label": "序号", "width": "50px", "background": "#ececec", "align": "center" },
-      { "label": "商品名称", "align": "center", "code": "productName" },
-      { "label": "商品编码", "align": "center", "code": "productCode" },
-      { "label": "单价", "align": "center", "code": "unitPrice" },
-      { "label": "数量", "background": "#ececec", "align": "left", "code": "quantity" },
-      { "label": "备注", "background": "#ececec", "align": "left", "code": "remark", "width": "140px" }
-    ]);
-  },
-
+  // 默认头部文本
   getDefaultHeadText() {
     return `<p style="text-align: center;"><span style="color: rgb(53, 91, 183); font-size: 29px;"><strong>${this.data.fileName}</strong></span></p>
             <p style="text-align: center;"><strong>采购清单</strong></p>
@@ -388,6 +350,7 @@ Page({
             <p><span style="font-size: 14px;">联系人：${this.data.merchant.name} &nbsp; &nbsp;手机：${this.data.merchant.phone}</span></p>`;
   },
 
+  // 默认底部文本
   getDefaultFootText() {
     return `<p style="line-height: 1;"><span style="font-size: 14px;">询价日期：${this.data.time}</span></p>
             <p style="line-height: 1;"><span style="font-size: 14px;">本询价有效期至：${this.data.validityTime}</span></p>`;
@@ -422,20 +385,13 @@ Page({
             wx.navigateBack();
           }, 1500);
         } else {
-          const isDuplicateError = res.data.msg?.includes('商家名称已存在') || res.data.msg?.includes('重复');
-          if (isDuplicateError) {
-            wx.showToast({ title: '保存成功（允许重复商家）', icon: 'none' });
-            setTimeout(() => wx.navigateBack(), 1500);
-          } else {
-            wx.showToast({ title: res.data.msg || '保存失败', icon: 'none' });
-          }
+          wx.showToast({ title: res.data.msg || '保存失败', icon: 'none' });
         }
       },
       fail: (err) => {
         wx.hideLoading();
         this.setData({ isSubmitting: false });
         wx.showToast({ title: '网络错误，请重试', icon: 'none' });
-        console.error('保存失败:', err);
       }
     });
   }
