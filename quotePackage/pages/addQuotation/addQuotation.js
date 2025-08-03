@@ -28,7 +28,8 @@ Page({
           quote: {},
           productGroupList: [],
           quoteFileList: [],
-          selectedProducts: []
+          selectedProducts: [],
+          productFieldList: []
         };
       }
   
@@ -38,7 +39,15 @@ Page({
           quote: {},
           productGroupList: [],
           quoteFileList: [],
-          selectedProducts: []
+          selectedProducts: [],
+          productFieldList: [
+            { productFieldCode: "productName", productFieldName: "商品名称" },
+            { productFieldCode: "productCode", productFieldName: "商品编码" },
+            { productFieldCode: "unitPrice", productFieldName: "单价" },
+            { productFieldCode: "quantity", productFieldName: "数量" },
+            { productFieldCode: "money", productFieldName: "金额" },
+            { productFieldCode: "remark", productFieldName: "备注" }
+          ]
         };
         app.globalData.shareSystemSelectedData = null;
         app.globalData.isCreateNewQuote = null;
@@ -94,10 +103,11 @@ Page({
           quote: {},
           productGroupList: [],
           quoteFileList: [],
-          selectedProducts: []
+          selectedProducts: [],
+          productFieldList: []
         };
       }
-
+  
       // 关键修复：强制从全局数据同步时间到页面
       const globalQuoteDate = app.globalData.submitData.quote?.quoteDate;
       if (globalQuoteDate) {
@@ -326,11 +336,22 @@ Page({
               });
             }
   
+            // 初始化商品字段列表（编辑模式）
+            const productFieldList = viewData.productFieldList || [
+              { productFieldCode: "productName", productFieldName: "商品名称" },
+              { productFieldCode: "productCode", productFieldName: "商品编码" },
+              { productFieldCode: "unitPrice", productFieldName: "单价" },
+              { productFieldCode: "quantity", productFieldName: "数量" },
+              { productFieldCode: "money", productFieldName: "金额" },
+              { productFieldCode: "remark", productFieldName: "备注" }
+            ];
+  
             // 更新全局submitData（完全匹配接口返回结构）
             const app = getApp();
             app.globalData.submitData = {
               ...viewData,
               selectedProducts: productList, // 存储商品列表
+              productFieldList: productFieldList,
               quote: {
                 ...quote,
                 quoteDate: quoteDate // 确保时间精确到秒
@@ -481,7 +502,7 @@ Page({
       wx.navigateBack();
     },
   
-    // 确认提交（使用submitData提交）
+    // 确认提交（使用正确格式的postData提交）
     confirm() {
       const app = getApp();
       const { isNew, item, product, attachment } = this.data;
@@ -504,42 +525,17 @@ Page({
       // 最终保存数据到全局submitData
       this.saveToSubmitData();
   
-      // 提交前输出完整的submitData
-      console.log('===== 保存修改 - 提交前的submitData =====');
-      console.log(JSON.stringify(app.globalData.submitData, null, 2));
+      // 构建符合接口要求的提交数据
+      const postData = this.buildSubmitData();
   
-      // 准备提交数据（与接口返回结构完全一致）
-      const submitData = {
-        ...app.globalData.submitData,
-        quote: {
-          ...app.globalData.submitData.quote,
-          // 基础信息
-          companyId: item.companyId,
-          companyName: item.companyName,
-          linkMan: item.linkMan || '',
-          linkTel: item.linkTel || '',
-          linkEmail: item.linkEmail || '',
-          projectName: item.projectName || '',
-          quoteDate: item.quoteDate || this.data.time, // 确保提交带秒的时间
-          // 价格信息
-          amountPrice: item.amountPrice || '0.00',
-          totalPrice: item.totalPrice || '0.00'
-        },
-        // 商品数据（保持与接口返回结构一致）
-        productGroupList: app.globalData.submitData.productGroupList,
-        // 附件数据
-        quoteFileList: attachment
-      };
-  
-      // 编辑模式添加ID
-      if (!isNew) {
-        submitData.quote.id = this.data.id;
-      }
+      // 提交前输出完整的postData
+      console.log('===== 提交前的postData =====');
+      console.log(JSON.stringify(postData, null, 2));
   
       // 区分接口地址
       const url = isNew 
         ? `${getApp().globalData.serverUrl}/diServer/quote/create`
-        : `${getApp().globalData.serverUrl}/diServer/quote/update`;
+        : `${getApp().globalData.serverUrl}/diServer/quote/submit`;
   
       // 发送请求
       wx.showLoading({ title: isNew ? '创建中...' : '保存中...' });
@@ -550,9 +546,10 @@ Page({
           'Authorization': `Bearer ${getApp().globalData.token}`,
           'Content-Type': 'application/json'
         },
-        data: submitData, // 提交完整的submitData结构
+        data: postData, // 提交格式化后的postData
         success: (res) => {
           wx.hideLoading();
+          console.log('提交响应:', res);
           if (res.statusCode === 200 && res.data.code === 200) {
             wx.showToast({
               title: isNew ? '创建成功' : '保存成功',
@@ -575,5 +572,82 @@ Page({
           wx.showToast({ title: '网络请求错误', icon: 'none' });
         }
       });
+    },
+  
+    // 构建符合接口要求的提交数据
+    buildSubmitData() {
+      const app = getApp();
+      const { item, product, attachment } = this.data;
+      const globalData = app.globalData.submitData;
+  
+      // 处理商品字段列表，只保留必要字段
+      const productFieldList = (globalData.productFieldList || []).map(field => ({
+        productFieldCode: field.productFieldCode,
+        productFieldName: field.productFieldName
+      }));
+  
+      // 处理商品分组及商品信息（解决商品不能为空错误）
+      const quoteProductGroupFormList = (globalData.productGroupList || []).map(group => ({
+        quoteProductFormList: (group.quoteProductList || []).map(product => ({
+          productId: product.productId,
+          quantity: product.quantity || 1,
+          unitPrice: (product.unitPrice || 0).toFixed(2)
+        }))
+      }));
+  
+      // 确保至少有一个商品分组
+      if (quoteProductGroupFormList.length === 0 && product.length > 0) {
+        quoteProductGroupFormList.push({
+          quoteProductFormList: product.map(p => ({
+            productId: p.productId,
+            quantity: p.quantity || 1,
+            unitPrice: (p.unitPrice || 0).toFixed(2)
+          }))
+        });
+      }
+  
+      // 处理文件列表
+      const formattedFileList = (attachment || []).map(file => ({
+        ...file,
+        createTime: file.createTime || this.formatDateTime(new Date()),
+        quoteId: globalData.quote?.id || null
+      }));
+  
+      // 构建最终提交数据
+      return {
+        // 成本分类列表（空）
+        costCategoryFormList: [],
+        
+        // 商品字段列表
+        productFieldList: productFieldList,
+        
+        // 报价单主信息
+        quote: {
+          ...globalData.quote,
+          ...item,
+          // 基础信息
+          companyId: String(item.companyId || ''), // 确保为字符串类型
+          companyName: item.companyName || '',
+          linkMan: item.linkMan || '',
+          linkTel: item.linkTel || '',
+          linkEmail: item.linkEmail || '',
+          projectName: item.projectName || '',
+          quoteDate: item.quoteDate || this.data.time,
+          
+          // 价格信息
+          amountPrice: item.amountPrice || '0.00',
+          totalPrice: item.totalPrice || '0.00',
+          
+          // 补充文件列表
+          fileList: formattedFileList
+        },
+        
+        // 报价文件列表
+        quoteFileList: formattedFileList,
+        
+        // 商品分组信息（解决商品不能为空错误）
+        quoteProductGroupFormList: quoteProductGroupFormList
+      };
     }
   })
+  
