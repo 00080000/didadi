@@ -17,7 +17,12 @@
         <image src="/static/Excel.png" wx:if="{{item.type=='xls'}}"></image>
         <view>{{item.name}}</view>
       </view>
-      <image src="/static/download.png"></image>
+      <!-- 绑定下载事件，传递文件类型 -->
+      <image 
+        src="/static/download.png" 
+        bindtap="downloadFile" 
+        data-type="{{item.type}}"
+      ></image>
     </view>
   </view>
 </view>

@@ -1,10 +1,10 @@
 Page({
   data: {
     inquiryId: null,
-    quote: {},
+    quote: {}, // 询价单基础信息（包含名称、采购方等核心数据）
     productFieldList: [], // 商品字段配置（从dataJson解析）
     productGroupList: [], // 商品分组列表
-    quoteFileList: [], // 附件列表（新增：用于传递到下载页）
+    quoteFileList: [], // 附件列表
     isLoading: true,
     errorMsg: ''
   },
@@ -38,11 +38,11 @@ Page({
       },
       success: (res) => {
         if (res.data.code === 200 && res.data.data) {
-          // 保存附件列表（用于后续跳转下载页）
+          // 保存附件列表
           const quoteFileList = res.data.data.quoteFileList || [];
           this.setData({ quoteFileList });
           
-          // 调用核心解析函数处理数据
+          // 解析并更新数据
           this.parseQuoteData(res.data.data);
         } else {
           this.setData({
@@ -64,20 +64,26 @@ Page({
   },
 
   /**
-   * 核心解析函数：处理接口返回的完整数据
+   * 解析接口返回的完整数据
    * @param {Object} data - 接口返回的data对象
    */
   parseQuoteData(data) {
     try {
-      // 1. 解析商品字段配置（优先使用quote.dataJson中的配置）
+      // 解析商品字段配置
       const productFieldList = this.parseProductFields(data.quote.dataJson);
       
-      // 2. 处理商品分组列表（补充空分组名称的默认显示）
+      // 处理商品分组列表
       const productGroupList = this.processProductGroups(data.productGroupList);
       
-      // 3. 整理最终数据
+      // 计算有效期天数
+      const validPeriod = this.calculateValidDays(data.quote.createTime, data.quote.validityTime);
+      
+      // 更新页面数据（补充计算后的有效期）
       this.setData({
-        quote: data.quote || {},
+        quote: {
+          ...data.quote,
+          validPeriod // 新增计算后的有效期字段
+        },
         productFieldList,
         productGroupList,
         isLoading: false,
@@ -93,12 +99,47 @@ Page({
   },
 
   /**
+   * 计算有效期天数（根据createTime和validityTime）
+   * @param {String} createTime - 创建时间（格式：yyyy-MM-dd HH:mm:ss）
+   * @param {String} validityTime - 失效时间（格式：yyyy-MM-dd HH:mm:ss）
+   * @returns {String} 有效期描述（如"7天"）
+   */
+  calculateValidDays(createTime, validityTime) {
+    // 缺省处理：如果缺少时间字段，返回默认30天
+    if (!createTime || !validityTime) {
+      return '30天';
+    }
+
+    try {
+      // 转换为时间戳（毫秒）
+      const createDate = new Date(createTime);
+      const validityDate = new Date(validityTime);
+      
+      // 验证日期格式是否有效
+      if (isNaN(createDate.getTime()) || isNaN(validityDate.getTime())) {
+        throw new Error('日期格式无效');
+      }
+      
+      // 计算毫秒差
+      const timeDiff = validityDate.getTime() - createDate.getTime();
+      
+      // 转换为天数（向上取整）
+      const days = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+      
+      // 确保至少1天
+      return days > 0 ? `${days}天` : '1天';
+    } catch (e) {
+      console.error('计算有效期失败:', e);
+      return '30天'; // 异常时返回默认值
+    }
+  },
+
+  /**
    * 解析商品字段配置（从quote.dataJson提取）
    * @param {String} dataJson - quote中的dataJson字符串
    * @returns {Array} 格式化后的字段配置列表
    */
   parseProductFields(dataJson) {
-    // 容错处理：如果dataJson为空，返回默认配置
     if (!dataJson) {
       return [
         { label: "序号", width: "50px", background: "#ececec", align: "center" },
@@ -110,14 +151,11 @@ Page({
       ];
     }
 
-    // 解析JSON字符串
     try {
       const fields = JSON.parse(dataJson);
-      // 过滤掉序号列（在页面中手动添加）
       return fields.filter(field => field.label !== "序号");
     } catch (e) {
       console.error('解析dataJson失败', e);
-      // 解析失败时返回默认配置
       return [
         { label: "商品名称", align: "center", code: "productName" },
         { label: "商品编码", align: "center", code: "productCode" },
@@ -138,12 +176,9 @@ Page({
       return [];
     }
 
-    // 为每个分组补充默认名称，处理商品数据
     return groups.map(group => ({
       ...group,
-      // 为空分组设置默认名称
       productGroupName: group.productGroupName || "商品组",
-      // 处理商品列表（确保productData解析正确）
       quoteProductList: (group.quoteProductList || []).map(product => this.processProduct(product))
     }));
   },
@@ -155,16 +190,13 @@ Page({
    */
   processProduct(product) {
     try {
-      // 解析productData（可能是字符串或对象）
       const productData = typeof product.productData === 'string' 
         ? JSON.parse(product.productData) 
         : (product.productData || {});
       
-      // 合并商品数据：优先使用product本身的字段，再补充productData中的字段
       return {
         ...product,
-        productData, // 保存解析后的productData
-        // 补充关键字段（避免页面中重复解析）
+        productData,
         productName: product.productName || productData.productName || "未命名商品",
         productCode: product.productCode || productData.productCode || "无编码",
         unitPrice: product.unitPrice || productData.unitPrice || 0,
@@ -172,7 +204,6 @@ Page({
       };
     } catch (e) {
       console.error('解析商品数据失败', e);
-      // 解析失败时返回原始数据（避免整个商品不显示）
       return {
         ...product,
         productData: {},
@@ -183,50 +214,78 @@ Page({
   },
 
   /**
-   * 在页面中获取商品字段值的辅助函数
+   * 获取商品字段值的辅助函数
    * @param {Object} product - 商品对象
-   * @param {String} code - 字段编码（如productName）
+   * @param {String} code - 字段编码
    * @returns {any} 字段值
    */
   getProductValue(product, code) {
-    // 优先从商品对象直接获取，再从productData中获取
     return product[code] || product.productData?.[code] || "-";
   },
 
-  // 下载询价单文档（跳转到文档下载页或直接下载）
+  // 下载询价单文档
   goToDownloadQuotation() {
-    const { quote } = this.data;
-    if (!quote.id) {
-      wx.showToast({ title: '询价单数据异常', icon: 'none' });
-      return;
-    }
-
-    // 这里假设询价单文档下载需要单独接口，若直接下载可调用wx.downloadFile
-    wx.showLoading({ title: '准备下载...', mask: true });
+    // 1. 从页面数据中获取所有所需数据
+    const { quote, productFieldList, productGroupList } = this.data;
     
-    // 模拟文档下载（实际项目替换为真实接口）
-    setTimeout(() => {
-      wx.hideLoading();
-      // 若有文档下载接口，可参考附件下载逻辑实现
-      wx.showToast({ title: '文档下载成功', icon: 'success' });
-    }, 1000);
+    // 2. 收集表格表头数据
+    const header = ['序号', ...productFieldList.map(field => field.label || field.productFieldName)];
+    
+    // 3. 整理商品数据为二维数组（表格行）
+    const rows = [];
+    productGroupList.forEach(group => {
+      group.quoteProductList.forEach((product, idx) => {
+        const row = [
+          idx + 1, // 序号
+          product.productName,
+          product.productCode,
+          product.unitPrice,
+          product.quantity,
+          product.remark || '-'
+        ];
+        rows.push(row);
+      });
+    });
+    
+    // 4. 保存到全局变量，供下载页使用
+    const app = getApp();
+    app.globalData.tableExportData = {
+      // 从quote中提取标题（名称）
+      title: quote.name || `询价单${new Date().getTime()}`,
+      // 表格数据
+      header,
+      rows,
+      // 从quote中提取其他核心信息
+      inquiryInfo: {
+        purchaseCompany: quote.companyName || '未知采购方',
+        supplierCompany: quote.supplierCompany || '贵公司',
+        contactPerson: quote.linkMan || '未知联系人',
+        quotePerson: quote.linkMan || '未知报价人',
+        phone: quote.linkTel || '未知电话',
+        inquiryDate: quote.createTime ? new Date(quote.createTime).toLocaleDateString() : new Date().toLocaleDateString(),
+        validPeriod: quote.validPeriod || '30天' // 使用计算后的有效期
+      }
+    };
+    
+    // 5. 跳转到下载页
+    wx.navigateTo({
+      url: '/inquiryPackage/pages/downloadRecievedInquiry/downloadRecievedInquiry'
+    });
   },
 
   // 跳转到附件下载页
   goToDownloadAttachment() {
     const { quoteFileList, quote } = this.data;
     
-    // 保存附件数据到全局，供下载页使用
     const app = getApp();
     app.globalData.quoteData = {
-      quote: { name: quote.name || '询价单附件' }, // 传递询价单名称
-      quoteFileList // 传递附件列表
+      quote: { name: quote.name || '询价单附件' },
+      quoteFileList
     };
 
-    // 跳转到附件下载页
     if (quoteFileList.length > 0) {
       wx.navigateTo({
-        url: '/inquiryPackage/pages/downloadAttachment/downloadAttachment' // 附件下载页路径
+        url: '/inquiryPackage/pages/downloadAttachment/downloadAttachment'
       });
     } else {
       wx.showToast({ title: '暂无附件可下载', icon: 'none' });
