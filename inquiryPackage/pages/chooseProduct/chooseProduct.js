@@ -197,20 +197,14 @@ Page({
     }
   },
   
-  // 修复核心：只传递新增商品而非全部商品
+  // 修改核心：直接传回当前页面所有商品
   passDataToPrevPage(selected) {
     const pages = getCurrentPages();
     const prevPage = pages[pages.length - 2];
     if (prevPage) {
-      // 获取主页面原始商品ID
-      const originalIds = prevPage.data.originalProductIds || [];
-      
-      // 筛选出新增的商品（不在原始ID列表中的商品）
-      const newAddedProducts = selected.filter(item => !originalIds.includes(item.id));
-      
-      // 仅将新增商品传递给主页面
+      // 直接将当前页面所有商品传递给主页面
       prevPage.setData({
-        product: [...prevPage.data.product, ...newAddedProducts]
+        product: selected // 替换为当前页面的所有商品
       }, () => {
         // 触发上一页的计算方法更新总金额
         if (typeof prevPage.calculateTotal === 'function') {
@@ -221,4 +215,3 @@ Page({
     }
   }
 });
-    

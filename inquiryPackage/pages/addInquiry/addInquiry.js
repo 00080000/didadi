@@ -22,12 +22,12 @@ Page({
     id: '',
     isNew: true,
     tableColumns: [
-      { label: "序号", width: "50px", background: "#ececec", align: "center" },
-      { label: "商品名称", align: "center", code: "productName" },
-      { label: "商品编码", align: "center", code: "productCode" },
-      { label: "单价", align: "center", code: "unitPrice" },
-      { label: "数量", background: "#ececec", align: "left", code: "quantity" },
-      { label: "备注", background: "#ececec", align: "left", code: "remark", width: "140px" }
+      { label: "序号", width: "50px", background: "#ececec", "align": "center" },
+      { label: "商品名称", "align": "center", code: "productName" },
+      { label: "商品编码", "align": "center", code: "productCode" },
+      { label: "单价", "align": "center", code: "unitPrice" },
+      { label: "数量", background: "#ececec", "align": "left", code: "quantity" },
+      { label: "备注", background: "#ececec", "align": "left", code: "remark", width: "140px" }
     ],
     copyMode: 0 // 0-正常模式，1-复制模式
   },
@@ -40,26 +40,27 @@ Page({
       copyMode: copyMode ? 1 : 0
     });
 
-    if (options && options.currentProducts) {
+    // 加载历史商品（如果有）
+    if (options?.currentProducts) {
       try {
         const historyProducts = JSON.parse(decodeURIComponent(options.currentProducts));
         this.setData({ product: historyProducts }, () => {
           this.calculateTotal();
-          console.log('加载的历史商品:', this.data.product);
         });
       } catch (err) {
         console.error('解析历史商品数据失败:', err);
       }
     }
 
-    if (this.data.isNew && this.data.copyMode === 0) {
+    // 新建或复制模式：初始化日期
+    if (this.data.isNew || this.data.copyMode === 1) {
       const today = this.formatDate(new Date());
       this.setData({ time: today });
       this.calculateValidityTime();
     } else {
+      // 编辑模式：加载原数据
       this.loadInquiryData(id);
     }
-    this.calculateTotal();
   },
 
   loadInquiryData(id) {
@@ -78,10 +79,11 @@ Page({
           const data = res.data.data || res.data;
           const quote = data.quote || data;
           
+          // 解析商品列表（与网页端保持一致）
           let productList = [];
-          if (Array.isArray(data.productGroupList) && data.productGroupList.length > 0) {
+          if (Array.isArray(data.productGroupList)) {
             data.productGroupList.forEach(group => {
-              if (Array.isArray(group.quoteProductList) && group.quoteProductList.length > 0) {
+              if (Array.isArray(group.quoteProductList)) {
                 group.quoteProductList.forEach((item, index) => {
                   let productData = {};
                   if (item.productData) {
@@ -111,8 +113,6 @@ Page({
             });
           }
 
-          const originalProductIds = productList.map(item => item.id);
-
           this.setData({
             fileName: quote.name || '小喇叭公司询价单',
             project: quote.projectName || '系采购项目名称',
@@ -126,7 +126,7 @@ Page({
               email: quote.linkEmail || ''
             },
             product: productList,
-            originalProductIds: originalProductIds,
+            originalProductIds: productList.map(item => item.id),
             attachment: data.quoteFileList || data.fileList || [],
             description: quote.description || ''
           }, () => {
@@ -162,7 +162,6 @@ Page({
           product: [...this.data.product, ...newProducts]
         }, () => {
           this.calculateTotal();
-          console.log('新增商品后的数据:', this.data.product);
         });
       }
 
@@ -250,6 +249,7 @@ Page({
       return wx.showToast({ title: '正在提交中...', icon: 'none' });
     }
   
+    // 基础验证
     if (!this.data.fileName.trim()) {
       return wx.showToast({ title: '请填写文档名称', icon: 'none' });
     }
@@ -272,7 +272,9 @@ Page({
     return `${hours}:${minutes}:${seconds}`;
   },
   
+  // 统一提交数据结构与网页端完全一致
   prepareSubmitData() {
+    // 1. 商品字段配置（与网页端完全一致）
     const productFieldList = [
       { productFieldCode: "productName", productFieldName: "商品名称" },
       { productFieldCode: "productCode", productFieldName: "商品编码" },
@@ -281,25 +283,16 @@ Page({
       { productFieldCode: "remark", productFieldName: "备注" }
     ];
   
+    // 2. 商品列表（仅保留后端需要的核心字段，与网页端对齐）
     const quoteProductGroupFormList = [{
-      quoteProductFormList: this.data.product.map((item) => {
-        const productData = {
-          productName: item.name || item.productName || '',
-          productCode: item.productCode || '',
-          unitPrice: Number(item.price) || Number(item.unitPrice) || 0,
-          quantity: Number(item.number) || Number(item.quantity) || 1,
-          id: item.id || ''
-        };
-        
-        return {
-          productId: item.id,
-          quantity: Number(item.number) || Number(item.quantity) || 1,
-          unitPrice: (Number(item.price) || Number(item.unitPrice) || 0).toFixed(2),
-          productData: productData
-        };
-      })
+      quoteProductFormList: this.data.product.map((item) => ({
+        productId: item.id || item.productId, // 确保传递正确的商品ID
+        quantity: item.type === 'combinationProduct' ? 1 : (item.number || item.quantity || 1),
+        unitPrice: (Number(item.price) || Number(item.unitPrice) || 0).toFixed(2)
+      }))
     }];
     
+    // 3. 附件信息
     const quoteFileList = this.data.attachment.map(file => ({
       fileName: file.name || '',
       filePath: file.path || '',
@@ -308,14 +301,15 @@ Page({
     
     const app = getApp();
     const currentTime = this.data.time + ' ' + this.formatCurrentTime();
-    // 复制模式按新建逻辑处理（不携带原id，状态设为0）
+    const isNewOrCopy = this.data.copyMode === 1 || this.data.isNew;
+    
+    // 4. 询价单主信息（严格对齐网页端结构）
     const quote = {
-      ...(this.data.copyMode === 0 && !this.data.isNew ? { id: this.data.id } : {}),
+      // 仅编辑模式携带id，新建/复制模式不携带
+      ...(isNewOrCopy ? {} : { id: this.data.id }),
       templateId: 36,
       userId: app.globalData.userId || 18,
-      enterpriseId: 11,
-      type: 2,
-      status: this.data.copyMode === 1 || this.data.isNew ? 0 : 1, // 复制/新建状态为0
+      status: 0, // 关键修复：统一状态为0（与网页端新建状态一致）
       totalUnitType: 1,
       name: this.data.fileName.trim(),
       projectName: this.data.project,
@@ -331,12 +325,8 @@ Page({
       footText: this.getDefaultFootText(),
       dataJson: JSON.stringify(this.data.tableColumns),
       totalPrice: this.data.totalPrice,
-      amountPrice: this.data.totalPrice,
-      fileList: quoteFileList,
-      createBy: app.globalData.userId || 18,
-      createTime: this.data.copyMode === 1 || this.data.isNew ? currentTime : undefined,
-      updateBy: app.globalData.userId || 18,
-      updateTime: currentTime
+      fileList: quoteFileList
+      // 移除多余字段，与网页端提交结构完全一致
     };
     
     return {
@@ -364,7 +354,8 @@ Page({
   saveQuoteDraft(data) {
     this.setData({ isSubmitting: true });
     const app = getApp();
-    wx.showLoading({ title: this.data.copyMode === 1 || this.data.isNew ? '创建中...' : '保存中...' });
+    const operationText = this.data.copyMode === 1 || this.data.isNew ? '创建中...' : '保存中...';
+    wx.showLoading({ title: operationText });
   
     wx.request({
       url: `${app.globalData.serverUrl}/diServer/inQuote/submit`,
@@ -379,10 +370,10 @@ Page({
         this.setData({ isSubmitting: false });
         
         if (res.data.code === 200) {
-          wx.showToast({ 
-            title: this.data.copyMode === 1 || this.data.isNew ? '创建成功' : '保存成功' 
-          });
+          const successText = this.data.copyMode === 1 || this.data.isNew ? '创建成功' : '保存成功';
+          wx.showToast({ title: successText });
           setTimeout(() => {
+            // 返回列表页并刷新数据
             const pages = getCurrentPages();
             const prevPage = pages[pages.length - 2];
             if (prevPage && typeof prevPage.getInquiryList === 'function') {
@@ -391,18 +382,16 @@ Page({
             wx.navigateBack();
           }, 1500);
         } else {
-          wx.showToast({ title: res.data.msg || '保存失败', icon: 'none' });
+          wx.showToast({ title: res.data.msg || '操作失败', icon: 'none' });
         }
       },
       fail: (err) => {
         wx.hideLoading();
         this.setData({ isSubmitting: false });
         wx.showToast({ title: '网络错误，请重试', icon: 'none' });
+        console.error('提交失败:', err);
       }
     });
   }
-  });
-
-
-
- 
+});
+    
