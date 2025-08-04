@@ -6,11 +6,10 @@ Page({
       keyword: '',
       isLoading: false, // 加载状态
       errorMsg: '', // 错误信息
-      // 总条数（后端返回的total）
-    total: 0,
-    pageNum: 1,        // 当前页码
-    pageSize: 9999,      // 每页条数
-    hasMore: true,     // 是否还有更多数据
+      total: 0,       // 总条数（后端返回的total）
+      pageNum: 1,     // 当前页码
+      pageSize: 9999, // 每页条数
+      hasMore: true,  // 是否还有更多数据
       // 原始静态数据
       staticQuotation: [
         {
@@ -71,10 +70,9 @@ Page({
             console.log('QuotationData:',quotation);
             this.setData({
                 quotation: isLoadMore ? [...this.data.quotation, ...quotation] : quotation,
-            // 筛选列表同步更新
-            filterQuotation: isLoadMore ? [...this.data.quotation, ...quotation] : quotation,
-              total: res.data.total, 
-              hasMore
+                filterQuotation: isLoadMore ? [...this.data.quotation, ...quotation] : quotation,
+                total: res.data.total, 
+                hasMore
             });
           } else {
             // 请求失败
@@ -133,11 +131,11 @@ Page({
     edit(e) {
         const id = e.currentTarget.dataset.id;
       wx.navigateTo({
-        url:   `/quotePackage/pages/addQuotation/addQuotation?id=${id}`,
+        url: `/quotePackage/pages/addQuotation/addQuotation?id=${id}`,
       });
     },
   
-    // 复制功能
+    // 复制功能 - 关键修改：添加copy=true参数
     copy(e) {
         const id = e.currentTarget.dataset.id;
         const app = getApp();
@@ -154,8 +152,8 @@ Page({
         app.globalData.copyFromId = id; // 记录复制源ID
         
         wx.navigateTo({
-          // 传递参数标记为复制模式，原id作为复制源
-          url: `/quotePackage/pages/addQuotation/addQuotation?id=${id}`
+          // 关键修改：添加copy=true参数标记为复制模式
+          url: `/quotePackage/pages/addQuotation/addQuotation?id=${id}&copy=true`
         });
       },
   
@@ -283,14 +281,14 @@ Page({
     
       },
   
-// 预览报价详情
-goToViewRecievedQuotation(e) {
-    const id = e.currentTarget.dataset.id;
-    console.log('id:',id);
-    wx.navigateTo({
-      url: `/quotePackage/pages/viewRecievedQuotation/viewRecievedQuotation?id=${id}`
-    });
-  },
+    // 预览报价详情
+    goToViewRecievedQuotation(e) {
+        const id = e.currentTarget.dataset.id;
+        console.log('id:',id);
+        wx.navigateTo({
+          url: `/quotePackage/pages/viewRecievedQuotation/viewRecievedQuotation?id=${id}`
+        });
+      },
   
     // 导航相关方法
     goToInquiry() {
@@ -341,3 +339,4 @@ goToViewRecievedQuotation(e) {
       });
     }
   });
+    
