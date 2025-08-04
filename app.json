@@ -74,6 +74,7 @@
     {
       "root": "inquiryPackage",
       "pages": [
+        "pages/addTemporaryProducts/addTemporaryProducts",
         "pages/sendedInquiryForm/sendedInquiryForm",
         "pages/recievedInquiryForm/recievedInquiryForm",
         "pages/addInquiry/addInquiry",

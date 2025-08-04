@@ -98,6 +98,12 @@ Page({
     });
   },
 
+  goToAddTemporaryProduct(){
+    wx.navigateTo({
+      url: `/inquiryPackage/pages/addTemporaryProducts/addTemporaryProducts`,
+    });
+  },
+
   setIfShow() {
     this.setData({
       ifShow: !this.data.ifShow
@@ -197,7 +203,7 @@ Page({
     }
   },
   
-  // 修改核心：直接传回当前页面所有商品
+  // 直接传回当前页面所有商品
   passDataToPrevPage(selected) {
     const pages = getCurrentPages();
     const prevPage = pages[pages.length - 2];
