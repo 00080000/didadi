@@ -169,5 +169,8 @@ Page({
     }
 
     wx.navigateBack();
+  },
+  cancel() {
+    wx.navigateBack();
   }
 });

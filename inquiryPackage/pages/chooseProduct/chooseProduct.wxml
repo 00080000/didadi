@@ -5,10 +5,6 @@
     <view class="content">
       <view></view>
       <view class="information">{{fileName}}</view>
-      <view class="productButton">
-        <button size="mini" bind:tap="goToSetFormStyle">设置表格样式</button>
-        <button size="mini" bind:tap="goToChooseProductFields">选择商品字段</button>
-      </view>  
     </view>
   </view>
 
@@ -25,14 +21,6 @@
     <view class='newItem' bind:tap="goToAddTemporaryProduct">
       <image src="/static/newBlankRow.png"></image>
       加空白行
-    </view>
-    <view class='newItem'>
-      <image src="/static/newGroupRow.png"></image>
-      加分组行
-    </view>
-    <view class='newItem'>
-      <image src="/static/newMonnyRow.png"></image>
-      加费用行
     </view>
   </view>
 

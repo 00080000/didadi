@@ -6,7 +6,10 @@ Page({
     enterpriseId: 11,     // 企业ID（固定值，可根据实际需求调整）
     isLoading: false,     // 加载状态标记
     searchTimer: null,    // 搜索防抖定时器
-    errorMsg: ''          // 错误提示信息
+    errorMsg: ''   ,       // 错误提示信息
+    pageNum: 1,
+    pageSize:9999
+
   },
 
   // 页面加载时初始化数据
