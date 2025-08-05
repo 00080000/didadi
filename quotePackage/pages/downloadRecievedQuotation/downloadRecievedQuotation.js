@@ -54,6 +54,70 @@ function cleanText(text, forPdf = false) {
   return cleaned.replace(/\s+/g, ' ').trim();
 }
 
+// 清理临时文件的函数 - 修复参数格式问题
+function cleanTempFiles(keepPath = '') {
+  const fs = wx.getFileSystemManager();
+  try {
+    // 获取临时目录路径
+    const tempDir = wx.env.USER_DATA_PATH;
+    
+    // 检查路径是否为字符串
+    if (typeof tempDir !== 'string' || tempDir.trim() === '') {
+      console.error('临时目录路径无效:', tempDir);
+      return;
+    }
+    
+    // 获取临时目录下的所有文件 - 修复参数格式
+    const files = fs.readdirSync(tempDir, {
+      recursive: false
+    });
+    
+    // 遍历并删除非当前下载的文件
+    files.forEach(file => {
+      const filePath = `${tempDir}/${file}`;
+      // 不删除当前正在处理的文件
+      if (filePath !== keepPath) {
+        try {
+          // 尝试删除文件 - 修复参数格式
+          fs.unlinkSync(filePath);
+          console.log(`清理临时文件: ${file}`);
+        } catch (e) {
+          console.log(`清理临时文件失败: ${file}`, e);
+        }
+      }
+    });
+  } catch (e) {
+    console.log('清理临时文件目录失败', e);
+  }
+}
+
+// 检查存储空间 - 进一步降低所需空间阈值至0.5MB
+function checkStorageSpace(requiredSizeMB = 0.5) { // 降至0.5MB
+  return new Promise((resolve, reject) => {
+    wx.getSystemInfo({
+      success: (res) => {
+        // 转换为MB (1MB = 1024KB)
+        const remainingSpaceMB = res.storageRemaining / 1024;
+        const requiredSpace = requiredSizeMB;
+        
+        // 大幅放宽检查条件，只在明显不足时才提示
+        // 对于小文件(我们的文件通常小于0.5MB)，即使检测显示不足也尝试下载
+        if (remainingSpaceMB >= requiredSpace * 0.5 || remainingSpaceMB === 0) {
+          resolve(true);
+        } else {
+          // 仅作为警告，仍允许继续
+          reject(new Error(`存储空间可能不足，建议清理空间`));
+        }
+      },
+      fail: (err) => {
+        // 系统信息获取失败时，仍然尝试下载
+        console.warn('获取系统信息失败，继续尝试下载', err);
+        resolve(true);
+      }
+    });
+  });
+}
+
 Page({
   data: {
     // 原始报价单数据
@@ -76,6 +140,9 @@ Page({
   },
 
   onLoad() {
+    // 页面加载时先清理临时文件
+    cleanTempFiles();
+    
     // 从全局获取预览页的原始数据
     const globalQuoteData = app.globalData.quoteData;
     
@@ -421,6 +488,33 @@ Page({
     const fileNameBase = cleanText(quote.name || '未命名报价单');
     const that = this;
     
+    // 先清理临时文件
+    cleanTempFiles();
+    
+    // 检查存储空间，但即使检查失败也尝试继续
+    checkStorageSpace(0.5) // 使用0.5MB的阈值
+      .then(() => {
+        // 存储空间检查通过，正常下载
+        that.actualDownload(fileNameBase, type);
+      })
+      .catch((err) => {
+        console.warn('存储空间检查有警告，但仍尝试下载', err);
+        // 即使空间检查有警告也尝试下载，缩短提示时间
+        wx.showToast({ 
+          title: '继续下载...', 
+          icon: 'none',
+          duration: 1000
+        });
+        // 延迟一下让用户看到提示
+        setTimeout(() => {
+          that.actualDownload(fileNameBase, type);
+        }, 500);
+      });
+  },
+  
+  // 实际执行下载操作的函数
+  actualDownload(fileNameBase, type) {
+    const that = this;
     try {
       // 生成文件内容
       const fileContent = this.generateFileContent(type);
@@ -440,11 +534,41 @@ Page({
         data: fileContent,
         encoding: 'utf8',
         success: () => {
-          that.openFile(filePath, type);
+          // 保存到系统
+          wx.saveFileToDisk({
+            filePath: filePath,
+            showActionSheet: true,
+            success: (res) => {
+              console.log('文件保存成功', res);
+              wx.showToast({ 
+                title: `文件已保存至: ${res.savedFilePath}`, 
+                icon: 'none',
+                duration: 3000
+              });
+              // 保存成功后清理临时文件
+              setTimeout(() => {
+                cleanTempFiles();
+              }, 1000);
+            },
+            fail: (err) => {
+              console.error('保存文件到系统失败', err);
+              // 尝试打开文件
+              that.openFile(filePath, type);
+            },
+            complete: () => {
+              that.setData({ loading: false });
+            }
+          });
         },
         fail: (err) => {
           console.error('写入文件失败', err);
-          wx.showToast({ title: '下载失败', icon: 'none' });
+          // 尝试清理空间后重试
+          if (err.errMsg.includes('exceeded')) {
+            cleanTempFiles();
+            wx.showToast({ title: '已清理缓存，请重试', icon: 'none' });
+          } else {
+            wx.showToast({ title: '下载失败', icon: 'none' });
+          }
           that.setData({ loading: false });
         }
       });
@@ -470,10 +594,20 @@ Page({
       fail: (err) => {
         console.error('打开文件失败', err);
         that.setData({ 
-          errorMsg: `打开${fileType}文件失败: ${err.errMsg || '未知错误'}`
+          errorMsg: `文件已下载，但无法预览: ${err.errMsg || '未知错误'}`
+        });
+        // 提示用户文件已保存
+        wx.showToast({
+          title: '文件已保存，请在文件管理器中查看',
+          icon: 'none',
+          duration: 3000
         });
       },
       complete: () => {
+        // 清理临时文件
+        setTimeout(() => {
+          cleanTempFiles();
+        }, 2000);
         that.setData({ loading: false });
       }
     });
@@ -481,11 +615,17 @@ Page({
 
   // 返回上一页
   goBack() {
+    cleanTempFiles();
     wx.navigateBack();
   },
   
   // 关闭错误提示
   closeError() {
     this.setData({ errorMsg: '' });
+  },
+  
+  // 页面卸载时清理临时文件
+  onUnload() {
+    cleanTempFiles();
   }
 })
