@@ -12,7 +12,7 @@ Page({
     requestParams: {
       pageNum: 1,
       pageSize: 9999,
-      userId: 18,     
+          
       linkMan: "",
       linkTel: "",
       name: "",

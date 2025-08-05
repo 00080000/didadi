@@ -22,7 +22,7 @@
       <image src="/static/newProductRow.png"></image>
       加商品行
     </view>
-    <view class='newItem'>
+    <view class='newItem' bind:tap="goToAddTemporaryProduct">
       <image src="/static/newBlankRow.png"></image>
       加空白行
     </view>
