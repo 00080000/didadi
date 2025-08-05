@@ -6,11 +6,13 @@
     <view class="section-title">基本信息</view>
     <view class="info-item">
       <view class="label">商品名称</view>
-      <view class="value">{{item.name}}</view>
+      <!-- 统一使用formData中的productName -->
+      <view class="value">{{formData.productName}}</view>
     </view>
     <view class="info-item">
       <view class="label">商品编码</view>
-      <view class="value">{{item.productCode || item.productId}}</view>
+      <!-- 统一使用formData中的productCode -->
+      <view class="value">{{formData.productCode}}</view>
     </view>
   </view>
 
@@ -45,24 +47,25 @@
       <view class="form-label">数量</view>
       <view class="form-input">
         <input 
-          type="number" 
-          value="{{formData.number}}" 
-          bindinput="onInputChange" 
+          type="number"
+          value="{{formData.number || ''}}"
+          bindinput="onInputChange"
           data-field="number"
           placeholder="请输入数量"
         />
       </view>
     </view>
 
-    <!-- 固定显示的备注字段 -->
+    <!-- 固定显示的单价字段 -->
     <view class="form-item">
-      <view class="form-label">备注</view>
+      <view class="form-label">单价</view>
       <view class="form-input">
-        <textarea 
-          value="{{formData.remark || ''}}" 
-          bindinput="onInputChange" 
-          data-field="remark"
-          placeholder="请输入备注"
+        <input 
+          type="digit"
+          value="{{formData.price || ''}}"
+          bindinput="onInputChange"
+          data-field="price"
+          placeholder="请输入单价"
         />
       </view>
     </view>
@@ -70,8 +73,7 @@
 
   <!-- 底部按钮 -->
   <view class="button-group">
-    <view class="cancel-btn" bind:tap="cancel">取消</view>
-    <view class="confirm-btn" bind:tap="confirm">确定</view>
+    <view class="cancel-btn" bindtap="cancel">取消</view>
+    <view class="confirm-btn" bindtap="confirm">确定</view>
   </view>
 </view>
-    

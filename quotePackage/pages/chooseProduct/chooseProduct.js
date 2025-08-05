@@ -4,7 +4,19 @@ Page({
       totalAmount: 0.00, // 总价
       fileName: '小喇叭公司报价单',
       ifShow: false, // 新增菜单显示状态
-      originalProducts: [] // 用于取消操作的原始数据备份
+      originalProducts: [], // 用于取消操作的原始数据备份
+      // 新增必要的状态变量
+      searchValue: '', // 搜索输入值
+      isAllSelected: false, // 是否全选
+      selectedCount: 0, // 已选择商品数量
+      isEditMode: false, // 是否编辑模式
+      selectMode: false, // 是否选择模式
+      showNoData: false, // 是否显示无数据提示
+      loading: false, // 加载状态
+      page: 1, // 当前页码
+      pageSize: 10, // 每页条数
+      hasMore: true, // 是否有更多数据
+      productFieldList: [] // 商品字段配置列表
     },
   
     onLoad(options) {
@@ -23,15 +35,31 @@ Page({
         app.globalData.selectedProducts = [];
       }
       
+      // 初始化选择模式
+      this.setData({
+        selectMode: options.selectMode === 'true',
+        productFieldList: app.globalData.submitData?.productFieldList || []
+      });
+      
       console.log('全局数据中的submitData:', app.globalData.submitData);
       
       // 从submitData获取商品数据（与addQuotation保持一致）
       let sourceProducts = [];
-      if (app.globalData.submitData && app.globalData.submitData.products && app.globalData.submitData.products.length > 0) {
+      // 优先从productGroupList获取数据（与提交格式保持一致）
+      if (app.globalData.submitData?.productGroupList?.length) {
+        console.log('从productGroupList获取商品数据');
+        app.globalData.submitData.productGroupList.forEach(group => {
+          if (group.quoteProductList && group.quoteProductList.length) {
+            sourceProducts = sourceProducts.concat(group.quoteProductList);
+          }
+        });
+      }
+      // 其次从submitData.products获取
+      else if (app.globalData.submitData && app.globalData.submitData.products && app.globalData.submitData.products.length > 0) {
         console.log('从submitData获取商品数据，数量:', app.globalData.submitData.products.length);
         sourceProducts = app.globalData.submitData.products;
       }
-      // 兼容处理：如果submitData中没有，从selectedProducts获取
+      // 最后从selectedProducts获取
       else if (app.globalData.selectedProducts && app.globalData.selectedProducts.length > 0) {
         console.log('从selectedProducts获取商品数据，数量:', app.globalData.selectedProducts.length);
         sourceProducts = app.globalData.selectedProducts;
@@ -44,7 +72,8 @@ Page({
         
         this.setData({
           product: normalizedProducts,
-          originalProducts: [...normalizedProducts] // 备份原始数据
+          originalProducts: [...normalizedProducts], // 备份原始数据
+          showNoData: false
         }, () => {
           console.log('setData完成，当前商品列表:', this.data.product);
           this.calculateTotal(); // 确保计算总价
@@ -54,9 +83,25 @@ Page({
         console.log('未检测到商品数据，初始化为空列表');
         this.setData({
           product: [],
-          originalProducts: []
+          originalProducts: [],
+          showNoData: true
         }, () => {
           this.calculateTotal(); // 确保计算总价
+        });
+      }
+    },
+  
+    onShow() {
+      // 页面显示时刷新数据，确保编辑后的数据能及时更新
+      const app = getApp();
+      if (app.globalData.selectedProducts && app.globalData.selectedProducts.length > 0) {
+        const normalizedProducts = this.normalizeProductData(app.globalData.selectedProducts);
+        this.setData({
+          product: normalizedProducts,
+          originalProducts: [...normalizedProducts],
+          showNoData: normalizedProducts.length === 0
+        }, () => {
+          this.calculateTotal();
         });
       }
     },
@@ -99,7 +144,10 @@ Page({
         const baseItem = {
           id: item.id || `item-${Date.now()}-${index}`,
           productId: item.productId || item.id || `pid-${Date.now()}-${index}`, // 确保有productId
+          // 确保商品名称和编码正确显示
           name: productData.productName || item.productName || item.name || '未命名商品',
+          productName: productData.productName || item.productName || item.name || '未命名商品',
+          productCode: productData.productCode || item.productCode || '未知编码',
           type: this.getProductType(item.type || productData.type) || 'singleProduct',
           price: Number(productData.unitPrice) || Number(item.unitPrice) || Number(item.price) || 0,
           number: Number(item.quantity) || Number(item.number) || 1,
@@ -109,7 +157,11 @@ Page({
           // 其他展示用字段
           unit: productData.unit || item.unit || '',
           specs: productData.specs || item.specs || '',
-          remark: productData.remark || item.remark || ''
+          brand: productData.brand || item.brand || '',
+          tag: productData.tag || item.tag || '',
+          remark: productData.remark || item.remark || '',
+          // 选择相关字段
+          checked: false
         };
   
         // 根据商品类型补充特定字段
@@ -164,9 +216,12 @@ Page({
         // 更新productData（保持原有结构）
         let productData = item.originalProductData ? JSON.parse(JSON.stringify(item.originalProductData)) : {};
         productData.productName = item.name;
+        productData.productCode = item.productCode;
         productData.unitPrice = item.price;
         productData.unit = item.unit;
         productData.specs = item.specs;
+        productData.brand = item.brand;
+        productData.tag = item.tag;
         productData.remark = item.remark;
         
         // 保持productData的数据类型（与submitData一致）
@@ -244,6 +299,13 @@ Page({
       this.setData({
         totalAmount: formattedTotal
       });
+      
+      // 更新全局数据中的总金额
+      const app = getApp();
+      if (app.globalData.submitData?.quote) {
+        app.globalData.submitData.quote.amountPrice = formattedTotal;
+        app.globalData.submitData.quote.totalPrice = formattedTotal;
+      }
     },
   
     // 确认选择（仅更新submitData）
@@ -263,6 +325,18 @@ Page({
       // 更新总价
       app.globalData.submitData.totalAmount = this.data.totalAmount;
       
+      // 同步更新productGroupList（与提交格式保持一致）
+      if (!app.globalData.submitData.productGroupList) {
+        app.globalData.submitData.productGroupList = [];
+      }
+      if (app.globalData.submitData.productGroupList.length === 0) {
+        app.globalData.submitData.productGroupList.push({
+          quoteProductList: submitProducts
+        });
+      } else {
+        app.globalData.submitData.productGroupList[0].quoteProductList = submitProducts;
+      }
+      
       // 同步更新selectedProducts用于页面展示
       app.globalData.selectedProducts = this.data.product;
       
@@ -279,6 +353,11 @@ Page({
       if (app.globalData.submitData) {
         app.globalData.submitData.products = this.convertToSubmitFormat(this.data.originalProducts);
         app.globalData.submitData.totalAmount = this.calculateOriginalTotal();
+        
+        // 同步恢复productGroupList
+        if (app.globalData.submitData.productGroupList && app.globalData.submitData.productGroupList.length > 0) {
+          app.globalData.submitData.productGroupList[0].quoteProductList = this.convertToSubmitFormat(this.data.originalProducts);
+        }
       }
       
       // 恢复展示用数据
@@ -331,9 +410,12 @@ Page({
               unitPrice: newProduct.price,
               productData: JSON.stringify({
                 productName: newProduct.name,
+                productCode: newProduct.productCode || '',
                 unitPrice: newProduct.price,
                 unit: newProduct.unit || '',
                 specs: newProduct.specs || '',
+                brand: newProduct.brand || '',
+                tag: newProduct.tag || '',
                 remark: newProduct.remark || '',
                 type: this.reverseProductType(newProduct.type)
               }),
@@ -344,12 +426,18 @@ Page({
             const displayProduct = {
               ...newProduct,
               productId: newProduct.productId || `new-pid-${Date.now()}`, // 确保有productId
+              productName: newProduct.name,
+              productCode: newProduct.productCode || '未知编码',
               originalData: newProductOriginal,
-              originalProductData: JSON.parse(newProductOriginal.productData)
+              originalProductData: JSON.parse(newProductOriginal.productData),
+              checked: false
             };
             
             const updatedProducts = [...this.data.product, displayProduct];
-            this.setData({ product: updatedProducts }, () => {
+            this.setData({ 
+              product: updatedProducts,
+              showNoData: updatedProducts.length === 0
+            }, () => {
               this.calculateTotal();
             });
           }
@@ -445,6 +533,8 @@ Page({
         id: `blank-${Date.now()}`,
         productId: `blank-pid-${Date.now()}`, // 确保有productId
         name: '空白行',
+        productName: '空白行',
+        productCode: '',
         type: 'blankRow',
         originalData: {
           id: `blank-${Date.now()}`,
@@ -452,12 +542,217 @@ Page({
           type: 4,
           productData: JSON.stringify({ type: 4 })
         },
-        originalProductData: { type: 4 }
+        originalProductData: { type: 4 },
+        checked: false
       };
       console.log('添加空白行:', newRow);
       
       const product = [...this.data.product, newRow];
-      this.setData({ product, ifShow: false }, () => this.calculateTotal());
+      this.setData({ 
+        product, 
+        ifShow: false,
+        showNoData: product.length === 0
+      }, () => this.calculateTotal());
+    },
+  
+    // 以下是新增的必要功能，确保数据能正确显示和更新
+  
+    // 搜索输入变化
+    onSearchInput(e) {
+      const value = e.detail.value.trim();
+      this.setData({
+        searchValue: value,
+        page: 1
+      }, () => {
+        this.filterProducts();
+      });
+    },
+  
+    // 过滤商品
+    filterProducts() {
+      const { originalProducts, searchValue } = this.data;
+      if (!searchValue) {
+        // 无搜索条件，显示所有商品
+        this.setData({
+          product: [...originalProducts],
+          showNoData: originalProducts.length === 0
+        });
+        return;
+      }
+  
+      // 根据搜索值过滤商品
+      const filtered = originalProducts.filter(item => {
+        const searchStr = searchValue.toLowerCase();
+        return (
+          item.productName.toLowerCase().indexOf(searchStr) !== -1 ||
+          item.productCode.toLowerCase().indexOf(searchStr) !== -1 ||
+          (item.brand && item.brand.toLowerCase().indexOf(searchStr) !== -1) ||
+          (item.tag && item.tag.toLowerCase().indexOf(searchStr) !== -1)
+        );
+      });
+  
+      this.setData({
+        product: filtered,
+        showNoData: filtered.length === 0
+      });
+    },
+  
+    // 切换选择状态
+    toggleSelect(e) {
+      const index = e.currentTarget.dataset.index;
+      const { product } = this.data;
+      
+      // 更新单个商品的选择状态
+      product[index].checked = !product[index].checked;
+      this.setData({ product }, () => {
+        this.updateSelectStatus();
+      });
+    },
+  
+    // 全选/取消全选
+    toggleAllSelect() {
+      const { isAllSelected, product } = this.data;
+      const newState = !isAllSelected;
+      
+      // 更新所有商品的选择状态
+      const updatedProducts = product.map(item => ({
+        ...item,
+        checked: newState
+      }));
+      
+      this.setData({
+        product: updatedProducts,
+        isAllSelected: newState,
+        selectedCount: newState ? updatedProducts.length : 0
+      });
+    },
+  
+    // 更新选择状态
+    updateSelectStatus() {
+      const { product } = this.data;
+      const selectedCount = product.filter(item => item.checked).length;
+      const isAllSelected = selectedCount > 0 && selectedCount === product.length;
+      
+      this.setData({
+        selectedCount,
+        isAllSelected
+      });
+    },
+  
+    // 切换编辑模式
+    toggleEditMode() {
+      this.setData({
+        isEditMode: !this.data.isEditMode,
+        // 退出编辑模式时取消所有选择
+        isAllSelected: false,
+        product: this.data.product.map(item => ({
+          ...item,
+          checked: false
+        })),
+        selectedCount: 0
+      });
+    },
+  
+    // 删除选中商品
+    deleteSelected() {
+      if (this.data.selectedCount === 0) {
+        wx.showToast({
+          title: '请选择要删除的商品',
+          icon: 'none',
+          duration: 2000
+        });
+        return;
+      }
+  
+      wx.showModal({
+        title: '确认删除',
+        content: `确定要删除选中的${this.data.selectedCount}个商品吗？`,
+        success: (res) => {
+          if (res.confirm) {
+            const remainingProducts = this.data.product.filter(item => !item.checked);
+            this.setData({
+              product: remainingProducts,
+              originalProducts: [...remainingProducts],
+              isEditMode: false,
+              selectedCount: 0,
+              isAllSelected: false,
+              showNoData: remainingProducts.length === 0
+            }, () => {
+              this.calculateTotal();
+              wx.showToast({
+                title: `已删除${this.data.selectedCount}个商品`,
+                icon: 'success',
+                duration: 2000
+              });
+            });
+          }
+        }
+      });
+    },
+  
+    // 选择商品（仅在选择模式下）
+    selectProduct(e) {
+      if (!this.data.selectMode) return;
+      
+      const index = e.currentTarget.dataset.index;
+      const { product } = this.data;
+      
+      // 更新选择状态
+      product[index].checked = !product[index].checked;
+      this.setData({ product }, () => {
+        this.updateSelectStatus();
+      });
+    },
+  
+    // 确认选择商品（仅在选择模式下）
+    confirmSelection() {
+      if (!this.data.selectMode) return;
+      
+      const { product } = this.data;
+      const selectedProducts = product.filter(item => item.checked);
+      
+      if (selectedProducts.length === 0) {
+        wx.showToast({
+          title: '请选择商品',
+          icon: 'none',
+          duration: 2000
+        });
+        return;
+      }
+      
+      // 将选择的商品添加到全局数据
+      const app = getApp();
+      if (!app.globalData.selectedProducts) {
+        app.globalData.selectedProducts = [];
+      }
+      
+      // 去重添加
+      selectedProducts.forEach(newProduct => {
+        const exists = app.globalData.selectedProducts.some(
+          item => item.productId === newProduct.productId
+        );
+        if (!exists) {
+          app.globalData.selectedProducts.push(newProduct);
+        }
+      });
+      
+      // 返回上一页
+      wx.navigateBack();
+    },
+  
+    // 下拉加载更多
+    onReachBottom() {
+      // 保持空实现，避免报错
+    },
+  
+    // 重置筛选条件
+    resetFilter() {
+      this.setData({
+        searchValue: '',
+        page: 1
+      }, () => {
+        this.filterProducts();
+      });
     }
   })
     

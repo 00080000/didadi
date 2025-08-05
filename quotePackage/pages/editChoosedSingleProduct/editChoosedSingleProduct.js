@@ -1,194 +1,238 @@
-// quotePackage/pages/editChoosedSingleProduct/editChoosedSingleProduct.js
 Page({
     data: {
-      index: -1,          // 当前商品索引
-      item: null,         // 当前商品数据
-      editableFields: [], // 可编辑的字段列表
-      formData: {}        // 表单数据
+      formData: {
+        productName: '',
+        productCode: '',
+        price: '',
+        number: '',
+        unit: '',
+        specs: '',
+        brand: '',
+        tag: '',
+        produceCompany: '',
+        remark: ''
+      },
+      index: -1,
+      productId: '',
+      editableFields: [] // 用于动态显示可编辑字段
     },
   
     onLoad(options) {
-      if (options.index !== undefined && options.item) {
-        const index = parseInt(options.index);
-        const item = JSON.parse(decodeURIComponent(options.item));
-        
-        // 初始化表单数据
-        const formData = {
-          price: item.price || 0,
-          number: item.number || 1,
-          remark: item.remark || '',
-          // 初始化其他可选字段
-          unit: item.unit || '',
-          specs: item.specs || '',
-          brand: item.brand || '',
-          tag: item.tag || '',
-          produceCompany: item.produceCompany || ''
-        };
-        
+      if (options && options.index !== undefined) {
         this.setData({
-          index,
-          item,
-          formData
+          index: parseInt(options.index)
         }, () => {
-          this.loadEditableFields();
+          this.initFormData();
+          this.loadEditableFields(); // 加载可编辑字段配置
         });
-      } else {
-        wx.showToast({
-          title: '数据加载失败',
-          icon: 'none'
-        });
-        setTimeout(() => {
-          wx.navigateBack();
-        }, 1000);
       }
     },
   
-    // 加载可编辑的字段列表（从dataJson中获取）
+    // 初始化表单数据，修复名称和编码不显示问题
+    initFormData() {
+      const app = getApp();
+      let targetProduct = null;
+      const { index } = this.data;
+      
+      // 从productGroupList获取商品数据（优先）
+      if (app.globalData.submitData?.productGroupList?.length) {
+        app.globalData.submitData.productGroupList.some(group => {
+          if (group.quoteProductList?.[index]) {
+            targetProduct = group.quoteProductList[index];
+            return true;
+          }
+          return false;
+        });
+      }
+      
+      // 从selectedProducts获取商品数据（备用）
+      if (!targetProduct) {
+        const products = app.globalData.selectedProducts || [];
+        targetProduct = products[index];
+      }
+      
+      if (targetProduct) {
+        // 解析productData
+        let productData = targetProduct.productData || {};
+        if (typeof productData === 'string') {
+          try {
+            productData = JSON.parse(productData);
+          } catch (e) {
+            console.error('解析productData失败:', e);
+            productData = {};
+          }
+        }
+  
+        // 统一变量名，确保数据正确映射
+        this.setData({
+          productId: targetProduct.productId,
+          formData: {
+            productName: targetProduct.productName || productData.productName || '',
+            productCode: targetProduct.productCode || productData.productCode || '',
+            price: targetProduct.unitPrice !== undefined ? String(targetProduct.unitPrice) : String(productData.unitPrice || ''),
+            number: targetProduct.quantity !== undefined ? String(targetProduct.quantity) : String(productData.quantity || ''),
+            unit: targetProduct.unit || productData.unit || '',
+            specs: targetProduct.specs || productData.specs || '',
+            brand: targetProduct.brand || productData.brand || '',
+            tag: targetProduct.tag || productData.tag || '',
+            produceCompany: targetProduct.produceCompany || productData.produceCompany || '',
+            remark: targetProduct.remark || productData.remark || ''
+          }
+        });
+      }
+    },
+  
+    // 加载可编辑字段配置
     loadEditableFields() {
       const app = getApp();
-      if (app.globalData.submitData && app.globalData.submitData.quote && app.globalData.submitData.quote.dataJson) {
-        try {
-          const tableColumns = JSON.parse(app.globalData.submitData.quote.dataJson);
-          const editableFields = [];
-          
-          // 过滤出可编辑的可选字段（排除固定字段和必选不可编辑字段）
-          for (let i = 0; i < tableColumns.length; i++) {
-            const column = tableColumns[i];
-            // 排除固定字段和核心不可编辑字段
-            if (column.code && !['productName', 'productCode', 'quantity', 'money', '序号'].includes(column.code)) {
-              // 检查是否是单价字段，只保留一个
-              if (column.code === 'unitPrice') {
-                // 确保单价只添加一次
-                let hasPriceField = false;
-                for (let j = 0; j < editableFields.length; j++) {
-                  if (editableFields[j].code === 'unitPrice' || editableFields[j].code === 'price') {
-                    hasPriceField = true;
-                    break;
-                  }
-                }
-                if (!hasPriceField) {
-                  editableFields.push({
-                    code: 'price', // 统一使用price作为键名，避免混淆
-                    label: column.label,
-                    dataType: this.getDataType(column.code)
-                  });
-                }
-              } else if (!['price', 'number', 'remark'].includes(column.code)) {
-                // 添加其他可选字段（排除已单独处理的字段）
-                editableFields.push({
-                  code: column.code,
-                  label: column.label,
-                  dataType: this.getDataType(column.code)
-                });
-              }
-            }
-          }
-          
-          this.setData({ editableFields });
-        } catch (e) {
-          console.error('解析dataJson失败:', e);
-        }
+      const { productFieldList } = app.globalData.submitData || {};
+      
+      // 过滤出需要在编辑页面显示的可编辑字段
+      if (productFieldList && productFieldList.length) {
+        const editableFields = productFieldList
+          .filter(field => !['productName', 'productCode', 'quantity', 'unitPrice', 'money'].includes(field.productFieldCode))
+          .map(field => ({
+            code: field.productFieldCode,
+            label: field.productFieldName,
+            dataType: field.productFieldCode === 'remark' ? 'textarea' : 'text'
+          }));
+        
+        this.setData({ editableFields });
       }
     },
   
-    // 获取字段的数据类型
-    getDataType(code) {
-      const typeMap = {
-        'price': 'number',
-        'unitPrice': 'number',
-        'unit': 'text',
-        'specs': 'text',
-        'brand': 'text',
-        'tag': 'text',
-        'produceCompany': 'text',
-        'remark': 'textarea'
-      };
-      return typeMap[code] || 'text';
-    },
-  
-    // 输入框变化事件
+    // 输入框变化处理
     onInputChange(e) {
       const { field } = e.currentTarget.dataset;
       const { value } = e.detail;
       
-      // 处理数字类型字段
-      if (field === 'price' || field === 'number') {
-        // 确保是有效数字
-        const numValue = value === '' ? 0 : parseFloat(value);
-        this.setData({
-          [`formData.${field}`]: isNaN(numValue) ? 0 : numValue
+      // 特殊处理数字字段
+      let processedValue = value;
+      if (field === 'number') {
+        processedValue = value.toString().replace(/[^\d]/g, ''); // 只允许数字
+      } else if (field === 'price') {
+        processedValue = value.toString().replace(/[^\d.]/g, ''); // 允许数字和小数点
+        // 确保只有一个小数点
+        const dotIndex = processedValue.indexOf('.');
+        if (dotIndex !== -1 && processedValue.lastIndexOf('.') !== dotIndex) {
+          processedValue = processedValue.substring(0, processedValue.lastIndexOf('.'));
+        }
+      }
+      
+      this.setData({
+        [`formData.${field}`]: processedValue
+      });
+    },
+  
+    // 确认保存
+    confirm() {
+      const app = getApp();
+      const { index } = this.data;
+      if (index === -1 || !app.globalData.submitData) {
+        wx.navigateBack();
+        return;
+      }
+  
+      const { formData } = this.data;
+      const price = parseFloat(formData.price || 0);
+      const quantity = parseInt(formData.number || 0);
+      const calcPrice = price * quantity;
+  
+      // 1. 更新selectedProducts（用于展示）
+      if (app.globalData.selectedProducts) {
+        const products = [...app.globalData.selectedProducts];
+        if (products[index]) {
+          products[index] = {
+            ...products[index],
+            ...formData,
+            unitPrice: price,
+            quantity: quantity,
+            calcPrice: calcPrice
+          };
+          app.globalData.selectedProducts = products;
+        }
+      }
+  
+      // 2. 更新productGroupList（用于提交）
+      if (app.globalData.submitData.productGroupList) {
+        app.globalData.submitData.productGroupList.forEach(group => {
+          if (group.quoteProductList && group.quoteProductList[index]) {
+            // 处理productData
+            let originalProductData = group.quoteProductList[index].productData || '{}';
+            if (typeof originalProductData === 'string') {
+              try {
+                originalProductData = JSON.parse(originalProductData);
+              } catch (e) {
+                originalProductData = {};
+              }
+            }
+  
+            // 更新productData
+            const updatedProductData = {
+              ...originalProductData,
+              productName: formData.productName,
+              productCode: formData.productCode,
+              unitPrice: formData.price,
+              quantity: formData.number,
+              unit: formData.unit,
+              specs: formData.specs,
+              brand: formData.brand,
+              tag: formData.tag,
+              produceCompany: formData.produceCompany,
+              remark: formData.remark
+            };
+  
+            // 更新商品信息
+            group.quoteProductList[index] = {
+              ...group.quoteProductList[index],
+              productName: formData.productName,
+              productCode: formData.productCode,
+              quantity: quantity,
+              unitPrice: price,
+              calcPrice: calcPrice,
+              productData: JSON.stringify(updatedProductData)
+            };
+          }
         });
-      } else {
-        this.setData({
-          [`formData.${field}`]: value
+      }
+  
+      // 3. 更新总金额
+      this.updateTotalPrice(app.globalData.submitData);
+  
+      // 4. 返回上一页并刷新
+      const pages = getCurrentPages();
+      const prevPage = pages[pages.length - 2];
+      if (prevPage && prevPage.refreshProductList) {
+        prevPage.refreshProductList(); // 调用上一页的刷新方法
+      }
+      wx.navigateBack();
+    },
+  
+    // 更新总金额
+    updateTotalPrice(submitData) {
+      let total = 0;
+      if (submitData.productGroupList && submitData.productGroupList.length) {
+        submitData.productGroupList.forEach(group => {
+          let groupTotal = 0;
+          if (group.quoteProductList && group.quoteProductList.length) {
+            group.quoteProductList.forEach(product => {
+              groupTotal += parseFloat(product.calcPrice || 0);
+            });
+          }
+          group.subtotal = groupTotal;
+          total += groupTotal;
         });
+      }
+      
+      // 更新报价单总金额
+      if (submitData.quote) {
+        submitData.quote.amountPrice = total.toFixed(2);
+        submitData.quote.totalPrice = total.toFixed(2);
       }
     },
   
     // 取消编辑
     cancel() {
       wx.navigateBack();
-    },
-  
-    // 保存编辑
-    confirm() {
-      const app = getApp();
-      if (!app.globalData.selectedProducts || !app.globalData.submitData) {
-        wx.navigateBack();
-        return;
-      }
-  
-      // 1. 更新展示用的商品数据
-      const products = [...app.globalData.selectedProducts];
-      if (products[this.data.index]) {
-        const updatedItem = {
-          ...products[this.data.index],
-          ...this.data.formData,
-          // 确保price和unitPrice同步
-          unitPrice: this.data.formData.price
-        };
-        products[this.data.index] = updatedItem;
-        app.globalData.selectedProducts = products;
-      }
-  
-      // 2. 更新submitData中的商品数据
-      if (app.globalData.submitData.products) {
-        const submitProducts = [...app.globalData.submitData.products];
-        if (submitProducts[this.data.index]) {
-          // 更新原始数据结构
-          const updatedSubmitItem = {
-            ...submitProducts[this.data.index],
-            quantity: this.data.formData.number,
-            unitPrice: this.data.formData.price,
-            productData: typeof submitProducts[this.data.index].productData === 'string' 
-              ? JSON.stringify({
-                  ...JSON.parse(submitProducts[this.data.index].productData),
-                  unitPrice: this.data.formData.price,
-                  unit: this.data.formData.unit,
-                  specs: this.data.formData.specs,
-                  brand: this.data.formData.brand,
-                  tag: this.data.formData.tag,
-                  produceCompany: this.data.formData.produceCompany,
-                  remark: this.data.formData.remark
-                })
-              : {
-                  ...submitProducts[this.data.index].productData,
-                  unitPrice: this.data.formData.price,
-                  unit: this.data.formData.unit,
-                  specs: this.data.formData.specs,
-                  brand: this.data.formData.brand,
-                  tag: this.data.formData.tag,
-                  produceCompany: this.data.formData.produceCompany,
-                  remark: this.data.formData.remark
-                }
-          };
-          submitProducts[this.data.index] = updatedSubmitItem;
-          app.globalData.submitData.products = submitProducts;
-        }
-      }
-  
-      // 3. 返回上一页
-      wx.navigateBack();
     }
   });
-      
