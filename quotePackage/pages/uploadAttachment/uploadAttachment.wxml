@@ -22,7 +22,7 @@
         <image src="/static/Excel.png" wx:if="{{item.type=='xls'}}"></image>
         <view>{{item.fileName}}</view>
       </view>
-      <image src="/static/delete.png" bind:tap="confirmDelete"></image>
+      <image src="/static/delete.png" bind:tap="confirmDelete" data-index="{{index}}"></image>
     </view>
   </view>
 </view>
