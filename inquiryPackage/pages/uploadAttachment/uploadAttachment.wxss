@@ -32,8 +32,8 @@ page{
   color: #23394D;
 }  
 .confirmBtn{
-  width: 30%;
-  height: 20%;
+  width: 50%;
+  height: 100%;
   font-size: 30rpx;
   background-color: #F9B712;
   color: white;
@@ -41,7 +41,26 @@ page{
   align-items: center;
   justify-content: center;
 }
-
+.cancel-btn {
+  width: 50%;
+  height: 100%;
+  font-size: 30rpx;
+  background-color: whitesmoke;
+  color: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-group {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 90rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
 .editButton {
   float: right;
 }

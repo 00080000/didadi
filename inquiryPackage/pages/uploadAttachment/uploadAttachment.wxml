@@ -26,12 +26,17 @@
         
         <view class="fileName">{{item.name}}</view>
       </view>
-      <image src="/static/delete.png" bind:tap="confirmDelete" class="deleteBtn"></image>
+      <image src="/static/delete.png" bind:tap="confirmDelete" class="deleteBtn" data-index="{{index}}" ></image>
     </view>
   </view>
 
   <!-- 确定按钮 -->
-  <view >
-    <button class="confirmBtn" bind:tap="confirm">确定</button>
+  <view class="btn-group">
+    <view class="cancel-btn" bind:tap="cancel">
+      取消
+    </view>
+    <view class="confirmBtn" bind:tap="confirm">
+      确定
+    </view>
   </view>
 </view>

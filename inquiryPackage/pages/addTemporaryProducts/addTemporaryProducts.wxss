@@ -6,8 +6,6 @@ page{
   position: relative;
 }
 
-
-
 .form-item {
   display: flex;
   padding: 24rpx;
