@@ -41,7 +41,7 @@ page{
   right: 30rpx;
   background-color: #DDDDDD;
   border-radius: 10px;
-  height: 340rpx;
+  height: 200rpx;
   width: 240rpx;
   display: flex;
   flex-direction: column;

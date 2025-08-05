@@ -98,6 +98,7 @@ Page({
         // 确保所有商品都有基础字段，优先从productData获取，其次从item获取
         const baseItem = {
           id: item.id || `item-${Date.now()}-${index}`,
+          productId: item.productId || item.id || `pid-${Date.now()}-${index}`, // 确保有productId
           name: productData.productName || item.productName || item.name || '未命名商品',
           type: this.getProductType(item.type || productData.type) || 'singleProduct',
           price: Number(productData.unitPrice) || Number(item.unitPrice) || Number(item.price) || 0,
@@ -156,6 +157,7 @@ Page({
         const submitItem = item.originalData ? JSON.parse(JSON.stringify(item.originalData)) : {};
         
         // 更新基本信息
+        submitItem.productId = item.productId || item.id; // 确保有productId
         submitItem.quantity = item.number;
         submitItem.productName = item.name;
         
@@ -323,6 +325,7 @@ Page({
             // 为新商品创建符合submitData格式的原始数据
             const newProductOriginal = {
               id: `new-${Date.now()}`,
+              productId: newProduct.productId || `new-pid-${Date.now()}`, // 确保有productId
               productName: newProduct.name,
               quantity: newProduct.number,
               unitPrice: newProduct.price,
@@ -340,6 +343,7 @@ Page({
             // 构建展示用商品数据
             const displayProduct = {
               ...newProduct,
+              productId: newProduct.productId || `new-pid-${Date.now()}`, // 确保有productId
               originalData: newProductOriginal,
               originalProductData: JSON.parse(newProductOriginal.productData)
             };
@@ -439,10 +443,12 @@ Page({
     addBlankRow() {
       const newRow = {
         id: `blank-${Date.now()}`,
+        productId: `blank-pid-${Date.now()}`, // 确保有productId
         name: '空白行',
         type: 'blankRow',
         originalData: {
           id: `blank-${Date.now()}`,
+          productId: `blank-pid-${Date.now()}`, // 确保有productId
           type: 4,
           productData: JSON.stringify({ type: 4 })
         },
@@ -452,64 +458,6 @@ Page({
       
       const product = [...this.data.product, newRow];
       this.setData({ product, ifShow: false }, () => this.calculateTotal());
-    },
-  
-    // 添加分组行
-    addGroupRow() {
-      const newRow = {
-        id: `group-${Date.now()}`,
-        name: '新分组',
-        type: 'groupRow',
-        description: '',
-        originalData: {
-          id: `group-${Date.now()}`,
-          type: 5,
-          productData: JSON.stringify({ 
-            type: 5,
-            productName: '新分组',
-            description: ''
-          })
-        },
-        originalProductData: { 
-          type: 5,
-          productName: '新分组',
-          description: ''
-        }
-      };
-      console.log('添加分组行:', newRow);
-      
-      const product = [...this.data.product, newRow];
-      this.setData({ product, ifShow: false }, () => this.calculateTotal());
-    },
-  
-    // 添加费用行
-    addFeeRow() {
-      const newRow = {
-        id: `fee-${Date.now()}`,
-        name: '新费用',
-        total: 1,
-        price: 0,
-        type: 'feeName',
-        originalData: {
-          id: `fee-${Date.now()}`,
-          type: 3,
-          total: 1,
-          unitPrice: 0,
-          productData: JSON.stringify({
-            type: 3,
-            productName: '新费用',
-            unitPrice: 0
-          })
-        },
-        originalProductData: {
-          type: 3,
-          productName: '新费用',
-          unitPrice: 0
-        }
-      };
-      console.log('添加费用行:', newRow);
-      
-      const product = [...this.data.product, newRow];
-      this.setData({ product, ifShow: false }, () => this.calculateTotal());
     }
-  });
+  })
+    

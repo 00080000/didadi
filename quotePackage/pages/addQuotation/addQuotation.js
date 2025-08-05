@@ -174,6 +174,7 @@ Page({
                         ...product,
                         ...productData,
                         id: product.id,
+                        productId: product.productId || product.id, // 确保有productId
                         name: productData.productName || product.name || '未知商品',
                         price: Number(product.unitPrice || 0),
                         unitPrice: Number(product.unitPrice || 0),
@@ -185,6 +186,7 @@ Page({
                       console.error('解析商品数据失败:', e);
                       productList.push({
                         ...product,
+                        productId: product.productId || product.id, // 确保有productId
                         name: product.name || '未知商品',
                         price: Number(product.unitPrice || 0),
                         unitPrice: Number(product.unitPrice || 0),
@@ -402,6 +404,7 @@ Page({
         
         return {
           ...product,
+          productId: product.productId || product.id, // 确保有productId
           unitPrice: price,
           quantity: quantity,
           productData: productData,
@@ -489,6 +492,7 @@ Page({
                         ...productData,
                         // 保留提交所需的核心字段
                         id: product.id,
+                        productId: product.productId || product.id, // 确保有productId
                         name: productData.productName || product.name || '未知商品',
                         price: Number(product.unitPrice || 0),
                         unitPrice: Number(product.unitPrice || 0),
@@ -501,6 +505,7 @@ Page({
                       // 解析失败时仍添加基础信息
                       productList.push({
                         ...product,
+                        productId: product.productId || product.id, // 确保有productId
                         name: product.name || '未知商品',
                         price: Number(product.unitPrice || 0),
                         unitPrice: Number(product.unitPrice || 0),
@@ -811,7 +816,7 @@ Page({
       // 处理商品分组及商品信息（解决商品不能为空错误）
       const quoteProductGroupFormList = (globalData.productGroupList || []).map(group => ({
         quoteProductFormList: (group.quoteProductList || []).map(product => ({
-          productId: product.productId,
+          productId: product.productId || product.id, // 确保有productId
           quantity: product.quantity || 1,
           unitPrice: (product.unitPrice || 0).toFixed(2)
         }))
@@ -821,7 +826,7 @@ Page({
       if (quoteProductGroupFormList.length === 0 && product.length > 0) {
         quoteProductGroupFormList.push({
           quoteProductFormList: product.map(p => ({
-            productId: p.productId,
+            productId: p.productId || p.id, // 确保有productId
             quantity: p.quantity || 1,
             unitPrice: (p.unitPrice || 0).toFixed(2)
           }))

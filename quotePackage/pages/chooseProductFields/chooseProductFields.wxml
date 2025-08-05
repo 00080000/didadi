@@ -1,33 +1,39 @@
 <view class="container">
   <view class="header">
-    以下信息将显示在您对外发送的文档中，请仔细填写！
+    以下信息将显示在您对外发送的文档中，请选择需要展示的字段
   </view>
-  <view class="form">
-    <view class="fieldCard" wx:for="{{fields}}" wx:for-item="field" wx:key="index" data-index="{{index}}" bind:tap="chooseField">
-      <view wx:if="{{field.ifChoose==true}}" style="display: flex;width: 100%;height: 100%;align-items: center;">
-        <view class="blueSidebar">
-          <view class="checkbox">✔</view>
+  
+  <!-- 字段列表 -->
+  <view class="fields-container">
+    <!-- 必选字段 -->
+    <view class="section-title">必选字段</view>
+    <view class="field-list">
+      <view class="field-item required" wx:for="{{requiredFields}}" wx:key="id">
+        <view class="field-info">
+          <view class="field-name">{{item.label}}</view>
+          <view class="field-desc">（必填，不可取消）</view>
         </view>
-        <view class="fieldName" style="color: #23394D;">
-          {{field.name}}
-        </view>
-      </view>
-      <view wx:if="{{field.ifChoose==false}}" style="display: flex;width: 100%;height: 100%;align-items: center;">
-        <view class="graySidebar">
-          <view class="checkbox"></view>
-        </view>
-        <view class="fieldName" style="color: gray;">
-          {{field.name}}
-        </view>
+        <view class="required-tag">必填</view>
       </view>
     </view>
+    
+    <!-- 可选字段 -->
+    <view class="section-title">可选字段</view>
+    <view class="field-list">
+      <view class="field-item" wx:for="{{optionalFields}}" wx:key="id" bind:tap="toggleField" data-index="{{index}}">
+        <view class="field-info">
+          <view class="field-name">{{item.label}}</view>
+        </view>
+        <view class="checkbox {{item.isSelected ? 'checked' : ''}}">
+          {{item.isSelected ? '✓' : ''}}
+        </view>
+      </view>
+    </view>
   </view>
-  <view class="buttonGroup">
-    <view class="cancelButton" bind:tap="cancel">
-      取消
-    </view>
-    <view class="confirmButton" bind:tap="confirm">
-      确定
-    </view>
+  
+  <!-- 底部按钮 -->
+  <view class="button-group">
+    <view class="cancel-btn" bind:tap="cancel">取消</view>
+    <view class="confirm-btn" bind:tap="confirm">确认</view>
   </view>
 </view>

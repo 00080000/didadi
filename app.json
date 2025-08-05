@@ -48,6 +48,7 @@
         "pages/sendedQuotationForm/sendedQuotationForm",
         "pages/recievedQuotationForm/recievedQuotationForm",
         "pages/addQuotation/addQuotation",
+        "pages/addTemporaryProducts/addTemporaryProducts",
         "pages/editFileInformation/editFileInformation",
         "pages/chooseMerchant/chooseMerchant",
         "pages/chooseContactOfMerchant/chooseContactOfMerchant",

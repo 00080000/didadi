@@ -1,42 +1,77 @@
 <view class="container">
-  <view class="header">
-    以下信息将显示在您对外发送的文档中，请仔细填写！
+  <view class="title">编辑商品</view>
+
+  <!-- 商品基本信息（不可编辑） -->
+  <view class="info-section">
+    <view class="section-title">基本信息</view>
+    <view class="info-item">
+      <view class="label">商品名称</view>
+      <view class="value">{{item.name}}</view>
+    </view>
+    <view class="info-item">
+      <view class="label">商品编码</view>
+      <view class="value">{{item.productCode || item.productId}}</view>
+    </view>
   </view>
-  <view class="form">
-    <view class="inputArea">
-      <view class="label">名称</view>
-      <input disabled="true" class="disabledInput" style="width: 450rpx;"/>
-    </view>
-    <view class="inputArea">
-      <view class="label">型号</view>
-      <input disabled="true" class="disabledInput" style="width: 450rpx;"/>
-    </view>
-    <view class="inputArea">
-      <view class="label">单价</view>
-      <view style="width: 500rpx;height: 70rpx;display: flex;align-items: center;">
-        <input type="digit" class="pickerInput" style="width: 225rpx;"/>
-        <picker bindchange="pickerChange" mode="selector" value="{{index}}" range="{{pickerValue}}"	 class="picker">
-            <view class="showPickerValue">
-              <view>{{pickerValue[index]}}</view>
-              <image src="/static/downArrow-gray.png"></image>
-            </view>
-          </picker>         
+
+  <!-- 可编辑字段区域 -->
+  <view class="edit-section">
+    <view class="section-title">编辑信息</view>
+    
+    <!-- 动态生成的可编辑字段 -->
+    <view class="form-item" wx:for="{{editableFields}}" wx:key="code">
+      <view class="form-label">{{item.label}}</view>
+      <view class="form-input">
+        <input 
+          wx:if="{{item.dataType !== 'textarea'}}"
+          type="{{item.dataType === 'number' ? 'number' : 'text'}}"
+          value="{{formData[item.code] || ''}}"
+          bindinput="onInputChange"
+          data-field="{{item.code}}"
+          placeholder="请输入{{item.label}}"
+        />
+        <textarea 
+          wx:else
+          value="{{formData[item.code] || ''}}"
+          bindinput="onInputChange"
+          data-field="{{item.code}}"
+          placeholder="请输入{{item.label}}"
+        />
       </view>
     </view>
-    <view class="inputArea">
-      <view class="label">数量</view>
-      <input type="number" class="input" style="width: 450rpx;"/>
+
+    <!-- 固定显示的数量字段 -->
+    <view class="form-item">
+      <view class="form-label">数量</view>
+      <view class="form-input">
+        <input 
+          type="number" 
+          value="{{formData.number}}" 
+          bindinput="onInputChange" 
+          data-field="number"
+          placeholder="请输入数量"
+        />
+      </view>
     </view>
-    <view class="deleteButton">
-      删除商品
+
+    <!-- 固定显示的备注字段 -->
+    <view class="form-item">
+      <view class="form-label">备注</view>
+      <view class="form-input">
+        <textarea 
+          value="{{formData.remark || ''}}" 
+          bindinput="onInputChange" 
+          data-field="remark"
+          placeholder="请输入备注"
+        />
+      </view>
     </view>
   </view>
-  <view class="buttonGroup">
-    <view class="cancelButton" bind:tap="cancel">
-      取消
-    </view>
-    <view class="confirmButton" bind:tap="confirm">
-      确定
-    </view>
+
+  <!-- 底部按钮 -->
+  <view class="button-group">
+    <view class="cancel-btn" bind:tap="cancel">取消</view>
+    <view class="confirm-btn" bind:tap="confirm">确定</view>
   </view>
-</view>  
+</view>
+    

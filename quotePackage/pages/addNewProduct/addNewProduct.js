@@ -84,6 +84,7 @@ Page({
             // 格式化数据
             const formattedData = (res.data.rows || []).map(item => ({
               id: item.id,
+              productId: item.id, // 确保有productId
               name: item.productName || '未知商品',
               type: item.type || item.specs || '无型号',
               price: this.getValidPrice(item),
@@ -92,6 +93,7 @@ Page({
               productCode: item.productCode || item.code || '无编码',
               originalData: {
                 id: item.id,
+                productId: item.id, // 确保有productId
                 productName: item.productName || '未知商品',
                 type: 0,
                 unitPrice: this.getValidPrice(item),
@@ -143,6 +145,7 @@ Page({
   
             const formattedData = (res.data.rows || []).map(item => ({
               id: item.id,
+              productId: item.id, // 确保有productId
               name: item.name || '未知组合商品',
               price: this.getValidPrice(item),
               number: 1,
@@ -150,6 +153,7 @@ Page({
               productCode: item.productCode || item.code || '组合无编码',
               originalData: {
                 id: item.id,
+                productId: item.id, // 确保有productId
                 productName: item.name || '未知组合商品',
                 type: 1,
                 unitPrice: this.getValidPrice(item),
@@ -202,6 +206,7 @@ Page({
   
             const formattedData = (res.data.rows || []).map(item => ({
               id: item.id,
+              productId: item.id, // 确保有productId
               name: item.productName || '未知临时商品',
               price: this.getValidPrice(item),
               number: 1,
@@ -209,6 +214,7 @@ Page({
               productCode: item.productCode || item.code || '临时无编码',
               originalData: {
                 id: item.id,
+                productId: item.id, // 确保有productId
                 productName: item.productName || '未知临时商品',
                 type: 2,
                 unitPrice: this.getValidPrice(item),
@@ -538,4 +544,4 @@ Page({
         }
       }
     }
-  });
+  })

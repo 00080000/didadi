@@ -28,14 +28,6 @@
       <image src="/static/newBlankRow.png"></image>
       加空白行
     </view>
-    <view class='newItem' bind:tap="addGroupRow">
-      <image src="/static/newGroupRow.png"></image>
-      加分组行
-    </view>
-    <view class='newItem' bind:tap="addFeeRow">
-      <image src="/static/newMonnyRow.png"></image>
-      加费用行
-    </view>
   </view>
 
   <view class="productList">
