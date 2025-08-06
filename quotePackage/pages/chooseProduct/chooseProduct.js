@@ -188,60 +188,7 @@ Page({
       return normalized;
     },
   
-    // 转换商品数据为submitData格式
-    convertToSubmitFormat(products) {
-      console.log('===== 开始转换商品数据为submitData格式 =====');
-      
-      // 防止空数据
-      if (!products || !Array.isArray(products)) {
-        console.warn('传入的商品数据不是有效的数组，返回空数组');
-        return [];
-      }
-      
-      const submitProducts = products.map((item) => {
-        // 确保item是对象
-        if (!item || typeof item !== 'object') {
-          console.warn(`商品数据项无效，跳过`);
-          return null;
-        }
-        
-        // 基于原始数据进行修改，保持与submitData一致的格式
-        const submitItem = item.originalData ? JSON.parse(JSON.stringify(item.originalData)) : {};
-        
-        // 更新基本信息
-        submitItem.productId = item.productId || item.id; // 确保有productId
-        submitItem.quantity = item.number;
-        submitItem.productName = item.name;
-        
-        // 更新productData（保持原有结构）
-        let productData = item.originalProductData ? JSON.parse(JSON.stringify(item.originalProductData)) : {};
-        productData.productName = item.name;
-        productData.productCode = item.productCode;
-        productData.unitPrice = item.price;
-        productData.unit = item.unit;
-        productData.specs = item.specs;
-        productData.brand = item.brand;
-        productData.tag = item.tag;
-        productData.remark = item.remark;
-        
-        // 保持productData的数据类型（与submitData一致）
-        submitItem.productData = typeof item.originalData?.productData === 'string' 
-          ? JSON.stringify(productData) 
-          : productData;
-        
-        // 处理不同类型商品的特殊字段
-        if (item.type === 'feeName') {
-          submitItem.total = item.total;
-          submitItem.unitPrice = item.price;
-        }
-        
-        console.log(`转换后的数据项:`, submitItem);
-        return submitItem;
-      }).filter(Boolean); // 过滤掉null值
-      
-      console.log('===== 商品数据转换为submitData格式完成 =====');
-      return submitProducts;
-    },
+
   
     // 转换商品类型（根据预览页逻辑映射）
     getProductType(originalType) {
@@ -464,7 +411,72 @@ Page({
         url: '/quotePackage/pages/setFormStyle/setFormStyle',
       });
     },
-  
+  // 转换商品数据为submitData格式
+  convertToSubmitFormat(products) {
+    console.log('===== 开始转换商品数据为submitData格式 =====');
+    
+    if (!products || !Array.isArray(products)) {
+      console.warn('传入的商品数据不是有效的数组，返回空数组');
+      return [];
+    }
+    
+    const submitProducts = products.map((item) => {
+      if (!item || typeof item !== 'object') {
+        console.warn(`商品数据项无效，跳过`);
+        return null;
+      }
+
+      // 临时商品(customProduct)特殊处理
+      if (item.type === 'customProduct') {
+        return {
+          // 完全匹配服务器期望的格式
+          quantity: item.quantity || item.number || "1",
+          unitPrice: item.unitPrice || (item.price ? item.price.toFixed(2) : "0.00"),
+          remark: item.remark || "",
+          productData: item.productData || {
+            productCode: item.productCode || item.code || "",
+            productName: item.productName || item.name || "",
+            unitPrice: item.unitPrice || (item.price ? item.price.toFixed(2) : "0.00"),
+            quantity: item.quantity || item.number || "1",
+            remark: item.remark || "",
+            type: 2, // 临时商品类型标识
+            money: item.money || ((parseFloat(item.unitPrice || item.price || 0) * parseInt(item.quantity || item.number || 1)).toFixed(2))
+          }
+        };
+      }
+      
+      // 普通商品处理逻辑保持不变
+      const submitItem = item.originalData ? JSON.parse(JSON.stringify(item.originalData)) : {};
+      
+      submitItem.productId = item.productId || item.id;
+      submitItem.quantity = item.number;
+      submitItem.productName = item.name;
+      
+      let productData = item.originalProductData ? JSON.parse(JSON.stringify(item.originalProductData)) : {};
+      productData.productName = item.name;
+      productData.productCode = item.productCode;
+      productData.unitPrice = item.price;
+      productData.unit = item.unit;
+      productData.specs = item.specs;
+      productData.brand = item.brand;
+      productData.tag = item.tag;
+      productData.remark = item.remark;
+      
+      submitItem.productData = typeof item.originalData?.productData === 'string' 
+        ? JSON.stringify(productData) 
+        : productData;
+      
+      if (item.type === 'feeName') {
+        submitItem.total = item.total;
+        submitItem.unitPrice = item.price;
+      }
+      
+      return submitItem;
+    }).filter(Boolean);
+    
+    console.log('===== 商品数据转换为submitData格式完成 =====');
+    return submitProducts;
+  },
     // 跳转到选择商品字段
     goToChooseProductFields() {
       wx.navigateTo({
@@ -527,35 +539,14 @@ Page({
       return pageMap[type] || 'SingleProduct';
     },
   
-    // 添加空白行
+    // 修改：加空白行功能改为跳转到临时商品页面
     addBlankRow() {
-      const newRow = {
-        id: `blank-${Date.now()}`,
-        productId: `blank-pid-${Date.now()}`, // 确保有productId
-        name: '空白行',
-        productName: '空白行',
-        productCode: '',
-        type: 'blankRow',
-        originalData: {
-          id: `blank-${Date.now()}`,
-          productId: `blank-pid-${Date.now()}`, // 确保有productId
-          type: 4,
-          productData: JSON.stringify({ type: 4 })
-        },
-        originalProductData: { type: 4 },
-        checked: false
-      };
-      console.log('添加空白行:', newRow);
-      
-      const product = [...this.data.product, newRow];
-      this.setData({ 
-        product, 
-        ifShow: false,
-        showNoData: product.length === 0
-      }, () => this.calculateTotal());
+      this.setData({ ifShow: false });
+      // 跳转到添加临时商品页面
+      wx.navigateTo({
+        url: '/quotePackage/pages/addTemporaryProducts/addTemporaryProducts'
+      });
     },
-  
-    // 以下是新增的必要功能，确保数据能正确显示和更新
   
     // 搜索输入变化
     onSearchInput(e) {
@@ -755,4 +746,3 @@ Page({
       });
     }
   })
-    

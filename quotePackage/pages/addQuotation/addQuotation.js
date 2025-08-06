@@ -165,9 +165,13 @@ Page({
             // 处理商品列表
             let productList = [];
             if (viewData.productGroupList && viewData.productGroupList.length) {
-              viewData.productGroupList.forEach(group => {
+              // 使用传统for循环替代for...of
+              for (let i = 0; i < viewData.productGroupList.length; i++) {
+                const group = viewData.productGroupList[i];
                 if (group.quoteProductList && group.quoteProductList.length) {
-                  group.quoteProductList.forEach(product => {
+                  // 使用传统for循环替代for...of
+                  for (let j = 0; j < group.quoteProductList.length; j++) {
+                    const product = group.quoteProductList[j];
                     try {
                       const productData = product.productData ? JSON.parse(product.productData) : {};
                       productList.push({
@@ -195,9 +199,9 @@ Page({
                         calcPrice: Number(product.calcPrice || 0)
                       });
                     }
-                  });
+                  }
                 }
-              });
+              }
             }
 
             // 更新全局数据
@@ -244,6 +248,7 @@ Page({
     },
   
     onShow() {
+      console.log('===== onShow 开始执行 =====');
       const app = getApp();
       const { isNew } = this.data;
   
@@ -314,11 +319,14 @@ Page({
   
         // 处理商品选择返回数据（核心同步点）
         if (app.globalData.selectedProducts) {
+          console.log('===== 新建模式 - 同步商品数据开始 =====');
+          console.log('全局商品数据:', app.globalData.selectedProducts);
           this.setData({
             product: app.globalData.selectedProducts
           });
           // 同步到全局submitData并更新总价
           this.syncProductsToSubmitData(app.globalData.selectedProducts);
+          console.log('===== 新建模式 - 同步商品数据结束 =====');
         }
         return;
       }
@@ -375,41 +383,96 @@ Page({
   
       // 处理商品选择返回数据（编辑模式 - 核心同步点）
       if (app.globalData.selectedProducts) {
+        console.log('===== 编辑模式 - 同步商品数据开始 =====');
+        console.log('全局商品数据:', app.globalData.selectedProducts);
         this.setData({
           product: app.globalData.selectedProducts
         });
         // 同步到全局submitData并更新总价
         this.syncProductsToSubmitData(app.globalData.selectedProducts);
+        console.log('===== 编辑模式 - 同步商品数据结束 =====');
       }
+      console.log('===== onShow 执行结束 =====');
     },
   
     // 同步商品数据到submitData并更新总价
     syncProductsToSubmitData(products) {
+      console.log('===== syncProductsToSubmitData 开始执行 =====');
+      console.log('原始商品数据:', products);
+      
       const app = getApp();
       // 计算总价
       let totalPrice = 0;
       
       // 格式化商品数据，确保与接口返回格式一致
-      const formattedProducts = products.map(product => {
+      const formattedProducts = products.map((product, index) => {
+        console.log(`===== 处理第 ${index + 1} 个商品 =====`);
+        console.log(`商品原始数据:`, product);
+        
+        // 调试productId类型和值
+        console.log(`productId 值: ${product.productId}, 类型: ${typeof product.productId}`);
+        
         // 计算商品小计（兼容不同字段名）
         const price = Number(product.price || product.unitPrice || 0);
         const quantity = Number(product.number || product.quantity || 0);
         const itemTotal = price * quantity;
         totalPrice += itemTotal;
         
-        // 确保productData为字符串格式（与接口返回一致）
-        const productData = typeof product.productData === 'object' 
-          ? JSON.stringify(product.productData)
-          : product.productData || '{}';
+        // 调试价格和数量
+        console.log(`价格: ${price}, 数量: ${quantity}, 小计: ${itemTotal}`);
         
-        return {
+        // 确保productData为对象格式（修复临时商品结构）
+        let productData = {};
+        if (typeof product.productData === 'string') {
+          try {
+            productData = JSON.parse(product.productData);
+          } catch (e) {
+            console.error('解析productData失败:', e);
+            productData = {};
+          }
+        } else if (typeof product.productData === 'object') {
+          productData = product.productData || {}; // 确保是对象
+        }
+        
+        // 将productId转换为字符串，防止类型错误
+        const productIdStr = String(product.productId || '');
+        console.log(`转换后的productId: ${productIdStr}, 类型: ${typeof productIdStr}`);
+        
+        // 为临时商品添加必要字段
+        if (productIdStr.startsWith('temp-')) {
+          console.log('检测到临时商品');
+          productData = {
+            ...productData,
+            productCode: productData.productCode || product.productCode || product.code || '',
+            productName: productData.productName || product.name || product.productName || '',
+            unitPrice: productData.unitPrice || product.unitPrice || price.toFixed(2),
+            quantity: productData.quantity || product.quantity || quantity.toString(),
+            remark: productData.remark || product.remark || '',
+            type: 2, // 临时商品标识
+            money: productData.money || itemTotal.toFixed(2)
+          };
+        } else {
+          console.log('检测到普通商品');
+          // 普通商品补充字段
+          productData = {
+            ...productData,
+            type: 1, // 普通商品标识
+            money: productData.money || itemTotal.toFixed(2)
+          };
+        }
+        
+        const formattedProduct = {
           ...product,
           productId: product.productId || product.id, // 确保有productId
           unitPrice: price,
           quantity: quantity,
+          remark: product.remark || '',
           productData: productData,
           calcPrice: itemTotal.toFixed(2) // 计算小计
         };
+        
+        console.log(`格式化后的商品数据:`, formattedProduct);
+        return formattedProduct;
       });
       
       // 更新全局submitData，确保时间和有效期存在
@@ -451,6 +514,7 @@ Page({
       
       console.log('商品数据同步完成，总价:', totalPrice.toFixed(2));
       console.log('同步后的selectedProducts:', formattedProducts);
+      console.log('===== syncProductsToSubmitData 执行结束 =====');
     },
   
     // 加载报价单详情数据（仅编辑模式）
@@ -481,10 +545,13 @@ Page({
             // 从productGroupList中提取商品数据（与接口返回格式保持一致）
             let productList = [];
             if (viewData.productGroupList && viewData.productGroupList.length) {
-              viewData.productGroupList.forEach(group => {
+              // 使用传统for循环替代for...of
+              for (let i = 0; i < viewData.productGroupList.length; i++) {
+                const group = viewData.productGroupList[i];
                 if (group.quoteProductList && group.quoteProductList.length) {
-                  // 解析每个商品的详细数据
-                  group.quoteProductList.forEach(product => {
+                  // 使用传统for循环替代for...of
+                  for (let j = 0; j < group.quoteProductList.length; j++) {
+                    const product = group.quoteProductList[j];
                     try {
                       const productData = product.productData ? JSON.parse(product.productData) : {};
                       productList.push({
@@ -498,7 +565,8 @@ Page({
                         unitPrice: Number(product.unitPrice || 0),
                         quantity: Number(product.quantity || 0),
                         number: Number(product.quantity || 0), // 兼容number字段
-                        calcPrice: Number(product.calcPrice || 0)
+                        calcPrice: Number(product.calcPrice || 0),
+                        remark: product.remark || productData.remark || ''
                       });
                     } catch (e) {
                       console.error('解析商品数据失败:', e);
@@ -511,12 +579,13 @@ Page({
                         unitPrice: Number(product.unitPrice || 0),
                         quantity: Number(product.quantity || 0),
                         number: Number(product.quantity || 0),
-                        calcPrice: Number(product.calcPrice || 0)
+                        calcPrice: Number(product.calcPrice || 0),
+                        remark: product.remark || ''
                       });
                     }
-                  });
+                  }
                 }
-              });
+              }
             }
   
             // 初始化商品字段列表（编辑模式）
@@ -725,113 +794,262 @@ Page({
       wx.navigateBack();
     },
   
-    // 确认提交（使用正确格式的postData提交）
-    confirm() {
-      const app = getApp();
-      const { isNew, item, product, attachment } = this.data;
-      
-      // 校验必填项
-      if (!item.companyId || item.companyName === '请选择商家') {
-        return wx.showToast({ title: '请选择商家', icon: 'none' });
-      }
-      if (product.length === 0) {
-        return wx.showToast({ title: '请添加商品', icon: 'none' });
-      }
-      if (!item.projectName || item.projectName.trim() === '') {
-        return wx.showToast({ title: '请填写项目名称', icon: 'none' });
-      }
-      // 验证时间是否存在
-      if (!item.quoteDate) {
-        return wx.showToast({ title: '请设置报价时间', icon: 'none' });
-      }
-      // 验证有效期是否存在
-      if (!item.validityTime) {
-        return wx.showToast({ title: '请设置有效期', icon: 'none' });
-      }
-  
-      // 最终保存数据到全局submitData
-      this.saveToSubmitData();
-  
-      // 构建符合接口要求的提交数据
-      const postData = this.buildSubmitData();
-  
-      // 提交前输出完整的postData
-      console.log('===== 提交前的postData =====');
-      console.log(JSON.stringify(postData, null, 2));
-  
-      // 区分接口地址
-      const url = isNew 
-        ? `${getApp().globalData.serverUrl}/diServer/quote/submit`
-        : `${getApp().globalData.serverUrl}/diServer/quote/submit`;
-  
-      // 发送请求
-      wx.showLoading({ title: isNew ? '创建中...' : '保存中...' });
-      wx.request({
-        url: url,
-        method: 'POST',
-        header: {
-          'Authorization': `Bearer ${getApp().globalData.token}`,
-          'Content-Type': 'application/json'
-        },
-        data: postData, // 提交格式化后的postData
-        success: (res) => {
-          wx.hideLoading();
-          console.log('提交响应:', res);
-          if (res.statusCode === 200 && res.data.code === 200) {
-            wx.showToast({
-              title: isNew ? '创建成功' : '保存成功',
-              icon: 'success',
-              duration: 1500
-            });
-            setTimeout(() => {
-              wx.navigateBack();
-            }, 1500);
-          } else {
-            wx.showToast({
-              title: res.data.message || (isNew ? '创建失败' : '保存失败'),
-              icon: 'none'
-            });
-          }
-        },
-        fail: (err) => {
-          wx.hideLoading();
-          console.error('提交失败:', err);
-          wx.showToast({ title: '网络请求错误', icon: 'none' });
+// 确认提交（使用正确格式的postData提交）
+confirm() {
+    console.log('===== confirm 开始执行 =====');
+    const app = getApp();
+    const { isNew, item, product, attachment } = this.data;
+    
+    console.log('当前商品列表:', product);
+    
+    // 校验必填项
+    if (!item.companyId || item.companyName === '请选择商家') {
+      return wx.showToast({ title: '请选择商家', icon: 'none' });
+    }
+    if (product.length === 0) {
+      return wx.showToast({ title: '请添加商品', icon: 'none' });
+    }
+    if (!item.projectName || item.projectName.trim() === '') {
+      return wx.showToast({ title: '请填写项目名称', icon: 'none' });
+    }
+    // 验证时间是否存在
+    if (!item.quoteDate) {
+      return wx.showToast({ title: '请设置报价时间', icon: 'none' });
+    }
+    // 验证有效期是否存在
+    if (!item.validityTime) {
+      return wx.showToast({ title: '请设置有效期', icon: 'none' });
+    }
+    
+    // 验证临时商品的必填字段 - 修复类型错误
+    // 先确保productId是字符串类型，再判断是否以'temp-'开头
+    console.log('===== 开始验证临时商品 =====');
+    const tempProducts = product.filter(p => {
+      // 将productId转换为字符串，防止类型错误
+      const productIdStr = String(p.productId || '');
+      console.log(`验证商品 productId: ${productIdStr}, 是否临时商品: ${productIdStr.startsWith('temp-')}`);
+      return productIdStr.startsWith('temp-');
+    });
+    
+    console.log('检测到的临时商品数量:', tempProducts.length);
+    
+    // 遍历临时商品验证必填项
+    for (let i = 0; i < tempProducts.length; i++) {
+        const p = tempProducts[i];
+        console.log(`验证第 ${i + 1} 个临时商品:`, p);
+        
+        // 修复临时商品名称验证逻辑 - 从多个可能的字段获取名称
+        const productName = p.productData?.productName || p.productName || p.name || '';
+        const productCode = p.productData?.productCode || p.productCode || p.code || '';
+        const remark = p.productData?.remark || p.remark || '';
+        
+        // 修复单价获取逻辑 - 从多个可能的字段获取单价
+        const unitPrice = p.unitPrice || p.productData?.unitPrice || p.price || '';
+        
+        // 修复数量获取逻辑 - 从多个可能的字段获取数量
+        const quantity = p.quantity || p.productData?.quantity || p.number || '';
+        
+        console.log(`临时商品名称来源: productData.productName=${p.productData?.productName}, productName=${p.productName}, name=${p.name}, 最终值=${productName}`);
+        console.log(`临时商品单价来源: unitPrice=${p.unitPrice}, productData.unitPrice=${p.productData?.unitPrice}, price=${p.price}, 最终值=${unitPrice}`);
+        console.log(`临时商品数量来源: quantity=${p.quantity}, productData.quantity=${p.productData?.quantity}, number=${p.number}, 最终值=${quantity}`);
+        
+        if (!productName || productName.trim() === '') {
+          console.error('临时商品名称为空');
+          return wx.showToast({ title: '临时商品名称不能为空', icon: 'none' });
         }
-      });
-    },
+        if (!productCode || productCode.trim() === '') {
+          console.error('临时商品编码为空');
+          return wx.showToast({ title: '临时商品编码不能为空', icon: 'none' });
+        }
+        if (!remark || remark.trim() === '') {
+          console.error('临时商品备注为空');
+          return wx.showToast({ title: '临时商品备注不能为空', icon: 'none' });
+        }
+        if (!unitPrice || isNaN(Number(unitPrice))) {
+          console.error(`临时商品单价错误: ${unitPrice}, 类型: ${typeof unitPrice}`);
+          return wx.showToast({ title: '临时商品单价格式不正确', icon: 'none' });
+        }
+        if (!quantity || isNaN(Number(quantity)) || Number(quantity) <= 0) {
+          console.error(`临时商品数量错误: ${quantity}, 类型: ${typeof quantity}`);
+          return wx.showToast({ title: '临时商品数量必须为正数', icon: 'none' });
+        }
+      }
+
+    // 最终保存数据到全局submitData
+    this.saveToSubmitData();
+
+    // 构建符合接口要求的提交数据
+    const postData = this.buildSubmitData();
+
+    // 提交前输出完整的postData
+    console.log('===== 提交前的postData =====');
+    console.log(JSON.stringify(postData, null, 2));
+
+    // 区分接口地址
+    const url = isNew 
+      ? `${getApp().globalData.serverUrl}/diServer/quote/submit`
+      : `${getApp().globalData.serverUrl}/diServer/quote/submit`;
+
+    // 发送请求
+    wx.showLoading({ title: isNew ? '创建中...' : '保存中...' });
+    wx.request({
+      url: url,
+      method: 'POST',
+      header: {
+        'Authorization': `Bearer ${getApp().globalData.token}`,
+        'Content-Type': 'application/json'
+      },
+      data: postData, // 提交格式化后的postData
+      success: (res) => {
+        wx.hideLoading();
+        console.log('提交响应:', res);
+        if (res.statusCode === 200 && res.data.code === 200) {
+          wx.showToast({
+            title: isNew ? '创建成功' : '保存成功',
+            icon: 'success',
+            duration: 1500
+          });
+          setTimeout(() => {
+            wx.navigateBack();
+          }, 1500);
+        } else {
+          wx.showToast({
+            title: res.data.message || (isNew ? '创建失败' : '保存失败'),
+            icon: 'none'
+          });
+        }
+      },
+      fail: (err) => {
+        wx.hideLoading();
+        console.error('提交失败:', err);
+        wx.showToast({ title: '网络请求错误', icon: 'none' });
+      }
+    });
+    console.log('===== confirm 执行结束 =====');
+  },
+  
+  
+    // 转换商品格式为提交格式
+    convertToSubmitFormat(products) {
+        console.log('===== convertToSubmitFormat 开始执行 =====');
+        console.log('待转换的商品数据:', products);
+        
+        if (!products || !Array.isArray(products)) {
+          console.log('商品数据为空或不是数组');
+          return [];
+        }
+        
+        const converted = products.map((product, index) => {
+          console.log(`===== 转换第 ${index + 1} 个商品 =====`);
+          console.log(`原始商品数据:`, product);
+          
+          // 将productId转换为字符串，防止类型错误
+          const productIdStr = String(product.productId || '');
+          console.log(`productId: ${productIdStr}, 类型: ${typeof productIdStr}`);
+          
+          // 调试单价和数量值
+          console.log(`原始单价: ${product.unitPrice}, 类型: ${typeof product.unitPrice}`);
+          console.log(`原始数量: ${product.quantity}, 类型: ${typeof product.quantity}`);
+          
+          // 判断是否为临时商品
+          if (productIdStr.startsWith('temp-')) {
+            console.log('处理临时商品 - 移除productId字段并修正价格计算');
+            
+            // 从多个可能的字段获取单价，确保正确转换为数字
+            const price = parseFloat(product.unitPrice || product.productData?.unitPrice || 0);
+            // 从多个可能的字段获取数量，确保正确转换为数字
+            const quantity = parseInt(product.quantity || product.productData?.quantity || 1);
+            // 计算金额，确保至少为0.01
+            const money = Math.max(price * quantity, 0.01).toFixed(2);
+            
+            console.log(`临时商品计算 - 单价: ${price}, 数量: ${quantity}, 金额: ${money}`);
+            
+            // 临时商品不包含productId字段
+            return {
+              quantity: quantity.toString(), // 确保数量是字符串格式
+              unitPrice: price.toFixed(2),    // 确保单价是带两位小数的字符串
+              remark: product.remark || product.productData?.remark || "",
+              productData: {
+                productCode: product.productCode || product.code || product.productData?.productCode || "",
+                productName: product.name || product.productName || product.productData?.productName || "",
+                unitPrice: price.toFixed(2),    // 使用计算后的单价
+                quantity: quantity.toString(),  // 使用计算后的数量
+                remark: product.remark || product.productData?.remark || "",
+                type: 2, // 临时商品标识
+                money: money                    // 使用计算后的金额
+              }
+              // 移除productId字段
+            };
+          }
+          
+          // 普通商品处理
+          console.log('处理普通商品');
+          return {
+            productId: product.productId || product.id,
+            quantity: product.quantity || product.number || 1,
+            // 修复toFixed错误：确保先转换为数字
+            unitPrice: Number(product.unitPrice || product.price || 0).toFixed(2),
+            productData: {
+              productCode: product.productCode || product.productData?.productCode || "",
+              productName: product.name || product.productData?.productName || "",
+              unitPrice: Number(product.unitPrice || product.price || 0).toFixed(2),
+              quantity: product.quantity || product.number || 1,
+              remark: product.remark || product.productData?.remark || "",
+              type: 1, // 普通商品标识
+              money: (Number(product.unitPrice || product.price || 0) * Number(product.quantity || product.number || 1)).toFixed(2)
+            }
+          };
+        });
+        
+        console.log('转换后的商品数据:', converted);
+        console.log('===== convertToSubmitFormat 执行结束 =====');
+        return converted;
+      },
+      
+  
   
     // 构建符合接口要求的提交数据
     buildSubmitData() {
+      console.log('===== buildSubmitData 开始执行 =====');
       const app = getApp();
       const { item, product, attachment } = this.data;
       const globalData = app.globalData.submitData;
   
+      console.log('当前商品列表:', product);
+      
       // 处理商品字段列表，只保留必要字段
       const productFieldList = (globalData.productFieldList || []).map(field => ({
         productFieldCode: field.productFieldCode,
         productFieldName: field.productFieldName
       }));
   
-      // 处理商品分组及商品信息（解决商品不能为空错误）
-      const quoteProductGroupFormList = (globalData.productGroupList || []).map(group => ({
-        quoteProductFormList: (group.quoteProductList || []).map(product => ({
-          productId: product.productId || product.id, // 确保有productId
-          quantity: product.quantity || 1,
-          unitPrice: (product.unitPrice || 0).toFixed(2)
-        }))
-      }));
-  
-      // 确保至少有一个商品分组
-      if (quoteProductGroupFormList.length === 0 && product.length > 0) {
-        quoteProductGroupFormList.push({
-          quoteProductFormList: product.map(p => ({
-            productId: p.productId || p.id, // 确保有productId
+      // 处理商品分组及商品信息（重点修复临时商品结构）
+      const quoteProductGroupFormList = [];
+      
+      // 获取转换后的商品数据（使用convertToSubmitFormat方法）
+      const convertedProducts = this.convertToSubmitFormat(product);
+      
+      // 构建正确的商品分组
+      quoteProductGroupFormList.push({
+        quoteProductFormList: convertedProducts.map(p => {
+          // 临时商品特殊处理
+          if (p.productData && p.productData.type === 2) {
+            return {
+              // 保留临时商品的完整结构
+              ...p,
+              productId: p.productId || p.productData.productCode || `temp-${Date.now()}`
+            };
+          }
+          
+          // 普通商品处理
+          return {
+            productId: p.productId || p.id,
             quantity: p.quantity || 1,
-            unitPrice: (p.unitPrice || 0).toFixed(2)
-          }))
-        });
-      }
+            unitPrice: p.unitPrice,
+            productData: p.productData
+          };
+        })
+      });
   
       // 处理文件列表
       const formattedFileList = (attachment || []).map(file => ({
@@ -841,40 +1059,31 @@ Page({
       }));
   
       // 构建最终提交数据
-      return {
-        // 成本分类列表（空）
+      const postData = {
         costCategoryFormList: [],
-        
-        // 商品字段列表
         productFieldList: productFieldList,
-        
-        // 报价单主信息
         quote: {
           ...globalData.quote,
           ...item,
-          // 基础信息
-          companyId: String(item.companyId || ''), // 确保为字符串类型
+          companyId: String(item.companyId || ''),
           companyName: item.companyName || '',
           linkMan: item.linkMan || '',
           linkTel: item.linkTel || '',
           linkEmail: item.linkEmail || '',
           projectName: item.projectName || '',
           quoteDate: item.quoteDate || this.data.time,
-          validityTime: item.validityTime || this.data.validityTime, // 包含有效期
-          
-          // 价格信息
+          validityTime: item.validityTime || this.data.validityTime,
           amountPrice: item.amountPrice || '0.00',
           totalPrice: item.totalPrice || '0.00',
-          
-          // 补充文件列表
           fileList: formattedFileList
         },
-        
-        // 报价文件列表
         quoteFileList: formattedFileList,
-        
-        // 商品分组信息（解决商品不能为空错误）
         quoteProductGroupFormList: quoteProductGroupFormList
       };
+      
+      console.log('构建的提交数据:', postData);
+      console.log('===== buildSubmitData 执行结束 =====');
+      return postData;
     }
-  })
+  });
+    

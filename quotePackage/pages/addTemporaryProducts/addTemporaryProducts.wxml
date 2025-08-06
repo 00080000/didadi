@@ -1,65 +1,82 @@
 <view class="container">
-  <view class="form-item">
-    <view class="form-label">商品名称 <text class="required">*</text></view>
-    <input 
-      class="form-input" 
-      placeholder="请输入商品名称" 
-      value="{{temporaryProduct.name}}"
-      data-field="name"
-      bindinput="onInputChange"
-    />
+  <!-- 页面标题 -->
+  <view class="page-title">添加临时商品</view>
+  
+  <!-- 表单内容 -->
+  <view class="form-container">
+    <!-- 商品名称（必填） -->
+    <view class="form-item">
+      <view class="form-label">商品名称 <text class="required">*</text></view>
+      <view class="form-input">
+        <input 
+          placeholder="请输入商品名称" 
+          model:value="{{temporaryProduct.name}}"
+          data-field="name"
+          bindinput="onInputChange"
+        />
+      </view>
+    </view>
+    
+    <!-- 商品编码（可编辑，必填） -->
+    <view class="form-item">
+      <view class="form-label">商品编码 <text class="required">*</text></view>
+      <view class="form-input">
+        <input 
+          value="{{temporaryProduct.code}}" 
+          placeholder="请输入商品编码"
+          data-field="code"
+          bindinput="onInputChange"
+        />
+      </view>
+    </view>
+    
+    <!-- 单价（必填） -->
+    <view class="form-item">
+      <view class="form-label">单价 <text class="required">*</text></view>
+      <view class="form-input">
+        <input 
+          type="number" 
+          placeholder="请输入单价" 
+          model:value="{{temporaryProduct.price}}"
+          data-field="price"
+          bindinput="onInputChange"
+          placeholder-style="color:#999"
+        />
+      </view>
+    </view>
+    
+    <!-- 数量（必填） -->
+    <view class="form-item">
+      <view class="form-label">数量 <text class="required">*</text></view>
+      <view class="form-input">
+        <input 
+          type="number" 
+          placeholder="请输入数量" 
+          model:value="{{temporaryProduct.number}}"
+          data-field="number"
+          bindinput="onInputChange"
+          min="1"
+        />
+      </view>
+    </view>
+    
+    <!-- 备注（必填） -->
+    <view class="form-item">
+      <view class="form-label">备注 <text class="required">*</text></view>
+      <view class="form-input">
+        <textarea 
+          placeholder="请输入备注信息" 
+          model:value="{{temporaryProduct.remark}}"
+          data-field="remark"
+          bindinput="onInputChange"
+          auto-height
+          style="min-height: 100rpx;"
+        />
+      </view>
+    </view>
   </view>
   
-  <view class="form-item">
-    <view class="form-label">商品编码</view>
-    <input 
-      class="form-input" 
-      placeholder="请输入商品编码（选填）" 
-      value="{{temporaryProduct.code}}"
-      data-field="code"
-      bindinput="onInputChange"
-    />
-  </view>
-  
-  <view class="form-item">
-    <view class="form-label">单价（元） <text class="required">*</text></view>
-    <input 
-      class="form-input" 
-      type="number" 
-      placeholder="0.00" 
-      value="{{temporaryProduct.price}}"
-      data-field="price"
-      bindinput="onInputChange"
-      step="0.01"
-    />
-  </view>
-  
-  <view class="form-item">
-    <view class="form-label">数量</view>
-    <input 
-      class="form-input" 
-      type="number" 
-      placeholder="1" 
-      value="{{temporaryProduct.number}}"
-      data-field="number"
-      bindinput="onInputChange"
-      min="1"
-    />
-  </view>
-  
-  <view class="form-item">
-    <view class="form-label">备注</view>
-    <textarea 
-      class="form-textarea" 
-      placeholder="请输入备注信息（选填）" 
-      value="{{temporaryProduct.remark}}"
-      data-field="remark"
-      bindinput="onInputChange"
-      auto-height
-    />
-  </view>
-  
- 
+  <!-- 底部按钮 -->
   <view class="btn-group">
     <view class="cancel-btn" bind:tap="cancel">
       取消
@@ -69,4 +86,3 @@
     </view>
   </view>
 </view>
-    

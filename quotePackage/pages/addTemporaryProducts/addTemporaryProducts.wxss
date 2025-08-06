@@ -4,9 +4,22 @@ page{
     height: 100%;
     background-color: white;
     position: relative;
+    padding-bottom: 100rpx; /* 为底部按钮留出空间 */
   }
   
+  .page-title {
+    font-size: 36rpx;
+    font-weight: bold;
+    color: #23394D;
+    text-align: center;
+    padding: 30rpx 0;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 20rpx;
+  }
   
+  .form-container {
+    padding: 20rpx 30rpx;
+  }
   
   .form-item {
     display: flex;
@@ -36,15 +49,25 @@ page{
     border-bottom: 1px solid #eee;
   }
   
-  .form-textarea {
-    flex: 1;
-    font-size: 32rpx;
+  .form-input input,
+  .form-input textarea {
+    width: 100%;
+    padding: 10rpx;
+    font-size: 30rpx;
+  }
+  
+  .form-input textarea {
     min-height: 120rpx;
-    padding: 8rpx 0;
+    line-height: 1.5;
+  }
+  
+  .form-input .readonly {
+    background-color: #f5f5f5;
+    color: #999;
   }
   
   .btn-group {
-    position: absolute;
+    position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
@@ -75,4 +98,3 @@ page{
     align-items: center;
     justify-content: center;
   }
-      
