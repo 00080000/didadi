@@ -1,12 +1,43 @@
-<!--quotePackage/pages/viewQuotationTemplate/viewQuotationTemplate.wxml-->
 <view class="container">
-  <!-- 上方的Logo与文字提示部分 -->
-  <view class="topArea">
-    <header></header>
-    <view class="information">
-      <view style="font-size: 35rpx;font-weight: bolder;">{{name}}</view>
-      <view style="font-size: 27rpx;margin-top: 30rpx;">创建日期：{{date}} {{time}}</view>
+  <!-- 顶部导航 -->
+  <view class="nav-bar">
+    <view class="back-btn" bindtap="goBack">
+      <image src="/static/back.png" class="back-icon"></image>
     </view>
-    <view></view>
+    <view class="nav-title">模板预览</view>
+    <view class="empty-view"></view>
+  </view>
+  
+  <!-- 模板信息 -->
+  <view class="template-info">
+    <view class="template-name">{{name}}</view>
+    <view class="template-date">创建日期：{{date}}</view>
+  </view>
+  
+  <!-- 预览内容区 -->
+  <view class="preview-container">
+    <!-- 头部内容预览 -->
+    <view class="section">
+      <view class="section-title">头部内容</view>
+      <view class="content">
+        <rich-text nodes="{{headText}}"></rich-text>
+      </view>
+    </view>
+    
+    <!-- 分隔线 -->
+    <view class="divider">商品列表区域</view>
+    
+    <!-- 底部内容预览 -->
+    <view class="section">
+      <view class="section-title">底部内容</view>
+      <view class="content">
+        <rich-text nodes="{{footText}}"></rich-text>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 底部按钮 -->
+  <view class="confirm-btn" bindtap="confirmSelect">
+    选择此模板
   </view>
 </view>

@@ -121,3 +121,59 @@ page{
   align-items: center;
   justify-content: center;
 }
+
+/* 编辑器区域样式 */
+.editorArea {
+    display: flex;
+    margin: 30rpx 20rpx;
+    align-items: flex-start;
+  }
+  
+  .label {
+    width: 180rpx;
+    font-size: 28rpx;
+    color: #333;
+    padding: 15rpx 0;
+  }
+  
+  .editor {
+    flex: 1;
+    min-height: 200rpx;
+    border: 1px solid #eee;
+    border-radius: 8rpx;
+    padding: 15rpx;
+    font-size: 26rpx;
+    line-height: 1.6;
+  }
+  
+  .buttonGroup {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100rpx;
+    display: flex;
+    border-top: 1px solid #eee;
+  }
+  
+  .cancelButton {
+    width: 50%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    color: #333;
+    font-size: 30rpx;
+  }
+  
+  .confirmButton {
+    width: 50%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #F9B712;
+    color: #fff;
+    font-size: 30rpx;
+  }

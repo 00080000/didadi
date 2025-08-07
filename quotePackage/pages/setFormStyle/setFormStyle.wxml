@@ -3,30 +3,35 @@
     以下信息将显示在您对外发送的文档中，请仔细填写！
   </view>
   <view class="form">
+    <!-- 报价单模板选择 -->
     <view class="inputArea">
       <view class="label">报价单模板</view>
       <view style="height: 100%;width: 500rpx;display: flex;align-items: center;justify-content: space-between;">
-        <input placeholder="请选择报价单模板" class="input" style="width: 370rpx;" disabled="true" model:value="{{template}}"/>
+        <input placeholder="请选择报价单模板" class="input" style="width: 370rpx;" disabled="true" model:value="{{templateName}}"/>
         <image src="/static/rightArrow-gray.png" bind:tap="goToChooseTemplate"></image>
       </view>
     </view>
-    <view class="pickerArea">
-      <view class="label">合计单元</view>
-      <picker bindchange="unitChange" mode="selector" value="{{unitIndex}}" range="{{unit}}" class="picker-area">
-        <view class="showPickerValue">
-          <view>{{unit[unitIndex]}}</view>
-          <image src="/static/downArrow-gray.png"></image>
-        </view>
-      </picker>
+
+    <!-- 头部文本编辑 -->
+    <view class="editorArea">
+      <view class="label">头部内容</view>
+      <textarea 
+        placeholder="请输入报价单头部内容" 
+        class="editor" 
+        model:value="{{headText}}"
+        bindinput="onHeadTextChange"
+      ></textarea>
     </view>
-    <view class="pickerArea">
-      <view class="label">币种</view>
-      <picker bindchange="currencyChange" mode="selector" value="{{currencyIndex}}" range="{{currency}}" class="picker-area">
-        <view class="showPickerValue">
-          <view>{{currency[currencyIndex]}}</view>
-          <image src="/static/downArrow-gray.png"></image>
-        </view>
-      </picker>
+
+    <!-- 底部文本编辑 -->
+    <view class="editorArea">
+      <view class="label">底部内容</view>
+      <textarea 
+        placeholder="请输入报价单底部内容" 
+        class="editor" 
+        model:value="{{footText}}"
+        bindinput="onFootTextChange"
+      ></textarea>
     </view>
   </view>
   <view class="buttonGroup">
