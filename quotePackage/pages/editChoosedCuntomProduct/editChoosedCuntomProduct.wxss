@@ -1,132 +1,94 @@
-page{
-  text-align: center;
-  width: 100%;
-  height: 100%;
-  background-color: white;
-  position: relative;
-}
-
-.header {
-  width: 100%;
-  height: 75rpx;
-  background-color: #DDDDDD;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 26rpx;
-}
-
-.form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 50rpx;
-}
-
-.inputArea {
-  width: 650rpx;
-  height: 100rpx;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.inputArea .label{
-  font-size: 27rpx;
-}
-
-.input {
-  height: 50rpx;
-  text-align: left;
-  padding: 10rpx 25rpx;
-  border: 1px solid lightgray;
-  border-radius: 5px;
-  font-size: 27rpx;
-  font-weight: lighter;
-}
-
-.pickerInput {
-  height: 50rpx;
-  text-align: left;
-  padding: 10rpx 25rpx;
-  border: 1px solid lightgray;
-  border-top-left-radius: 5px;
-  border-bottom-left-radius: 5px;
-  font-size: 27rpx;
-  font-weight: lighter;
-}
-
-.picker {
-  height: 50rpx;
-  padding: 10rpx 10rpx;
-  width: 205rpx;
-  background-color: #f0f0f0;
-  border: 1px solid lightgray;
-  border-left: none;
-  border-top-right-radius: 5px;
-  border-bottom-right-radius: 5px;
-}
-
-.showPickerValue {
-  width: 185rpx;
-  height: 50rpx;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: gray;
-  font-size: 28rpx;
-  padding: 0 10rpx;
-}
-
-.picker image {
-  width: 40rpx;
-  height: 40rpx;
-}
-
-.deleteButton {
-  margin-top: 50rpx;
-  border: 1px solid red;
-  background-color: white;
-  color: red;
-  width: 300rpx;
-  height: 85rpx;
-  font-size: 32rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  font-weight: lighter;
-}
-
-.buttonGroup {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 90rpx;
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-}
-
-.cancelButton {
-  width: 50%;
-  height: 100%;
-  font-size: 30rpx;
-  background-color: whitesmoke;
-  color: black;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.confirmButton {
-  width: 50%;
-  height: 100%;
-  font-size: 30rpx;
-  background-color: #F9B712;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+.container {
+    padding: 20rpx;
+    background-color: #f5f5f5;
+    min-height: 100vh;
+  }
+  
+  .title {
+    font-size: 36rpx;
+    font-weight: bold;
+    color: #333;
+    padding: 30rpx 0;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .section-title {
+    font-size: 30rpx;
+    color: #666;
+    margin: 30rpx 0 20rpx;
+    padding-left: 10rpx;
+    border-left: 4rpx solid #F9B712;
+  }
+  
+  .info-section, .edit-section {
+    background-color: #fff;
+    border-radius: 10rpx;
+    padding: 20rpx;
+    margin-bottom: 20rpx;
+  }
+  
+  .info-item, .form-item {
+    display: flex;
+    padding: 25rpx 0;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .info-item:last-child, .form-item:last-child {
+    border-bottom: none;
+  }
+  
+  .label, .form-label {
+    width: 200rpx;
+    font-size: 28rpx;
+    color: #666;
+    display: flex;
+    align-items: center;
+  }
+  
+  .value, .form-input {
+    flex: 1;
+    font-size: 28rpx;
+    color: #333;
+  }
+  
+  input, textarea {
+    width: 100%;
+    font-size: 28rpx;
+    padding: 10rpx;
+    border: 1px solid #eee;
+    border-radius: 6rpx;
+    min-height: 60rpx;
+  }
+  
+  .required {
+    color: #ff4d4f;
+    margin-left: 5rpx;
+  }
+  
+  .btn-group {
+    display: flex;
+    margin-top: 40rpx;
+    padding: 0 20rpx;
+  }
+  
+  .cancel-btn, .save-btn {
+    flex: 1;
+    height: 80rpx;
+    line-height: 80rpx;
+    text-align: center;
+    border-radius: 40rpx;
+    font-size: 30rpx;
+    margin: 0 10rpx;
+  }
+  
+  .cancel-btn {
+    background-color: #fff;
+    color: #666;
+    border: 1px solid #eee;
+  }
+  
+  .save-btn {
+    background-color: #F9B712;
+    color: #fff;
+  }

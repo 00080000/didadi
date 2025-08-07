@@ -5,7 +5,6 @@ Page({
       fileName: '小喇叭公司报价单',
       ifShow: false, // 新增菜单显示状态
       originalProducts: [], // 用于取消操作的原始数据备份
-      // 新增必要的状态变量
       searchValue: '', // 搜索输入值
       isAllSelected: false, // 是否全选
       selectedCount: 0, // 已选择商品数量
@@ -187,8 +186,6 @@ Page({
       console.log('===== 商品数据标准化完成（展示用） =====');
       return normalized;
     },
-  
-
   
     // 转换商品类型（根据预览页逻辑映射）
     getProductType(originalType) {
@@ -411,79 +408,81 @@ Page({
         url: '/quotePackage/pages/setFormStyle/setFormStyle',
       });
     },
-  // 转换商品数据为submitData格式
-  convertToSubmitFormat(products) {
-    console.log('===== 开始转换商品数据为submitData格式 =====');
-    
-    if (!products || !Array.isArray(products)) {
-      console.warn('传入的商品数据不是有效的数组，返回空数组');
-      return [];
-    }
-    
-    const submitProducts = products.map((item) => {
-      if (!item || typeof item !== 'object') {
-        console.warn(`商品数据项无效，跳过`);
-        return null;
+  
+    // 转换商品数据为submitData格式
+    convertToSubmitFormat(products) {
+      console.log('===== 开始转换商品数据为submitData格式 =====');
+      
+      if (!products || !Array.isArray(products)) {
+        console.warn('传入的商品数据不是有效的数组，返回空数组');
+        return [];
       }
-
-      // 临时商品(customProduct)特殊处理
-      if (item.type === 'customProduct') {
-        return {
-          // 完全匹配服务器期望的格式
-          quantity: item.quantity || item.number || "1",
-          unitPrice: item.unitPrice || (item.price ? item.price.toFixed(2) : "0.00"),
-          remark: item.remark || "",
-          productData: item.productData || {
-            productCode: item.productCode || item.code || "",
-            productName: item.productName || item.name || "",
-            unitPrice: item.unitPrice || (item.price ? item.price.toFixed(2) : "0.00"),
+      
+      const submitProducts = products.map((item) => {
+        if (!item || typeof item !== 'object') {
+          console.warn(`商品数据项无效，跳过`);
+          return null;
+        }
+  
+        // 临时商品(customProduct)特殊处理
+        if (item.type === 'customProduct') {
+          return {
+            // 完全匹配服务器期望的格式
             quantity: item.quantity || item.number || "1",
+            unitPrice: item.unitPrice || (item.price ? item.price.toFixed(2) : "0.00"),
             remark: item.remark || "",
-            type: 2, // 临时商品类型标识
-            money: item.money || ((parseFloat(item.unitPrice || item.price || 0) * parseInt(item.quantity || item.number || 1)).toFixed(2))
-          }
-        };
-      }
+            productData: item.productData || {
+              productCode: item.productCode || item.code || "",
+              productName: item.productName || item.name || "",
+              unitPrice: item.unitPrice || (item.price ? item.price.toFixed(2) : "0.00"),
+              quantity: item.quantity || item.number || "1",
+              remark: item.remark || "",
+              type: 2, // 临时商品类型标识
+              money: item.money || ((parseFloat(item.unitPrice || item.price || 0) * parseInt(item.quantity || item.number || 1)).toFixed(2))
+            }
+          };
+        }
+        
+        // 普通商品处理逻辑保持不变
+        const submitItem = item.originalData ? JSON.parse(JSON.stringify(item.originalData)) : {};
+        
+        submitItem.productId = item.productId || item.id;
+        submitItem.quantity = item.number;
+        submitItem.productName = item.name;
+        
+        let productData = item.originalProductData ? JSON.parse(JSON.stringify(item.originalProductData)) : {};
+        productData.productName = item.name;
+        productData.productCode = item.productCode;
+        productData.unitPrice = item.price;
+        productData.unit = item.unit;
+        productData.specs = item.specs;
+        productData.brand = item.brand;
+        productData.tag = item.tag;
+        productData.remark = item.remark;
+        
+        submitItem.productData = typeof item.originalData?.productData === 'string' 
+          ? JSON.stringify(productData) 
+          : productData;
+        
+        if (item.type === 'feeName') {
+          submitItem.total = item.total;
+          submitItem.unitPrice = item.price;
+        }
+        
+        return submitItem;
+      }).filter(Boolean);
       
-      // 普通商品处理逻辑保持不变
-      const submitItem = item.originalData ? JSON.parse(JSON.stringify(item.originalData)) : {};
-      
-      submitItem.productId = item.productId || item.id;
-      submitItem.quantity = item.number;
-      submitItem.productName = item.name;
-      
-      let productData = item.originalProductData ? JSON.parse(JSON.stringify(item.originalProductData)) : {};
-      productData.productName = item.name;
-      productData.productCode = item.productCode;
-      productData.unitPrice = item.price;
-      productData.unit = item.unit;
-      productData.specs = item.specs;
-      productData.brand = item.brand;
-      productData.tag = item.tag;
-      productData.remark = item.remark;
-      
-      submitItem.productData = typeof item.originalData?.productData === 'string' 
-        ? JSON.stringify(productData) 
-        : productData;
-      
-      if (item.type === 'feeName') {
-        submitItem.total = item.total;
-        submitItem.unitPrice = item.price;
-      }
-      
-      return submitItem;
-    }).filter(Boolean);
-    
-    console.log('===== 商品数据转换为submitData格式完成 =====');
-    return submitProducts;
-  },
+      console.log('===== 商品数据转换为submitData格式完成 =====');
+      return submitProducts;
+    },
+  
     // 跳转到选择商品字段
     goToChooseProductFields() {
       wx.navigateTo({
         url: '/quotePackage/pages/chooseProductFields/chooseProductFields',
       });
     },
-  
+    
     // 切换新增菜单显示状态
     setIfShow() {
       this.setData({
@@ -512,26 +511,41 @@ Page({
     },
   
     // 跳转到编辑商品页面
-    navigate(e) {
-      const index = e.currentTarget.dataset.index;
-      const item = this.data.product[index];
-      console.log(`===== 点击编辑第${index}个商品 =====`);
-      console.log('编辑的商品数据:', item);
-      
-      // 隐藏操作菜单
-      this.setData({ ifShow: false });
-      
-      wx.navigateTo({
-        url: `/quotePackage/pages/editChoosed${this.getEditPageName(item.type)}/editChoosed${this.getEditPageName(item.type)}?index=${index}&item=${encodeURIComponent(JSON.stringify(item))}`
-      });
-    },
+navigate(e) {
+    const index = e.currentTarget.dataset.index;
+    const item = this.data.product[index];
+    console.log(`===== 点击编辑第${index}个商品 =====`);
+    console.log('编辑的商品数据:', item);
+    
+    // 隐藏操作菜单
+    this.setData({ ifShow: false });
+    
+    // 针对临时商品特殊处理，确保所有字段都被正确传递
+    let navigateItem = item;
+    if (item.type === 'customProduct') {
+      navigateItem = {
+        ...item,
+        // 确保商品编码被正确提取
+        productCode: item.productCode || item.originalProductData?.productCode || '',
+        // 确保其他字段完整
+        name: item.name || item.productName || '',
+        price: item.price || 0,
+        number: item.number || 1,
+        remark: item.remark || ''
+      };
+    }
+    
+    wx.navigateTo({
+      url: `/quotePackage/pages/editChoosed${this.getEditPageName(item.type)}/editChoosed${this.getEditPageName(item.type)}?index=${index}&item=${encodeURIComponent(JSON.stringify(navigateItem))}`
+    });
+  },
   
     // 获取编辑页面名称
     getEditPageName(type) {
       const pageMap = {
         singleProduct: 'SingleProduct',
         combinationProduct: 'CombinationProduct',
-        customProduct: 'CuntomProduct',
+        customProduct: 'CuntomProduct',  // 注意: 这里保持了原拼写"CuntomProduct"与文件名称一致
         feeName: 'Fee',
         groupRow: 'GroupRow',
         blankRow: 'BlankRow'
@@ -539,7 +553,7 @@ Page({
       return pageMap[type] || 'SingleProduct';
     },
   
-    // 修改：加空白行功能改为跳转到临时商品页面
+    // 加空白行功能改为跳转到临时商品页面
     addBlankRow() {
       this.setData({ ifShow: false });
       // 跳转到添加临时商品页面
@@ -746,3 +760,4 @@ Page({
       });
     }
   })
+  

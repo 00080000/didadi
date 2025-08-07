@@ -1,42 +1,51 @@
 <view class="container">
-  <view class="header">
-    以下信息将显示在您对外发送的文档中，请仔细填写！
+  <view class="title">编辑临时商品</view>
+
+  <!-- 商品基本信息（不可编辑） -->
+  <view class="info-section">
+    <view class="section-title">基本信息</view>
+    <view class="info-item">
+      <view class="label">商品编码</view>
+      <view class="value">{{formData.productCode}}</view>
+    </view>
   </view>
-  <view class="form">
-    <view class="inputArea">
-      <view class="label">名称</view>
-      <input class="input" style="width: 450rpx;"/>
-    </view>
-    <view class="inputArea">
-      <view class="label">型号</view>
-      <input class="input" style="width: 450rpx;"/>
-    </view>
-    <view class="inputArea">
-      <view class="label">单价</view>
-      <view style="width: 500rpx;height: 70rpx;display: flex;align-items: center;">
-        <input type="digit" class="pickerInput" style="width: 225rpx;"/>
-        <view class="picker">
-          <view class="showPickerValue">
-             <view>选价格</view>
-             <image src="/static/downArrow-gray.png"></image>
-          </view>
-        </view>      
+
+  <!-- 可编辑字段区域 -->
+  <view class="edit-section">
+    <view class="section-title">编辑信息</view>
+    
+    <!-- 动态生成的可编辑字段 -->
+    <view class="form-item" wx:for="{{editableFields}}" wx:key="code">
+      <view class="form-label">{{item.label}} <text class="required" wx:if="{{item.required}}">*</text></view>
+      <view class="form-input">
+        <input 
+          wx:if="{{item.dataType !== 'textarea'}}"
+          type="{{item.dataType === 'number' ? 'number' : 'text'}}"
+          value="{{formData[item.code] || ''}}"
+          bindinput="onInputChange"
+          data-field="{{item.code}}"
+          placeholder="请输入{{item.label}}"
+        />
+        <textarea 
+          wx:else
+          value="{{formData[item.code] || ''}}"
+          bindinput="onInputChange"
+          data-field="{{item.code}}"
+          placeholder="请输入{{item.label}}"
+          auto-height
+          style="min-height: 100rpx;"
+        />
       </view>
     </view>
-    <view class="inputArea">
-      <view class="label">数量</view>
-      <input type="number" class="input" style="width: 450rpx;"/>
-    </view>
-    <view class="deleteButton">
-      删除商品
-    </view>
   </view>
-  <view class="buttonGroup">
-    <view class="cancelButton" bind:tap="cancel">
+
+  <!-- 底部按钮 -->
+  <view class="btn-group">
+    <view class="cancel-btn" bind:tap="cancel">
       取消
     </view>
-    <view class="confirmButton" bind:tap="confirm">
+    <view class="save-btn" bind:tap="saveEditedProduct">
       确定
     </view>
   </view>
-</view>  
+</view>

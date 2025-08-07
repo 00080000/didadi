@@ -794,219 +794,239 @@ Page({
       wx.navigateBack();
     },
   
-// 确认提交（使用正确格式的postData提交）
-confirm() {
-    console.log('===== confirm 开始执行 =====');
-    const app = getApp();
-    const { isNew, item, product, attachment } = this.data;
-    
-    console.log('当前商品列表:', product);
-    
-    // 校验必填项
-    if (!item.companyId || item.companyName === '请选择商家') {
-      return wx.showToast({ title: '请选择商家', icon: 'none' });
-    }
-    if (product.length === 0) {
-      return wx.showToast({ title: '请添加商品', icon: 'none' });
-    }
-    if (!item.projectName || item.projectName.trim() === '') {
-      return wx.showToast({ title: '请填写项目名称', icon: 'none' });
-    }
-    // 验证时间是否存在
-    if (!item.quoteDate) {
-      return wx.showToast({ title: '请设置报价时间', icon: 'none' });
-    }
-    // 验证有效期是否存在
-    if (!item.validityTime) {
-      return wx.showToast({ title: '请设置有效期', icon: 'none' });
-    }
-    
-    // 验证临时商品的必填字段 - 修复类型错误
-    // 先确保productId是字符串类型，再判断是否以'temp-'开头
-    console.log('===== 开始验证临时商品 =====');
-    const tempProducts = product.filter(p => {
-      // 将productId转换为字符串，防止类型错误
-      const productIdStr = String(p.productId || '');
-      console.log(`验证商品 productId: ${productIdStr}, 是否临时商品: ${productIdStr.startsWith('temp-')}`);
-      return productIdStr.startsWith('temp-');
-    });
-    
-    console.log('检测到的临时商品数量:', tempProducts.length);
-    
-    // 遍历临时商品验证必填项
-    for (let i = 0; i < tempProducts.length; i++) {
-        const p = tempProducts[i];
-        console.log(`验证第 ${i + 1} 个临时商品:`, p);
-        
-        // 修复临时商品名称验证逻辑 - 从多个可能的字段获取名称
-        const productName = p.productData?.productName || p.productName || p.name || '';
-        const productCode = p.productData?.productCode || p.productCode || p.code || '';
-        const remark = p.productData?.remark || p.remark || '';
-        
-        // 修复单价获取逻辑 - 从多个可能的字段获取单价
-        const unitPrice = p.unitPrice || p.productData?.unitPrice || p.price || '';
-        
-        // 修复数量获取逻辑 - 从多个可能的字段获取数量
-        const quantity = p.quantity || p.productData?.quantity || p.number || '';
-        
-        console.log(`临时商品名称来源: productData.productName=${p.productData?.productName}, productName=${p.productName}, name=${p.name}, 最终值=${productName}`);
-        console.log(`临时商品单价来源: unitPrice=${p.unitPrice}, productData.unitPrice=${p.productData?.unitPrice}, price=${p.price}, 最终值=${unitPrice}`);
-        console.log(`临时商品数量来源: quantity=${p.quantity}, productData.quantity=${p.productData?.quantity}, number=${p.number}, 最终值=${quantity}`);
-        
-        if (!productName || productName.trim() === '') {
-          console.error('临时商品名称为空');
-          return wx.showToast({ title: '临时商品名称不能为空', icon: 'none' });
-        }
-        if (!productCode || productCode.trim() === '') {
-          console.error('临时商品编码为空');
-          return wx.showToast({ title: '临时商品编码不能为空', icon: 'none' });
-        }
-        if (!remark || remark.trim() === '') {
-          console.error('临时商品备注为空');
-          return wx.showToast({ title: '临时商品备注不能为空', icon: 'none' });
-        }
-        if (!unitPrice || isNaN(Number(unitPrice))) {
-          console.error(`临时商品单价错误: ${unitPrice}, 类型: ${typeof unitPrice}`);
-          return wx.showToast({ title: '临时商品单价格式不正确', icon: 'none' });
-        }
-        if (!quantity || isNaN(Number(quantity)) || Number(quantity) <= 0) {
-          console.error(`临时商品数量错误: ${quantity}, 类型: ${typeof quantity}`);
-          return wx.showToast({ title: '临时商品数量必须为正数', icon: 'none' });
-        }
+    // 确认提交（使用正确格式的postData提交）
+    confirm() {
+      console.log('===== confirm 开始执行 =====');
+      const app = getApp();
+      const { isNew, item, product, attachment } = this.data;
+      
+      console.log('当前商品列表:', product);
+      
+      // 校验必填项
+      if (!item.companyId || item.companyName === '请选择商家') {
+        return wx.showToast({ title: '请选择商家', icon: 'none' });
       }
-
-    // 最终保存数据到全局submitData
-    this.saveToSubmitData();
-
-    // 构建符合接口要求的提交数据
-    const postData = this.buildSubmitData();
-
-    // 提交前输出完整的postData
-    console.log('===== 提交前的postData =====');
-    console.log(JSON.stringify(postData, null, 2));
-
-    // 区分接口地址
-    const url = isNew 
-      ? `${getApp().globalData.serverUrl}/diServer/quote/submit`
-      : `${getApp().globalData.serverUrl}/diServer/quote/submit`;
-
-    // 发送请求
-    wx.showLoading({ title: isNew ? '创建中...' : '保存中...' });
-    wx.request({
-      url: url,
-      method: 'POST',
-      header: {
-        'Authorization': `Bearer ${getApp().globalData.token}`,
-        'Content-Type': 'application/json'
-      },
-      data: postData, // 提交格式化后的postData
-      success: (res) => {
-        wx.hideLoading();
-        console.log('提交响应:', res);
-        if (res.statusCode === 200 && res.data.code === 200) {
-          wx.showToast({
-            title: isNew ? '创建成功' : '保存成功',
-            icon: 'success',
-            duration: 1500
-          });
-          setTimeout(() => {
-            wx.navigateBack();
-          }, 1500);
-        } else {
-          wx.showToast({
-            title: res.data.message || (isNew ? '创建失败' : '保存失败'),
-            icon: 'none'
-          });
-        }
-      },
-      fail: (err) => {
-        wx.hideLoading();
-        console.error('提交失败:', err);
-        wx.showToast({ title: '网络请求错误', icon: 'none' });
+      if (product.length === 0) {
+        return wx.showToast({ title: '请添加商品', icon: 'none' });
       }
-    });
-    console.log('===== confirm 执行结束 =====');
-  },
+      if (!item.projectName || item.projectName.trim() === '') {
+        return wx.showToast({ title: '请填写项目名称', icon: 'none' });
+      }
+      // 验证时间是否存在
+      if (!item.quoteDate) {
+        return wx.showToast({ title: '请设置报价时间', icon: 'none' });
+      }
+      // 验证有效期是否存在
+      if (!item.validityTime) {
+        return wx.showToast({ title: '请设置有效期', icon: 'none' });
+      }
+      
+      // 验证临时商品的必填字段 - 修复类型错误
+      // 先确保productId是字符串类型，再判断是否以'temp-'开头
+      console.log('===== 开始验证临时商品 =====');
+      const tempProducts = product.filter(p => {
+        // 将productId转换为字符串，防止类型错误
+        const productIdStr = String(p.productId || '');
+        console.log(`验证商品 productId: ${productIdStr}, 是否临时商品: ${productIdStr.startsWith('temp-')}`);
+        return productIdStr.startsWith('temp-');
+      });
+      
+      console.log('检测到的临时商品数量:', tempProducts.length);
+      
+      // 遍历临时商品验证必填项
+      for (let i = 0; i < tempProducts.length; i++) {
+          const p = tempProducts[i];
+          console.log(`验证第 ${i + 1} 个临时商品:`, p);
+          
+          // 修复临时商品名称验证逻辑 - 从多个可能的字段获取名称
+          const productName = p.productData?.productName || p.productName || p.name || '';
+          const productCode = p.productData?.productCode || p.productCode || p.code || '';
+          const remark = p.productData?.remark || p.remark || p.originalProductData?.remark || '';
+          
+          // 修复单价获取逻辑 - 从多个可能的字段获取单价
+          const unitPrice = p.unitPrice || p.productData?.unitPrice || p.originalProductData?.unitPrice || p.price || '';
+          
+          // 修复数量获取逻辑 - 从多个可能的字段获取数量
+          const quantity = p.quantity || p.productData?.quantity || p.originalProductData?.quantity || p.number || '';
+          
+          console.log(`临时商品名称来源: productData.productName=${p.productData?.productName}, productName=${p.productName}, name=${p.name}, 最终值=${productName}`);
+          console.log(`临时商品单价来源: unitPrice=${p.unitPrice}, productData.unitPrice=${p.productData?.unitPrice}, originalProductData.unitPrice=${p.originalProductData?.unitPrice}, price=${p.price}, 最终值=${unitPrice}`);
+          console.log(`临时商品数量来源: quantity=${p.quantity}, productData.quantity=${p.productData?.quantity}, originalProductData.quantity=${p.originalProductData?.quantity}, number=${p.number}, 最终值=${quantity}`);
+          
+          if (!productName || productName.trim() === '') {
+            console.error('临时商品名称为空');
+            return wx.showToast({ title: '临时商品名称不能为空', icon: 'none' });
+          }
+          if (!productCode || productCode.trim() === '') {
+            console.error('临时商品编码为空');
+            return wx.showToast({ title: '临时商品编码不能为空', icon: 'none' });
+          }
+          if (!remark || remark.trim() === '') {
+            console.error('临时商品备注为空');
+            return wx.showToast({ title: '临时商品备注不能为空', icon: 'none' });
+          }
+          if (!unitPrice || isNaN(Number(unitPrice))) {
+            console.error(`临时商品单价错误: ${unitPrice}, 类型: ${typeof unitPrice}`);
+            return wx.showToast({ title: '临时商品单价格式不正确', icon: 'none' });
+          }
+          if (!quantity || isNaN(Number(quantity)) || Number(quantity) <= 0) {
+            console.error(`临时商品数量错误: ${quantity}, 类型: ${typeof quantity}`);
+            return wx.showToast({ title: '临时商品数量必须为正数', icon: 'none' });
+          }
+        }
   
+      // 最终保存数据到全局submitData
+      this.saveToSubmitData();
+  
+      // 构建符合接口要求的提交数据
+      const postData = this.buildSubmitData();
+  
+      // 提交前输出完整的postData
+      console.log('===== 提交前的postData =====');
+      console.log(JSON.stringify(postData, null, 2));
+  
+      // 区分接口地址
+      const url = isNew 
+        ? `${getApp().globalData.serverUrl}/diServer/quote/submit`
+        : `${getApp().globalData.serverUrl}/diServer/quote/submit`;
+  
+      // 发送请求
+      wx.showLoading({ title: isNew ? '创建中...' : '保存中...' });
+      wx.request({
+        url: url,
+        method: 'POST',
+        header: {
+          'Authorization': `Bearer ${getApp().globalData.token}`,
+          'Content-Type': 'application/json'
+        },
+        data: postData, // 提交格式化后的postData
+        success: (res) => {
+          wx.hideLoading();
+          console.log('提交响应:', res);
+          if (res.statusCode === 200 && res.data.code === 200) {
+            wx.showToast({
+              title: isNew ? '创建成功' : '保存成功',
+              icon: 'success',
+              duration: 1500
+            });
+            setTimeout(() => {
+              wx.navigateBack();
+            }, 1500);
+          } else {
+            wx.showToast({
+              title: res.data.message || (isNew ? '创建失败' : '保存失败'),
+              icon: 'none'
+            });
+          }
+        },
+        fail: (err) => {
+          wx.hideLoading();
+          console.error('提交失败:', err);
+          wx.showToast({ title: '网络请求错误', icon: 'none' });
+        }
+      });
+      console.log('===== confirm 执行结束 =====');
+    },
   
     // 转换商品格式为提交格式
     convertToSubmitFormat(products) {
-        console.log('===== convertToSubmitFormat 开始执行 =====');
-        console.log('待转换的商品数据:', products);
+      console.log('===== convertToSubmitFormat 开始执行 =====');
+      console.log('待转换的商品数据:', products);
+      
+      if (!products || !Array.isArray(products)) {
+        console.log('商品数据为空或不是数组');
+        return [];
+      }
+      
+      const converted = products.map((product, index) => {
+        console.log(`===== 转换第 ${index + 1} 个商品 =====`);
+        console.log(`原始商品数据:`, product);
         
-        if (!products || !Array.isArray(products)) {
-          console.log('商品数据为空或不是数组');
-          return [];
-        }
+        // 将productId转换为字符串，防止类型错误
+        const productIdStr = String(product.productId || '');
+        console.log(`productId: ${productIdStr}, 类型: ${typeof productIdStr}`);
         
-        const converted = products.map((product, index) => {
-          console.log(`===== 转换第 ${index + 1} 个商品 =====`);
-          console.log(`原始商品数据:`, product);
+        // 调试所有可能的单价来源
+        console.log(`单价来源调试: 
+          product.unitPrice=${product.unitPrice}, 
+          product.productData.unitPrice=${product.productData?.unitPrice}, 
+          product.originalProductData.unitPrice=${product.originalProductData?.unitPrice},
+          product.price=${product.price}`);
+        
+        // 调试所有可能的数量来源
+        console.log(`数量来源调试: 
+          product.quantity=${product.quantity}, 
+          product.productData.quantity=${product.productData?.quantity}, 
+          product.originalProductData.quantity=${product.originalProductData?.quantity},
+          product.number=${product.number}`);
+        
+        // 判断是否为临时商品
+        if (productIdStr.startsWith('temp-')) {
+          console.log('处理临时商品 - 移除productId字段并修正价格计算');
           
-          // 将productId转换为字符串，防止类型错误
-          const productIdStr = String(product.productId || '');
-          console.log(`productId: ${productIdStr}, 类型: ${typeof productIdStr}`);
+          // 从多个可能的字段获取单价（包括originalProductData）
+          const price = parseFloat(
+            product.unitPrice || 
+            product.productData?.unitPrice || 
+            product.originalProductData?.unitPrice ||  // 从原始产品数据获取
+            product.price || 0
+          );
           
-          // 调试单价和数量值
-          console.log(`原始单价: ${product.unitPrice}, 类型: ${typeof product.unitPrice}`);
-          console.log(`原始数量: ${product.quantity}, 类型: ${typeof product.quantity}`);
+          // 从多个可能的字段获取数量（包括originalProductData）
+          const quantity = parseInt(
+            product.quantity || 
+            product.productData?.quantity || 
+            product.originalProductData?.quantity ||  // 从原始产品数据获取
+            product.number || 1
+          );
           
-          // 判断是否为临时商品
-          if (productIdStr.startsWith('temp-')) {
-            console.log('处理临时商品 - 移除productId字段并修正价格计算');
-            
-            // 从多个可能的字段获取单价，确保正确转换为数字
-            const price = parseFloat(product.unitPrice || product.productData?.unitPrice || 0);
-            // 从多个可能的字段获取数量，确保正确转换为数字
-            const quantity = parseInt(product.quantity || product.productData?.quantity || 1);
-            // 计算金额，确保至少为0.01
-            const money = Math.max(price * quantity, 0.01).toFixed(2);
-            
-            console.log(`临时商品计算 - 单价: ${price}, 数量: ${quantity}, 金额: ${money}`);
-            
-            // 临时商品不包含productId字段
-            return {
-              quantity: quantity.toString(), // 确保数量是字符串格式
-              unitPrice: price.toFixed(2),    // 确保单价是带两位小数的字符串
-              remark: product.remark || product.productData?.remark || "",
-              productData: {
-                productCode: product.productCode || product.code || product.productData?.productCode || "",
-                productName: product.name || product.productName || product.productData?.productName || "",
-                unitPrice: price.toFixed(2),    // 使用计算后的单价
-                quantity: quantity.toString(),  // 使用计算后的数量
-                remark: product.remark || product.productData?.remark || "",
-                type: 2, // 临时商品标识
-                money: money                    // 使用计算后的金额
-              }
-              // 移除productId字段
-            };
-          }
+          // 计算金额
+          const money = (price * quantity).toFixed(2);
           
-          // 普通商品处理
-          console.log('处理普通商品');
-          return {
-            productId: product.productId || product.id,
-            quantity: product.quantity || product.number || 1,
-            // 修复toFixed错误：确保先转换为数字
-            unitPrice: Number(product.unitPrice || product.price || 0).toFixed(2),
+          console.log(`临时商品计算 - 单价: ${price}, 数量: ${quantity}, 金额: ${money}`);
+          
+          // 临时商品不包含productId字段
+          const tempProduct = {
+            quantity: quantity.toString(), // 确保数量是字符串格式
+            unitPrice: price.toFixed(2),    // 确保单价是带两位小数的字符串
+            remark: product.remark || product.productData?.remark || product.originalProductData?.remark || "",
             productData: {
-              productCode: product.productCode || product.productData?.productCode || "",
-              productName: product.name || product.productData?.productName || "",
-              unitPrice: Number(product.unitPrice || product.price || 0).toFixed(2),
-              quantity: product.quantity || product.number || 1,
-              remark: product.remark || product.productData?.remark || "",
-              type: 1, // 普通商品标识
-              money: (Number(product.unitPrice || product.price || 0) * Number(product.quantity || product.number || 1)).toFixed(2)
+              productCode: product.productCode || product.code || product.productData?.productCode || "",
+              productName: product.name || product.productName || product.productData?.productName || "",
+              unitPrice: price.toFixed(2),    // 使用计算后的单价
+              quantity: quantity.toString(),  // 使用计算后的数量
+              remark: product.remark || product.productData?.remark || product.originalProductData?.remark || "",
+              type: 2, // 临时商品标识
+              money: money                    // 使用计算后的金额
             }
           };
-        });
+          
+          console.log('转换后的临时商品数据:', tempProduct);
+          return tempProduct;
+        }
         
-        console.log('转换后的商品数据:', converted);
-        console.log('===== convertToSubmitFormat 执行结束 =====');
-        return converted;
-      },
+        // 普通商品处理
+        console.log('处理普通商品');
+        return {
+          productId: product.productId || product.id,
+          quantity: product.quantity || product.number || 1,
+          unitPrice: Number(product.unitPrice || product.price || 0).toFixed(2),
+          productData: {
+            productCode: product.productCode || product.productData?.productCode || "",
+            productName: product.name || product.productData?.productName || "",
+            unitPrice: Number(product.unitPrice || product.price || 0).toFixed(2),
+            quantity: product.quantity || product.number || 1,
+            remark: product.remark || product.productData?.remark || "",
+            type: 1, // 普通商品标识
+            money: (Number(product.unitPrice || product.price || 0) * Number(product.quantity || product.number || 1)).toFixed(2)
+          }
+        };
+      });
       
-  
+      console.log('转换后的商品数据:', converted);
+      console.log('===== convertToSubmitFormat 执行结束 =====');
+      return converted;
+    },
   
     // 构建符合接口要求的提交数据
     buildSubmitData() {
@@ -1031,24 +1051,7 @@ confirm() {
       
       // 构建正确的商品分组
       quoteProductGroupFormList.push({
-        quoteProductFormList: convertedProducts.map(p => {
-          // 临时商品特殊处理
-          if (p.productData && p.productData.type === 2) {
-            return {
-              // 保留临时商品的完整结构
-              ...p,
-              productId: p.productId || p.productData.productCode || `temp-${Date.now()}`
-            };
-          }
-          
-          // 普通商品处理
-          return {
-            productId: p.productId || p.id,
-            quantity: p.quantity || 1,
-            unitPrice: p.unitPrice,
-            productData: p.productData
-          };
-        })
+        quoteProductFormList: convertedProducts
       });
   
       // 处理文件列表
@@ -1086,4 +1089,3 @@ confirm() {
       return postData;
     }
   });
-    
