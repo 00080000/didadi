@@ -37,6 +37,16 @@
         />
       </view>
     </view>
+
+    <!-- 删除按钮 - 新增部分 -->
+    <view class="form-item delete-button-container">
+      <view class="form-label"></view>
+      <view class="form-input">
+        <view class="delete-btn" bind:tap="deleteProduct">
+          删除商品
+        </view>
+      </view>
+    </view>
   </view>
 
   <!-- 底部按钮 -->

@@ -207,6 +207,61 @@ Page({
       }
       wx.navigateBack();
     },
+
+    // 删除商品
+    deleteProduct() {
+      const { index } = this.data;
+      if (index === -1) {
+        return wx.showToast({ title: '删除失败', icon: 'none' });
+      }
+
+      wx.showModal({
+        title: '确认删除',
+        content: '确定要删除该商品吗？',
+        confirmColor: '#ff4d4f',
+        success: (res) => {
+          if (res.confirm) {
+            const app = getApp();
+            
+            // 1. 更新selectedProducts
+            if (app.globalData.selectedProducts) {
+              const products = [...app.globalData.selectedProducts];
+              products.splice(index, 1);
+              app.globalData.selectedProducts = products;
+            }
+
+            // 2. 更新productGroupList
+            if (app.globalData.submitData?.productGroupList) {
+              app.globalData.submitData.productGroupList.forEach(group => {
+                if (group.quoteProductList) {
+                  group.quoteProductList.splice(index, 1);
+                }
+              });
+            }
+
+            // 3. 更新总金额
+            this.updateTotalPrice(app.globalData.submitData);
+
+            // 4. 通知上一页刷新
+            const pages = getCurrentPages();
+            const prevPage = pages[pages.length - 2];
+            if (prevPage && prevPage.refreshProductList) {
+              prevPage.refreshProductList();
+            }
+
+            // 5. 返回上一页并提示
+            wx.showToast({
+              title: '商品已删除',
+              icon: 'success',
+              duration: 1500
+            });
+            setTimeout(() => {
+              wx.navigateBack({ delta: 1 });
+            }, 1000);
+          }
+        }
+      });
+    },
   
     // 更新总金额
     updateTotalPrice(submitData) {

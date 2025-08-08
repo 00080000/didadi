@@ -68,27 +68,55 @@
   
   .btn-group {
     display: flex;
-    margin-top: 40rpx;
-    padding: 0 20rpx;
+    height: 100rpx;
+    border-top: 1rpx solid #eee;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #fff;
   }
   
   .cancel-btn, .save-btn {
     flex: 1;
-    height: 80rpx;
-    line-height: 80rpx;
-    text-align: center;
-    border-radius: 40rpx;
-    font-size: 30rpx;
-    margin: 0 10rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32rpx;
   }
   
   .cancel-btn {
     background-color: #fff;
-    color: #666;
-    border: 1px solid #eee;
+    color: #333;
+    border-right: 1rpx solid #eee;
   }
   
   .save-btn {
     background-color: #F9B712;
     color: #fff;
+  }
+  /* 删除按钮容器样式 */
+.delete-button-container {
+    margin-top: 20rpx;
+    padding-bottom: 10rpx;
+  }
+  
+  /* 删除按钮样式 */
+  .delete-btn {
+    width: 60%;
+    height: 80rpx;
+    line-height: 80rpx;
+    text-align: center;
+    background-color: #ff4d4f;
+    color: #ffffff;
+    border-radius: 8rpx;
+    font-size: 28rpx;
+    letter-spacing: 2rpx;
+    margin-top: 10rpx;
+  }
+  
+  /* 按钮点击态样式 */
+  .delete-btn:active {
+    background-color: #d9363e;
+    opacity: 0.9;
   }

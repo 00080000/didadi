@@ -511,34 +511,34 @@ Page({
     },
   
     // 跳转到编辑商品页面
-navigate(e) {
-    const index = e.currentTarget.dataset.index;
-    const item = this.data.product[index];
-    console.log(`===== 点击编辑第${index}个商品 =====`);
-    console.log('编辑的商品数据:', item);
-    
-    // 隐藏操作菜单
-    this.setData({ ifShow: false });
-    
-    // 针对临时商品特殊处理，确保所有字段都被正确传递
-    let navigateItem = item;
-    if (item.type === 'customProduct') {
-      navigateItem = {
-        ...item,
-        // 确保商品编码被正确提取
-        productCode: item.productCode || item.originalProductData?.productCode || '',
-        // 确保其他字段完整
-        name: item.name || item.productName || '',
-        price: item.price || 0,
-        number: item.number || 1,
-        remark: item.remark || ''
-      };
-    }
-    
-    wx.navigateTo({
-      url: `/quotePackage/pages/editChoosed${this.getEditPageName(item.type)}/editChoosed${this.getEditPageName(item.type)}?index=${index}&item=${encodeURIComponent(JSON.stringify(navigateItem))}`
-    });
-  },
+    navigate(e) {
+        const index = e.currentTarget.dataset.index;
+        const item = this.data.product[index];
+        console.log(`===== 点击编辑第${index}个商品 =====`);
+        console.log('编辑的商品数据:', item);
+        
+        // 隐藏操作菜单
+        this.setData({ ifShow: false });
+        
+        // 针对临时商品特殊处理，确保所有字段都被正确传递
+        let navigateItem = item;
+        if (item.type === 'customProduct') {
+          navigateItem = {
+            ...item,
+            // 确保商品编码被正确提取
+            productCode: item.productCode || item.originalProductData?.productCode || '',
+            // 确保其他字段完整
+            name: item.name || item.productName || '',
+            price: item.price || 0,
+            number: item.number || 1,
+            remark: item.remark || ''
+          };
+        }
+        
+        wx.navigateTo({
+          url: `/quotePackage/pages/editChoosed${this.getEditPageName(item.type)}/editChoosed${this.getEditPageName(item.type)}?index=${index}&item=${encodeURIComponent(JSON.stringify(navigateItem))}`
+        });
+      },
   
     // 获取编辑页面名称
     getEditPageName(type) {
@@ -759,5 +759,4 @@ navigate(e) {
         this.filterProducts();
       });
     }
-  })
-  
+  });

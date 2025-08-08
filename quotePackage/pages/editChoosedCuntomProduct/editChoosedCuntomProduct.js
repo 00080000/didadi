@@ -174,10 +174,59 @@ Page({
         });
       }
     },
+
+    // 删除商品
+    deleteProduct() {
+      const { productIndex } = this.data;
+      if (productIndex === -1) {
+        return wx.showToast({ title: '删除失败', icon: 'none' });
+      }
+
+      wx.showModal({
+        title: '确认删除',
+        content: '确定要删除该商品吗？',
+        confirmColor: '#ff4d4f',
+        success: (res) => {
+          if (res.confirm) {
+            // 获取上一页并更新数据
+            const pages = getCurrentPages();
+            const prevPage = pages[pages.length - 2]; // chooseProduct页面
+            
+            if (prevPage) {
+              // 删除商品
+              const updatedProducts = [...prevPage.data.product];
+              updatedProducts.splice(productIndex, 1);
+              
+              // 更新上一页数据
+              prevPage.setData({
+                product: updatedProducts,
+                originalProducts: [...updatedProducts]
+              }, () => {
+                // 更新全局数据
+                const app = getApp();
+                app.globalData.selectedProducts = updatedProducts;
+                
+                // 重新计算总价
+                prevPage.calculateTotal();
+                
+                // 返回上一页并提示成功
+                wx.showToast({
+                  title: '商品已删除',
+                  icon: 'success',
+                  duration: 1500
+                });
+                setTimeout(() => {
+                  wx.navigateBack({ delta: 1 });
+                }, 1000);
+              });
+            }
+          }
+        }
+      });
+    },
   
     // 取消编辑
     cancel() {
       wx.navigateBack();
     }
   })
-      

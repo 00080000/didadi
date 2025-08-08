@@ -126,4 +126,29 @@ page {
     background-color: #F9B712;
     color: #fff;
   }
-      
+    
+  /* 删除按钮容器样式 */
+.delete-button-container {
+    margin-top: 20rpx;
+    padding-bottom: 10rpx;
+  }
+  
+  /* 删除按钮样式 */
+  .delete-btn {
+    width: 60%;
+    height: 80rpx;
+    line-height: 80rpx;
+    text-align: center;
+    background-color: #ff4d4f;
+    color: #ffffff;
+    border-radius: 8rpx;
+    font-size: 28rpx;
+    letter-spacing: 2rpx;
+    margin-top: 10rpx;
+  }
+  
+  /* 按钮点击态样式 */
+  .delete-btn:active {
+    background-color: #d9363e;
+    opacity: 0.9;
+  }

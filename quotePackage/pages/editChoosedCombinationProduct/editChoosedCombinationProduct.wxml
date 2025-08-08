@@ -1,22 +1,94 @@
 <view class="container">
-  <view class="header">
-    以下信息将显示在您对外发送的文档中，请仔细填写！
-  </view>
-  <view class="form">
-    <view class="inputArea">
-      <view class="label">名称</view>
-      <input placeholder="请输入商品名称" class="input" style="width: 450rpx;"/>
+  <view class="title">编辑组合商品</view>
+
+  <!-- 组合商品基本信息 -->
+  <view class="info-section">
+    <view class="section-title">基本信息</view>
+    <view class="form-item">
+      <view class="form-label">组合名称</view>
+      <view class="form-input">
+        <input 
+          value="{{formData.name}}"
+          bindinput="onInputChange"
+          data-field="name"
+          placeholder="请输入组合商品名称"
+        />
+      </view>
     </view>
-    <view class="deleteButton">
-      删除商品
+    <view class="form-item">
+      <view class="form-label">组合编码</view>
+      <view class="form-input">
+        <input 
+          value="{{formData.productCode}}"
+          bindinput="onInputChange"
+          data-field="productCode"
+          placeholder="请输入组合商品编码"
+        />
+      </view>
+    </view>
+    <view class="form-item">
+      <view class="form-label">组合数量</view>
+      <view class="form-input">
+        <input 
+          type="number"
+          value="{{formData.number}}"
+          bindinput="onInputChange"
+          data-field="number"
+          placeholder="请输入组合数量"
+          min="1"
+        />
+      </view>
     </view>
   </view>
-  <view class="buttonGroup">
-    <view class="cancelButton" bind:tap="cancel">
+
+  <!-- 组合内商品列表 -->
+  <view class="products-section">
+    <view class="section-title">包含商品</view>
+    <view class="product-list">
+      <view wx:for="{{formData.products}}" wx:key="id" class="product-item">
+        <view class="product-info">
+          <view class="product-name">{{item.productName}}</view>
+          <view class="product-details">
+            <view>编码: {{item.productCode}}</view>
+            <view>单价: ¥{{item.unitPrice}}</view>
+          </view>
+        </view>
+        <view class="quantity-control">
+          <view class="quantity-btn" bindtap="reduceProduct" data-index="{{index}}">-</view>
+          <view class="quantity-input">{{item.quantity}}</view>
+          <view class="quantity-btn" bindtap="addProduct" data-index="{{index}}">+</view>
+        </view>
+        <!-- 修复：将复杂计算移到JS中处理 -->
+        <view class="product-subtotal">
+          ¥{{item.subtotal}}
+        </view>
+      </view>
+    </view>
+    
+    <!-- 组合总价 -->
+    <view class="total-price">
+      组合总价: ¥{{totalPrice}}
+    </view>
+  </view>
+
+  <!-- 删除按钮 -->
+  <view class="form-item delete-button-container">
+    <view class="form-label"></view>
+    <view class="form-input">
+      <view class="delete-btn" bind:tap="deleteCombination">
+        删除组合商品
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部按钮 -->
+  <view class="btn-group">
+    <view class="cancel-btn" bind:tap="cancel">
       取消
     </view>
-    <view class="confirmButton" bind:tap="confirm">
+    <view class="confirm-btn" bind:tap="confirm">
       确定
     </view>
   </view>
-</view>  
+</view>
+    

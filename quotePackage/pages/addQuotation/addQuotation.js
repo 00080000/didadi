@@ -76,7 +76,7 @@ Page({
         const sevenDaysLater = new Date();
         sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
         const validityTime = this.formatDateTime(sevenDaysLater);
-
+  
         // 获取用户信息补全报价人信息
         const userInfo = app.globalData.userInfo || {};
         
@@ -161,7 +161,7 @@ Page({
               linkTel: userInfo.phonenumber || '',
               linkEmail: userInfo.email || ''
             };
-
+  
             // 处理商品列表
             let productList = [];
             if (viewData.productGroupList && viewData.productGroupList.length) {
@@ -203,24 +203,27 @@ Page({
                 }
               }
             }
-
+  
+            // 初始化商品字段列表（编辑模式）
+            const productFieldList = viewData.productFieldList || [
+              { productFieldCode: "productName", productFieldName: "商品名称" },
+              { productFieldCode: "productCode", productFieldName: "商品编码" },
+              { productFieldCode: "unitPrice", productFieldName: "单价" },
+              { productFieldCode: "quantity", productFieldName: "数量" },
+              { productFieldCode: "money", productFieldName: "金额" },
+              { productFieldCode: "remark", productFieldName: "备注" }
+            ];
+  
             // 更新全局数据
             const app = getApp();
             app.globalData.submitData = {
               ...viewData,
               quote: copiedQuote,
               selectedProducts: productList,
-              productFieldList: viewData.productFieldList || [
-                { productFieldCode: "productName", productFieldName: "商品名称" },
-                { productFieldCode: "productCode", productFieldName: "商品编码" },
-                { productFieldCode: "unitPrice", productFieldName: "单价" },
-                { productFieldCode: "quantity", productFieldName: "数量" },
-                { productFieldCode: "money", productFieldName: "金额" },
-                { productFieldCode: "remark", productFieldName: "备注" }
-              ]
+              productFieldList: productFieldList,
             };
             app.globalData.selectedProducts = productList;
-
+  
             // 更新本地数据
             this.setData({
               item: copiedQuote,
@@ -434,32 +437,35 @@ Page({
           productData = product.productData || {}; // 确保是对象
         }
         
+        // 组合商品特殊处理
+        if (product.type === 'combinationProduct') {
+          productData = {
+            ...productData,
+            type: 1, // 组合商品标识
+            products: product.products || [], // 保留组合内商品数据
+            money: itemTotal.toFixed(2)
+          };
+        }
+        // 临时商品特殊处理
+        else if (product.type === 'customProduct') {
+          productData = {
+            ...productData,
+            type: 2, // 临时商品标识
+            money: itemTotal.toFixed(2)
+          };
+        }
+        // 普通商品处理
+        else {
+          productData = {
+            ...productData,
+            type: 0, // 普通商品标识
+            money: itemTotal.toFixed(2)
+          };
+        }
+        
         // 将productId转换为字符串，防止类型错误
         const productIdStr = String(product.productId || '');
         console.log(`转换后的productId: ${productIdStr}, 类型: ${typeof productIdStr}`);
-        
-        // 为临时商品添加必要字段
-        if (productIdStr.startsWith('temp-')) {
-          console.log('检测到临时商品');
-          productData = {
-            ...productData,
-            productCode: productData.productCode || product.productCode || product.code || '',
-            productName: productData.productName || product.name || product.productName || '',
-            unitPrice: productData.unitPrice || product.unitPrice || price.toFixed(2),
-            quantity: productData.quantity || product.quantity || quantity.toString(),
-            remark: productData.remark || product.remark || '',
-            type: 2, // 临时商品标识
-            money: productData.money || itemTotal.toFixed(2)
-          };
-        } else {
-          console.log('检测到普通商品');
-          // 普通商品补充字段
-          productData = {
-            ...productData,
-            type: 1, // 普通商品标识
-            money: productData.money || itemTotal.toFixed(2)
-          };
-        }
         
         const formattedProduct = {
           ...product,
@@ -566,7 +572,11 @@ Page({
                         quantity: Number(product.quantity || 0),
                         number: Number(product.quantity || 0), // 兼容number字段
                         calcPrice: Number(product.calcPrice || 0),
-                        remark: product.remark || productData.remark || ''
+                        remark: product.remark || productData.remark || '',
+                        // 组合商品特殊处理
+                        type: productData.type === 1 ? 'combinationProduct' : 
+                               productData.type === 2 ? 'customProduct' : 'singleProduct',
+                        products: productData.products || [] // 保留组合内商品数据
                       });
                     } catch (e) {
                       console.error('解析商品数据失败:', e);
@@ -580,7 +590,8 @@ Page({
                         quantity: Number(product.quantity || 0),
                         number: Number(product.quantity || 0),
                         calcPrice: Number(product.calcPrice || 0),
-                        remark: product.remark || ''
+                        remark: product.remark || '',
+                        type: 'singleProduct'
                       });
                     }
                   }
@@ -946,21 +957,45 @@ Page({
         const productIdStr = String(product.productId || '');
         console.log(`productId: ${productIdStr}, 类型: ${typeof productIdStr}`);
         
-        // 调试所有可能的单价来源
-        console.log(`单价来源调试: 
-          product.unitPrice=${product.unitPrice}, 
-          product.productData.unitPrice=${product.productData?.unitPrice}, 
-          product.originalProductData.unitPrice=${product.originalProductData?.unitPrice},
-          product.price=${product.price}`);
+        // 组合商品特殊处理
+        if (product.type === 'combinationProduct') {
+          console.log('处理组合商品 - 保留内部商品结构');
+          
+          // 计算组合商品总价
+          const totalPrice = (product.products || []).reduce((sum, item) => {
+            return sum + (parseFloat(item.unitPrice || 0) * parseInt(item.quantity || 0));
+          }, 0);
+          
+          // 计算数量乘以总价
+          const quantity = parseInt(product.number || product.quantity || 1);
+          const total = totalPrice * quantity;
+          
+          return {
+            productId: product.productId || product.id,
+            quantity: quantity,
+            unitPrice: totalPrice.toFixed(2),
+            remark: product.remark || "",
+            productData: {
+              productCode: product.productCode || product.code || "",
+              productName: product.name || product.productName || "",
+              unitPrice: totalPrice.toFixed(2),
+              quantity: quantity,
+              remark: product.remark || "",
+              type: 1, // 组合商品标识
+              money: total.toFixed(2),
+              // 保留组合内商品数据
+              products: (product.products || []).map(p => ({
+                productId: p.productId || p.id,
+                productCode: p.productCode || p.code || "",
+                productName: p.name || p.productName || "",
+                unitPrice: parseFloat(p.unitPrice || 0).toFixed(2),
+                quantity: parseInt(p.quantity || 1)
+              }))
+            }
+          };
+        }
         
-        // 调试所有可能的数量来源
-        console.log(`数量来源调试: 
-          product.quantity=${product.quantity}, 
-          product.productData.quantity=${product.productData?.quantity}, 
-          product.originalProductData.quantity=${product.originalProductData?.quantity},
-          product.number=${product.number}`);
-        
-        // 判断是否为临时商品
+        // 临时商品处理
         if (productIdStr.startsWith('temp-')) {
           console.log('处理临时商品 - 移除productId字段并修正价格计算');
           
@@ -1017,7 +1052,7 @@ Page({
             unitPrice: Number(product.unitPrice || product.price || 0).toFixed(2),
             quantity: product.quantity || product.number || 1,
             remark: product.remark || product.productData?.remark || "",
-            type: 1, // 普通商品标识
+            type: 0, // 普通商品标识
             money: (Number(product.unitPrice || product.price || 0) * Number(product.quantity || product.number || 1)).toFixed(2)
           }
         };
@@ -1089,3 +1124,4 @@ Page({
       return postData;
     }
   });
+  

@@ -104,4 +104,3 @@
     <view class="confirmButton" bind:tap="confirm">确认</view>
   </view>
 </view>
-    
