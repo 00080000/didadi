@@ -55,7 +55,7 @@
       </view>
       <view class="cardRight">
         <view class="title">
-          <view style="font-weight: bolder;font-size: 30rpx;margin-left: 15rpx;">￥{{item.totalPrice}} 万元</view>
+          <view style="font-weight: bolder;font-size: 30rpx;margin-left: 15rpx;">￥{{item.totalPrice}} 元</view>
           <view style="font-size: 23rpx; color: {{ item.status == 1 ? 'blue' : item.status == 0 ? 'red' : 'gray' }};">{{ item.status == 1 ? '已提交' : item.status == 0 ? '草稿' : '已过期' }}
 </view>
         </view>

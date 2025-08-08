@@ -48,11 +48,11 @@
     <view class="longCard">
       <view class="longCardLeft">
         <image src="/static/quotationAmount.png"></image>
-        万元
+        ￥
       </view>
       <view class="longCardMiddle">
         <view style="margin-bottom: 20rpx;">报价单金额</view>
-        <view style="font-weight: bolder;font-size: 35rpx;white-space: nowrap;">￥ {{quotationAmount}}</view>
+        <view style="font-weight: bolder;font-size: 35rpx;white-space: nowrap;">{{quotationAmount}}</view>
       </view>
       <view class="longCardRight">
         <image src="/static/quotationTendency.png"></image>

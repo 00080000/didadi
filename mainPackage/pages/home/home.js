@@ -90,8 +90,8 @@ Page({
   },
   fetchKPI() {
     const app = getApp();
-    this.data.enterpriseId = app.globalData.userInfo.enterpriseId ;
-    console.log('enterpriseId:',this.data.enterpriseId)
+    this.data.enterpriseId = app.globalData.userInfo.enterpriseId;
+    console.log('enterpriseId:', this.data.enterpriseId)
     wx.request({
       url: `${getApp().globalData.serverUrl}/diServer/index/queryKPI?enterpriseId=${getApp().globalData.userInfo.enterpriseId}`,
       method: 'GET',
@@ -99,10 +99,22 @@ Page({
         'Authorization': `Bearer ${getApp().globalData.token}`
       },
       success: (res) => {
-          console.log('fetchKPI:statusCode:',res.statusCode,' code:',res.data.code);
+        console.log('fetchKPI:statusCode:', res.statusCode, ' code:', res.data.code);
         if (res.statusCode === 200 && res.data.code === 200) {
           // 请求成功，更新数据
           const data = res.data.data || {};
+          
+          // 重点：处理quotationAmount的单位转换
+          let amount = data.quoteTotalPirce || 0;
+          let amountWithUnit;
+          if (amount >= 10000) {
+            // 大于等于1万时，转换为万元并保留两位小数
+            amountWithUnit = (amount / 10000).toFixed(2) + '万元';
+          } else {
+            // 小于1万时，保留两位小数并显示元
+            amountWithUnit = amount.toFixed(2) + '元';
+          }
+  
           this.setData({
             quotationQuantity: data.quoteCount || 0,
             inquiryQuantity: data.inquiryCount || 0,
@@ -110,12 +122,12 @@ Page({
             supplierQuantity: data.sellerCount || 0,
             singleGoodsSKU: data.productCount || 0,
             combinationGoodsSKU: data.productGroupCount || 0,
-            quotationAmount: data.quoteTotalPirce || 0
+            quotationAmount: amountWithUnit // 赋值处理后的带单位字符串
           });
-          console.log('KPI：',res.data.data);
+          console.log('KPI：', res.data.data);
         } else {
           // 请求失败，使用本地默认数据
-          this.setData({ 
+          this.setData({
             errorMsg: res.data.message || '获取数据失败，使用默认数据',
           });
           console.log('errorMsg');
@@ -123,7 +135,7 @@ Page({
       },
       fail: (err) => {
         // 请求失败，使用本地默认数据
-        this.setData({ 
+        this.setData({
           errorMsg: '网络请求失败，使用默认数据',
         });
         console.error(err);
@@ -189,9 +201,21 @@ Page({
     })
   },
   goToAddQuotation(){
+    const app = getApp();
+    // 重置全局数据，确保新建模式的纯净性
+    app.globalData.submitData = {
+      quote: {},
+      productGroupList: [],
+      quoteFileList: [],
+      selectedProducts: []
+    };
+    app.globalData.shareSystemSelectedData = null;
+    app.globalData.isCreateNewQuote = true; // 标记为新建
+    app.globalData.selectedProducts = [];
+    
     wx.navigateTo({
-      url: '/quotePackage/pages/addQuotation/addQuotation',
-    })
+      url: '/quotePackage/pages/addQuotation/addQuotation'
+    });
   },
   goToAddInquiry(){
     wx.navigateTo({
