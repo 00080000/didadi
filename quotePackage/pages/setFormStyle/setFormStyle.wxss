@@ -177,3 +177,54 @@ page{
     color: #fff;
     font-size: 30rpx;
   }
+
+  /* 预览区域样式 */
+.previewArea {
+    width: 680rpx;
+    margin: 30rpx 20rpx;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .preview-content {
+    flex: 1;
+    border: 1px solid #eee;
+    border-radius: 8rpx;
+    padding: 20rpx;
+    background-color: #f9f9f9;
+  }
+  
+  .preview-content .section-title {
+    font-size: 26rpx;
+    color: #666;
+    margin: 15rpx 0;
+    padding-bottom: 5rpx;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .preview-content .divider {
+    height: 60rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24rpx;
+    color: #999;
+    margin: 20rpx 0;
+    position: relative;
+  }
+  
+  .preview-content .divider::before, .preview-content .divider::after {
+    content: '';
+    position: absolute;
+    width: 30%;
+    height: 1px;
+    background-color: #eee;
+  }
+  
+  .preview-content .divider::before {
+    left: 0;
+  }
+  
+  .preview-content .divider::after {
+    right: 0;
+  }

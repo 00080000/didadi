@@ -12,26 +12,18 @@
       </view>
     </view>
 
-    <!-- 头部文本编辑 -->
-    <view class="editorArea">
-      <view class="label">头部内容</view>
-      <textarea 
-        placeholder="请输入报价单头部内容" 
-        class="editor" 
-        model:value="{{headText}}"
-        bindinput="onHeadTextChange"
-      ></textarea>
-    </view>
-
-    <!-- 底部文本编辑 -->
-    <view class="editorArea">
-      <view class="label">底部内容</view>
-      <textarea 
-        placeholder="请输入报价单底部内容" 
-        class="editor" 
-        model:value="{{footText}}"
-        bindinput="onFootTextChange"
-      ></textarea>
+    <!-- 富文本预览区域 -->
+    <view class="previewArea">
+      <view class="label">内容预览</view>
+      <view class="preview-content">
+        <view class="section-title">头部内容</view>
+        <rich-text nodes="{{headText}}"></rich-text>
+        
+        <view class="divider">商品列表区域</view>
+        
+        <view class="section-title">底部内容</view>
+        <rich-text nodes="{{footText}}"></rich-text>
+      </view>
     </view>
   </view>
   <view class="buttonGroup">
