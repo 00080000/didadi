@@ -1,26 +1,89 @@
-// quotePackage/pages/viewRecievedQuotation/viewRecievedQuotation.js
 const app = getApp();
-// 引入工具函数
-const { numberToChinese } = require('../../../utils/util');
+// 引入工具函数（增加解密函数）
+const { numberToChinese, decryptId } = require('../../../utils/util');
 
 Page({
   data: {
     item: null,
-    id: '',
+    id: '', // 存储解密后的原始ID
+    originalId: '', // 存储原始传入的ID
     tableColumns: [],
     tableData: [],
-    amountChinese: '' // 用于存储金额大写
+    amountChinese: '', // 用于存储金额大写
+    errorMsg: ''
   },
 
   onLoad(options) {
-      console.log(options.id);
+    console.log('传入的参数:', options.id);
     this.setData({
-      id: options.id
+      originalId: options.id || ''
     });
-    this.loadQuotationData();
+    
+    // 处理ID（解密如果需要）
+    this.processIdAndLoadData();
+  },
+
+  // 处理ID：判断是否加密并解密
+  processIdAndLoadData() {
+    const { originalId } = this.data;
+    
+    if (!originalId) {
+      this.setData({ errorMsg: '缺少报价单ID参数' });
+      return;
+    }
+    
+    try {
+      // 尝试解密ID
+      // 加密ID长度固定为16位，可作为初步判断依据
+      let decodedId;
+      if (originalId.length === 16) {
+        // 看起来像加密ID，尝试解密
+        decodedId = decryptId(originalId);
+        console.log('解密后的ID:', decodedId);
+      } else {
+        // 不是加密格式，直接使用
+        decodedId = parseInt(originalId, 10);
+        console.log('使用原始ID:', decodedId);
+      }
+      
+      // 验证ID有效性
+      if (typeof decodedId !== 'number' || isNaN(decodedId) || decodedId < 1) {
+        throw new Error('ID格式无效');
+      }
+      
+      // 保存解密后的ID并加载数据
+      this.setData({ id: decodedId }, () => {
+        this.loadQuotationData();
+      });
+      
+    } catch (err) {
+      console.error('ID处理失败:', err);
+      // 解密失败时，尝试直接使用原始ID（兼容旧版本或未加密情况）
+      try {
+        const numericId = parseInt(originalId, 10);
+        if (numericId >= 1) {
+          this.setData({ 
+            id: numericId,
+            errorMsg: 'ID解密失败，尝试使用原始ID'
+          }, () => {
+            this.loadQuotationData();
+          });
+        } else {
+          this.setData({ errorMsg: '无效的报价单ID' });
+        }
+      } catch (e) {
+        this.setData({ errorMsg: '无效的报价单ID' });
+      }
+    }
   },
 
   loadQuotationData() {
+    // 显示加载提示
+    wx.showLoading({
+      title: '加载中...',
+      mask: true
+    });
+    
     wx.request({
       url: `${getApp().globalData.serverUrl}/diServer/quote/${this.data.id}`,
       method: 'GET',
@@ -28,7 +91,7 @@ Page({
         'Authorization': `Bearer ${getApp().globalData.token}`
       },
       success: (res) => {
-          console.log('loadQuotationData:',res);
+        console.log('loadQuotationData:', res);
         if (res.statusCode === 200 && res.data.code === 200) {
           const viewData = res.data.data || {};
           console.log('viewData:', viewData);
@@ -44,7 +107,14 @@ Page({
         }
       },
       fail: (err) => {
-        console.error(err);
+        console.error('加载数据失败:', err);
+        this.setData({
+          errorMsg: '网络请求失败，请稍后重试'
+        });
+      },
+      complete: () => {
+        // 隐藏加载提示
+        wx.hideLoading();
       }
     });
   },
@@ -182,5 +252,10 @@ Page({
       duration: 1000
     })
     // 实际项目中可调用打印API
+  },
+
+  // 关闭错误提示
+  closeError() {
+    this.setData({ errorMsg: '' });
   }
 })

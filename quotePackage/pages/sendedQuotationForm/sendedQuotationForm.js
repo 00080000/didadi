@@ -1,3 +1,5 @@
+const { encryptId } = require('../../../utils/util');
+
 Page({
     data: {
       quotation: [], // 从服务器获取的原始数据
@@ -17,35 +19,40 @@ Page({
           quoteDate: '2024.04.13',
           time: '20:09:45',
           totalPrice: '331.58',
-          status: 0
+          status: 0,
+          id: 1001 // 补充ID字段
         },
         {
           name: '报价单2024040319008883',
           quoteDate: '2024.04.13',
           time: '20:09:45',
           totalPrice: '331.58',
-          status: 1
+          status: 1,
+          id: 1002 // 补充ID字段
         },
         {
           name: '报价单2024040319008884',
           quoteDate: '2024.04.13',
           time: '20:09:45',
           totalPrice: '331.58',
-          status: 1
+          status: 1,
+          id: 1003 // 补充ID字段
         },
         {
           name: '报价单2024040319008885',
           quoteDate: '2024.04.13',
           time: '20:09:45',
           totalPrice: '331.58',
-          status: 0
+          status: 0,
+          id: 1004 // 补充ID字段
         },
         {
           name: '报价单2024040319008882',
           quoteDate: '2024.04.13',
           time: '20:09:45',
           totalPrice: '331.58',
-          status: 1
+          status: 1,
+          id: 1005 // 补充ID字段
         }
       ]
     },
@@ -157,9 +164,11 @@ Page({
         });
       },
   
-    // 分享功能
+    // 分享功能 - 修改分享到微信的逻辑
     share(e) {
       const id = e.currentTarget.dataset.id;
+      // 获取当前报价单信息用于分享
+      const currentQuote = this.data.quotation.find(item => item.id === id) || {};
       
       wx.showActionSheet({
         itemList: ['系统内发送', '生成二维码', '复制链接', '发送邮件', '分享至微信'],
@@ -178,10 +187,26 @@ Page({
               break;
             }
             case 2: {
-              wx.showToast({
-                title: '复制成功',
-                icon: 'none',
-              });
+              // 复制链接时也使用加密ID
+              try {
+                const encryptedId = encryptId(id);
+                const shareUrl = `${getApp().globalData.webUrl}/quote/view?id=${encryptedId}`;
+                wx.setClipboardData({
+                  data: shareUrl,
+                  success: () => {
+                    wx.showToast({
+                      title: '链接复制成功',
+                      icon: 'none',
+                    });
+                  }
+                });
+              } catch (err) {
+                wx.showToast({
+                  title: '复制失败，请重试',
+                  icon: 'none',
+                });
+                console.error('复制链接失败:', err);
+              }
               break;
             }
             case 3: {
@@ -191,22 +216,35 @@ Page({
               break;
             }
             case 4: {
-              wx.updateShareMenu({
-                withShareTicket: true,
-                success: () => {
-                  wx.showToast({
-                    title: '请点击右上角“···”分享到微信',
-                    icon: 'none',
-                    duration: 3000
-                  });
-                },
-                fail: (err) => {
-                  wx.showToast({
-                    title: err.errMsg + '，请稍后重试',
-                    icon: 'none'
-                  });
-                }
-              });
+              // 分享至微信，先加密ID
+              try {
+                const encryptedId = encryptId(id);
+                // 设置当前要分享的报价单ID
+                getApp().globalData.shareQuoteId = id;
+                
+                wx.updateShareMenu({
+                  withShareTicket: true,
+                  success: () => {
+                    wx.showToast({
+                      title: '请点击右上角“···”分享到微信',
+                      icon: 'none',
+                      duration: 3000
+                    });
+                  },
+                  fail: (err) => {
+                    wx.showToast({
+                      title: err.errMsg + '，请稍后重试',
+                      icon: 'none'
+                    });
+                  }
+                });
+              } catch (err) {
+                wx.showToast({
+                  title: '分享准备失败，请重试',
+                  icon: 'none',
+                });
+                console.error('分享准备失败:', err);
+              }
               break;
             }
           }
@@ -220,14 +258,54 @@ Page({
       });
     },
   
-    // 定义分享内容
+    // 定义分享内容 - 使用加密ID和正确的预览路径
     onShareAppMessage() {
-      return {
-        title: '报价记录分享',
-        path: `/quotePackage/pages/viewRecievedQuotation/viewRecievedQuotation?name=${this.data.filterQuotation[0]?.name || ''}`,
-        imageUrl: 'https://example.com/share-image.jpg',
-        extraData: {}
-      };
+      // 获取当前要分享的报价单ID
+      const shareQuoteId = getApp().globalData.shareQuoteId;
+      if (!shareQuoteId) {
+        // 如果没有指定ID，使用第一个报价单
+        const firstQuote = this.data.filterQuotation[0];
+        if (firstQuote && firstQuote.id) {
+          getApp().globalData.shareQuoteId = firstQuote.id;
+        } else {
+          return {
+            title: '报价单分享',
+            path: '/quotePackage/pages/recievedQuotationForm/recievedQuotationForm',
+            imageUrl: 'https://example.com/share-image.jpg'
+          };
+        }
+      }
+      
+      try {
+        // 加密ID
+        const encryptedId = encryptId(getApp().globalData.shareQuoteId);
+        // 获取报价单名称作为分享标题
+        const quote = this.data.quotation.find(item => item.id === getApp().globalData.shareQuoteId) || {};
+        
+        return {
+          title: `${quote.name || '报价单'}`,
+          // 分享路径指向预览页面，并附带加密后的ID
+          path: `/quotePackage/pages/viewRecievedQuotation/viewRecievedQuotation?id=${encryptedId}`,
+          imageUrl: 'https://example.com/share-image.jpg',
+          success: () => {
+            wx.showToast({
+              title: '分享成功',
+              icon: 'success',
+              duration: 2000
+            });
+          },
+          fail: (err) => {
+            console.error('分享失败:', err);
+          }
+        };
+      } catch (err) {
+        console.error('生成分享内容失败:', err);
+        return {
+          title: '报价单分享',
+          path: '/quotePackage/pages/recievedQuotationForm/recievedQuotationForm',
+          imageUrl: 'https://example.com/share-image.jpg'
+        };
+      }
     },
   
     // 删除确认
@@ -285,9 +363,19 @@ Page({
     goToViewRecievedQuotation(e) {
         const id = e.currentTarget.dataset.id;
         console.log('id:',id);
-        wx.navigateTo({
-          url: `/quotePackage/pages/viewRecievedQuotation/viewRecievedQuotation?id=${id}`
-        });
+        // 预览时也使用加密ID
+        try {
+          const encryptedId = encryptId(id);
+          wx.navigateTo({
+            url: `/quotePackage/pages/viewRecievedQuotation/viewRecievedQuotation?id=${encryptedId}`
+          });
+        } catch (err) {
+          console.error('加密ID失败:', err);
+          wx.showToast({
+            title: '预览失败，请重试',
+            icon: 'none'
+          });
+        }
       },
   
     // 导航相关方法
@@ -339,4 +427,3 @@ Page({
       });
     }
   });
-    
