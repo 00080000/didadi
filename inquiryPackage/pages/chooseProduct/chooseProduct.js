@@ -67,7 +67,7 @@ Page({
       if (item.type === "singleProduct" || item.type === 'customProduct') {
         quantity = Number(item.number) || 1;
       } else if (item.type === "combinationProduct") {
-        quantity = 1;
+        quantity = Number(item.number) || 1; // 修复组合商品数量计算
       }
 
       totalAmount += Number((price * quantity).toFixed(4));
@@ -132,26 +132,29 @@ Page({
     this.setData({ product });
   },
 
-  // 跳转到编辑页
+  // 跳转到编辑页 - 修复核心：添加item数据传递
   navigate(e) {
     const index = e.currentTarget.dataset.index;
     const item = this.data.product[index];
     
+    // 对商品数据进行编码，确保能正确传递
+    const encodedItem = encodeURIComponent(JSON.stringify(item));
+    
     if (item.type === "singleProduct") {
       wx.navigateTo({
-        url: `/inquiryPackage/pages/editChoosedSingleProduct/editChoosedSingleProduct?index=${index}`,
+        url: `/inquiryPackage/pages/editChoosedSingleProduct/editChoosedSingleProduct?index=${index}&item=${encodedItem}`,
       });
     } else if (item.type === "combinationProduct") {
       wx.navigateTo({
-        url: `/inquiryPackage/pages/editChoosedCombinationProduct/editChoosedCombinationProduct?index=${index}`,
+        url: `/inquiryPackage/pages/editChoosedCombinationProduct/editChoosedCombinationProduct?index=${index}&item=${encodedItem}`,
       });
     } else if (item.type === "customProduct") {
       wx.navigateTo({
-        url: `/inquiryPackage/pages/editChoosedCuntomProduct/editChoosedCuntomProduct?index=${index}`,
+        url: `/inquiryPackage/pages/editChoosedCuntomProduct/editChoosedCuntomProduct?index=${index}&item=${encodedItem}`,
       });
     } else if (item.type === "feeName") {
       wx.navigateTo({
-        url: `/inquiryPackage/pages/editFee/editFee?index=${index}`,
+        url: `/inquiryPackage/pages/editFee/editFee?index=${index}&item=${encodedItem}`,
       });
     }
   },

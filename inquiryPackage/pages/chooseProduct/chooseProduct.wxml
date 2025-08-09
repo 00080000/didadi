@@ -5,6 +5,7 @@
     <view class="content">
       <view></view>
       <view class="information">{{fileName}}</view>
+      <view class="information">当前总价：{{totalAmount}}元</view>
     </view>
   </view>
 

@@ -21,6 +21,13 @@ Page({
     isSubmitting: false,
     id: '',
     isNew: true,
+    // 商品类型常量定义
+    productTypes: {
+      SINGLE: 'singleProduct',
+      COMBINATION: 'combinationProduct',
+      CUSTOM: 'customProduct',
+      GROUP: 'productGroup'
+    },
     tableColumns: [
       { label: "序号", width: "50px", background: "#ececec", "align": "center" },
       { label: "商品名称", "align": "center", code: "productName" },
@@ -40,29 +47,103 @@ Page({
       copyMode: copyMode ? 1 : 0
     });
 
-    // 加载历史商品（如果有）
+    // 加载历史商品（核心修复：强化类型识别）
     if (options?.currentProducts) {
       try {
         const historyProducts = JSON.parse(decodeURIComponent(options.currentProducts));
-        this.setData({ product: historyProducts }, () => {
+        const productsWithData = historyProducts.map(item => this.completeProductData(item));
+        this.setData({ product: productsWithData }, () => {
           this.calculateTotal();
+          this.logProductTypes();
         });
       } catch (err) {
         console.error('解析历史商品数据失败:', err);
+        wx.showToast({ title: '历史数据加载失败', icon: 'none' });
       }
     }
 
-    // 新建或复制模式：初始化日期
+    // 初始化日期
     if (this.data.isNew || this.data.copyMode === 1) {
       const today = this.formatDate(new Date());
       this.setData({ time: today });
       this.calculateValidityTime();
     } else {
-      // 编辑模式：加载原数据
       this.loadInquiryData(id);
     }
   },
 
+  // 打印商品类型日志
+  logProductTypes() {
+    const typeInfo = this.data.product.map(item => ({
+      id: item.id,
+      name: item.name,
+      type: item.type,
+      source: '历史数据'
+    }));
+    console.log('当前商品类型明细:', typeInfo);
+  },
+
+  // 完善商品数据结构（核心修复）
+  completeProductData(item) {
+    const { productTypes } = this.data;
+    const allTypes = Object.values(productTypes);
+
+    // 类型修复逻辑
+    let itemType = item.type;
+    if (!itemType || !allTypes.includes(itemType)) {
+      if (item.products && item.products.length > 0) {
+        itemType = item.isGroup ? productTypes.GROUP : productTypes.COMBINATION;
+      } else if (item.isCustom) {
+        itemType = productTypes.CUSTOM;
+      } else {
+        itemType = productTypes.SINGLE;
+      }
+      console.warn(`自动修复商品[${item.name || item.id}]类型为: ${itemType}`);
+    }
+
+    if (item.productData) {
+      return { ...item, type: itemType };
+    }
+    
+    // 构建特定类型数据
+    let specificData = {};
+    switch(itemType) {
+      case productTypes.COMBINATION:
+        specificData = {
+          products: item.products || [],
+          sp: true,
+          type: 1,
+          templateId: 5,
+          validityTime: '2099-12-31 08:00:00'
+        };
+        break;
+      case productTypes.GROUP:
+        specificData = {
+          products: item.products || [],
+          sp: false,
+          type: 2,
+          templateId: 6
+        };
+        break;
+      default:
+        specificData = {};
+    }
+    
+    return {
+      ...item,
+      type: itemType,
+      productData: {
+        productName: item.name || item.productName || '',
+        productCode: item.productCode || '',
+        unitPrice: (Number(item.price) || Number(item.unitPrice) || 0).toFixed(2),
+        quantity: item.number || item.quantity || 1,
+        remark: item.remark || '',
+        ...specificData
+      }
+    };
+  },
+
+  // 加载询价单数据
   loadInquiryData(id) {
     wx.showLoading({ title: '加载中...' });
     const app = getApp();
@@ -79,7 +160,7 @@ Page({
           const data = res.data.data || res.data;
           const quote = data.quote || data;
           
-          // 解析商品列表（与网页端保持一致）
+          // 解析商品列表
           let productList = [];
           if (Array.isArray(data.productGroupList)) {
             data.productGroupList.forEach(group => {
@@ -96,17 +177,32 @@ Page({
                     }
                   }
 
+                  // 类型识别
+                  let itemType = item.type;
+                  const { productTypes } = this.data;
+                  
+                  if (!itemType) {
+                    if (productData.sp && productData.type === 1) {
+                      itemType = productTypes.COMBINATION;
+                    } else if (productData.products && productData.products.length > 0) {
+                      itemType = productTypes.GROUP;
+                    } else {
+                      itemType = productTypes.SINGLE;
+                    }
+                  }
+
                   productList.push({
                     id: item.productId || item.id || `temp_${Date.now()}_${index}`,
                     name: productData.productName || item.productName || '未知商品',
                     productCode: productData.productCode || item.productCode || '',
                     price: Number(item.unitPrice || productData.unitPrice || 0),
                     number: Number(item.quantity || 1),
-                    type: item.type || 'singleProduct',
+                    type: itemType,
                     remark: item.remark || '',
                     productName: productData.productName || item.productName || '未知商品',
                     unitPrice: Number(item.unitPrice || productData.unitPrice || 0).toFixed(2),
-                    quantity: Number(item.quantity || 1)
+                    quantity: Number(item.quantity || 1),
+                    productData: productData
                   });
                 });
               }
@@ -145,6 +241,7 @@ Page({
     });
   },
 
+  // 页面显示时处理
   onShow() {
     console.log('当前页面的商品数据:', this.data.product);
     const pages = getCurrentPages();
@@ -158,8 +255,9 @@ Page({
       });
 
       if (newProducts.length > 0) {
+        const productsWithData = newProducts.map(item => this.completeProductData(item));
         this.setData({
-          product: [...this.data.product, ...newProducts]
+          product: [...this.data.product, ...productsWithData]
         }, () => {
           this.calculateTotal();
         });
@@ -171,17 +269,19 @@ Page({
     this.calculateTotal();
   },
 
+  // 计算总价
   calculateTotal() {
     let totalAmount = 0;
     let totalPrice = 0;
+    const { productTypes } = this.data;
     
     this.data.product.forEach(item => {
       const price = Number(item.price) || 0;
       let quantity = 1;
 
-      if (item.type === "singleProduct" || item.type === 'customProduct') {
+      if (item.type === productTypes.SINGLE || item.type === productTypes.CUSTOM) {
         quantity = Number(item.number) || 1;
-      } else if (item.type === "combinationProduct") {
+      } else if (item.type === productTypes.COMBINATION || item.type === productTypes.GROUP) {
         quantity = 1;
       }
 
@@ -195,6 +295,7 @@ Page({
     });
   },
 
+  // 计算有效期
   calculateValidityTime() {
     if (!this.data.time) return;
     const date = new Date(this.data.time);
@@ -202,6 +303,7 @@ Page({
     this.setData({ validityTime: this.formatDate(date) });
   },
 
+  // 格式化日期
   formatDate(date) {
     if (!(date instanceof Date)) date = new Date(date);
     const year = date.getFullYear();
@@ -210,14 +312,17 @@ Page({
     return `${year}-${month}-${day}`;
   },
 
+  // 跳转编辑文档信息
   goToEditFileInformation() {
     wx.navigateTo({ url: '/inquiryPackage/pages/editFileInformation/editFileInformation' });
   },
 
+  // 选择商家
   goToChooseMerchant() {
     wx.navigateTo({ url: '/inquiryPackage/pages/chooseMerchant/chooseMerchant' });
   },
 
+  // 选择商品
   goToChooseProduct() {
     const currentProducts = encodeURIComponent(JSON.stringify(this.data.product));
     wx.navigateTo({
@@ -225,6 +330,7 @@ Page({
     });
   },
 
+  // 添加附件
   goToAddAttachment() {
     wx.navigateTo({ url: '/inquiryPackage/pages/uploadAttachment/uploadAttachment' });
   },
@@ -240,10 +346,12 @@ Page({
     });
   },
   
+  // 取消
   cancel() {
     wx.navigateBack();
   },
   
+  // 确认提交
   confirm() {
     if (this.data.isSubmitting) {
       return wx.showToast({ title: '正在提交中...', icon: 'none' });
@@ -264,6 +372,7 @@ Page({
     this.saveQuoteDraft(submitData);
   },
   
+  // 格式化当前时间
   formatCurrentTime() {
     const date = new Date();
     const hours = date.getHours().toString().padStart(2, '0');
@@ -272,9 +381,11 @@ Page({
     return `${hours}:${minutes}:${seconds}`;
   },
   
-  // 统一提交数据结构与网页端完全一致
+  // 准备提交数据
   prepareSubmitData() {
-    // 1. 商品字段配置（与网页端完全一致）
+    const { productTypes } = this.data;
+    
+    // 商品字段配置
     const productFieldList = [
       { productFieldCode: "productName", productFieldName: "商品名称" },
       { productFieldCode: "productCode", productFieldName: "商品编码" },
@@ -283,16 +394,67 @@ Page({
       { productFieldCode: "remark", productFieldName: "备注" }
     ];
   
-    // 2. 商品列表（仅保留后端需要的核心字段，与网页端对齐）
+    // 商品列表
     const quoteProductGroupFormList = [{
-      quoteProductFormList: this.data.product.map((item) => ({
-        productId: item.id || item.productId, // 确保传递正确的商品ID
-        quantity: item.type === 'combinationProduct' ? 1 : (item.number || item.quantity || 1),
-        unitPrice: (Number(item.price) || Number(item.unitPrice) || 0).toFixed(2)
-      }))
+      groupName: '',
+      quoteProductFormList: this.data.product.map((item) => {
+        // 组合商品数据
+        const combinationProductData = item.type === productTypes.COMBINATION ? {
+          products: item.products.map(sub => ({
+            productName: sub.name,
+            productCode: sub.productCode,
+            unitPrice: sub.unitPrice.toFixed(2),
+            quantity: sub.quantity,
+            subtotal: sub.subtotal,
+            type: 0
+          })),
+          sp: true,
+          type: 1,
+          templateId: 5,
+          validityTime: '2099-12-31 08:00:00'
+        } : {};
+
+        // 商品组数据
+        const groupProductData = item.type === productTypes.GROUP ? {
+          products: item.products.map(sub => ({
+            productName: sub.name,
+            productCode: sub.productCode,
+            unitPrice: sub.unitPrice.toFixed(2),
+            quantity: sub.quantity,
+            subtotal: sub.subtotal,
+            type: 0
+          })),
+          sp: false,
+          type: 2,
+          templateId: 6
+        } : {};
+
+        // 构建productData
+        const productData = {
+          productName: item.name || item.productName || '',
+          productCode: item.productCode || '',
+          unitPrice: (Number(item.price) || 0).toFixed(2),
+          quantity: (item.type === productTypes.COMBINATION || item.type === productTypes.GROUP) 
+            ? 1 
+            : (item.number || 1),
+          remark: item.remark || '',
+          ...combinationProductData,
+          ...groupProductData
+        };
+
+        return {
+          productId: item.id || item.productId,
+          quantity: (item.type === productTypes.COMBINATION || item.type === productTypes.GROUP)
+            ? 1
+            : (item.number || 1),
+          unitPrice: (Number(item.price) || 0).toFixed(2),
+          remark: item.remark || '',
+          productData: productData
+        };
+      })
     }];
     
-    // 3. 附件信息
+    // 附件信息
     const quoteFileList = this.data.attachment.map(file => ({
       fileName: file.name || '',
       filePath: file.path || '',
@@ -303,13 +465,12 @@ Page({
     const currentTime = this.data.time + ' ' + this.formatCurrentTime();
     const isNewOrCopy = this.data.copyMode === 1 || this.data.isNew;
     
-    // 4. 询价单主信息（严格对齐网页端结构）
+    // 询价单主信息
     const quote = {
-      // 仅编辑模式携带id，新建/复制模式不携带
       ...(isNewOrCopy ? {} : { id: this.data.id }),
       templateId: 36,
       userId: app.globalData.userId || 18,
-      status: 0, // 关键修复：统一状态为0（与网页端新建状态一致）
+      status: 0,
       totalUnitType: 1,
       name: this.data.fileName.trim(),
       projectName: this.data.project,
@@ -326,7 +487,6 @@ Page({
       dataJson: JSON.stringify(this.data.tableColumns),
       totalPrice: this.data.totalPrice,
       fileList: quoteFileList
-      // 移除多余字段，与网页端提交结构完全一致
     };
     
     return {
@@ -394,4 +554,3 @@ Page({
     });
   }
 });
-    

@@ -72,8 +72,8 @@ page{
   height: 50rpx;
   padding: 10rpx 10rpx;
   width: 205rpx;
-  background-color: #23394D;
-  border: 1px solid #23394D;
+  border: 1px solid #f0f0f0;
+  background-color: #f0f0f0;
   border-top-right-radius: 5px;
   border-bottom-right-radius: 5px;
 

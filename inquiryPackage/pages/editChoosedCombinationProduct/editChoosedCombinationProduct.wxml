@@ -1,16 +1,119 @@
 <view class="container">
+  <!-- 头部提示 -->
   <view class="header">
     以下信息将显示在您对外发送的文档中，请仔细填写！
   </view>
+
   <view class="form">
+    <!-- 名称输入 -->
     <view class="inputArea">
       <view class="label">名称</view>
-      <input placeholder="请输入商品名称" class="input" style="width: 450rpx;"/>
+      <input 
+        placeholder="请输入商品名称" 
+        class="input" 
+        value="{{formData.name}}"
+        bindinput="onInputChange"
+        data-field="name"
+      />
     </view>
-    <view class="deleteButton">
+
+    <!-- 商品编码输入 -->
+    <view class="inputArea">
+      <view class="label">商品编码</view>
+      <input 
+        placeholder="请输入商品编码" 
+        class="input" 
+        value="{{formData.productCode}}"
+        bindinput="onInputChange"
+        data-field="productCode"
+      />
+    </view>
+
+    <!-- 数量输入 -->
+    <view class="inputArea">
+      <view class="label">数量</view>
+      <input 
+        type="number"
+        placeholder="请输入数量" 
+        class="input" 
+        value="{{formData.number}}"
+        bindinput="onInputChange"
+        data-field="number"
+        min="1"
+      />
+    </view>
+
+    <!-- 组合商品列表区域 -->
+    <view class="subProductsSection">
+      <view class="subProductsTitle">
+        <text>组合包含商品：</text>
+        <text class="countBadge">{{formData.products.length}}</text>
+      </view>
+      
+      <!-- 列表为空时的提示 -->
+      <view wx:if="{{formData.products.length === 0}}" class="emptyTips">
+        该组合暂无商品，请先添加商品
+      </view>
+      
+      <!-- 商品列表 -->
+      <view wx:else class="subProductList">
+        <!-- 列表头部 -->
+        <view class="subProductHeader">
+          <view class="subProductCol col-name">商品名称</view>
+          <view class="subProductCol col-price">单价</view>
+          <view class="subProductCol col-quantity">数量</view>
+          <view class="subProductCol col-subtotal">小计</view>
+        </view>
+        
+        <!-- 列表内容 -->
+        <block wx:for="{{formData.products}}" wx:key="id" wx:for-index="idx">
+          <view class="subProductItem {{idx % 2 === 0 ? 'evenRow' : ''}}">
+            <view class="subProductCol col-name">
+              <text class="productCode">{{item.productCode}}</text>
+              <text>{{item.name}}</text>
+            </view>
+            <view class="subProductCol col-price">¥{{item.unitPrice.toFixed(2)}}</view>
+            <view class="subProductCol col-quantity">
+              <view class="quantityController">
+                <view class="quantityBtn minus" bindtap="reduceProduct" data-index="{{idx}}" 
+                  wx:if="{{item.quantity > 1}}">-</view>
+                <view class="quantityBtn minus disabled" wx:else>-</view>
+                <view class="quantityNum">{{item.quantity}}</view>
+                <view class="quantityBtn plus" bindtap="addProduct" data-index="{{idx}}">+</view>
+              </view>
+            </view>
+            <view class="subProductCol col-subtotal">¥{{item.subtotal}}</view>
+          </view>
+        </block>
+      </view>
+    </view>
+
+    <!-- 总价区域 -->
+    <view class="totalArea">
+      <view class="totalLabel">组合总价：</view>
+      <view class="totalValue">¥{{totalPrice}}</view>
+    </view>
+
+    <!-- 备注输入 -->
+    <view class="inputArea">
+      <view class="label">备注</view>
+      <textarea 
+        placeholder="请输入备注信息" 
+        class="textarea" 
+        value="{{formData.remark}}"
+        bindinput="onInputChange"
+        data-field="remark"
+      ></textarea>
+    </view>
+
+    <!-- 删除按钮 -->
+    <view class="deleteButton" bindtap="deleteCombination">
+      <icon class="deleteIcon" type="clear" size="16"></icon>
       删除商品
     </view>
   </view>
+
+  <!-- 底部操作按钮 -->
   <view class="buttonGroup">
     <view class="cancelButton" bind:tap="cancel">
       取消
@@ -19,4 +122,4 @@
       确定
     </view>
   </view>
-</view>  
+</view>

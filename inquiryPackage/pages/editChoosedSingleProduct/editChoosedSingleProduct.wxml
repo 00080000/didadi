@@ -5,17 +5,72 @@
   <view class="form">
     <view class="inputArea">
       <view class="label">名称</view>
-      <input disabled="true" class="disabledInput" style="width: 450rpx;"/>
+      <input 
+        disabled="true" 
+        class="disabledInput" 
+        style="width: 450rpx;"
+        value="{{formData.productName}}"
+      />
     </view>
     <view class="inputArea">
       <view class="label">型号</view>
-      <input disabled="true" class="disabledInput" style="width: 450rpx;"/>
+      <input 
+        disabled="true" 
+        class="disabledInput" 
+        style="width: 450rpx;"
+        value="{{formData.productModel}}"
+      />
     </view>
     <view class="inputArea">
       <view class="label">数量</view>
-      <input type="number" class="input" style="width: 450rpx;"/>
+      <input 
+        type="number" 
+        class="input" 
+        style="width: 450rpx;"
+        value="{{formData.quantity}}"
+        bindinput="onInputChange"
+        data-field="quantity"
+        placeholder="请输入数量"
+      />
     </view>
-    <view class="deleteButton">
+    <view class="inputArea">
+      <view class="label">单价类型</view>
+      <picker 
+        class="picker" 
+        value="{{index}}" 
+        range="{{pickerValue}}" 
+        bindchange="pickerChange"
+        style="width: 450rpx;"
+      >
+        <view class="picker-view">{{pickerValue[index]}}</view>
+      </picker>
+    </view>
+    <view class="inputArea">
+      <view class="label">单价</view>
+      <input 
+        type="digit" 
+        class="input" 
+        style="width: 450rpx;"
+        value="{{formData.price}}"
+        bindinput="onInputChange"
+        data-field="price"
+        placeholder="请输入单价"
+      />
+    </view>
+    <view class="inputArea">
+      <view class="label">总价</view>
+      <input 
+        type="digit" 
+        class="disabledInput" 
+        style="width: 450rpx;"
+        value="{{formData.totalPrice}}"
+        disabled="true"
+      />
+    </view>
+    <view 
+      class="deleteButton" 
+      bind:tap="deleteProduct"
+    >
       删除商品
     </view>
   </view>
@@ -27,4 +82,4 @@
       确定
     </view>
   </view>
-</view>  
+</view>

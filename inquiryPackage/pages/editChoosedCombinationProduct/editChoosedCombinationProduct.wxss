@@ -1,64 +1,224 @@
-/* quotePackage/pages/editChoosedCombinationProduct/editChoosedCombinationProduct.wxss */
-page{
-  text-align: center;
-  width: 100%;
-  height: 100%;
-  background-color: white;
-  position: relative;
+/* 基础样式 */
+.container {
+  padding: 20rpx 30rpx;
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
 .header {
-  width: 100%;
-  height: 75rpx;
-  background-color: #DDDDDD;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  color: #666;
   font-size: 26rpx;
+  padding: 15rpx 0;
+  margin-bottom: 20rpx;
+  line-height: 1.5;
 }
 
 .form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 50rpx;
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
 }
 
+/* 输入区域样式 */
 .inputArea {
-  width: 650rpx;
-  height: 100rpx;
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30rpx;
+  position: relative;
+}
+
+.label {
+  width: 160rpx;
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.input, .textarea {
+  flex: 1;
+  height: 80rpx;
+  border: 2rpx solid #eee;
+  border-radius: 8rpx;
+  padding: 0 20rpx;
+  font-size: 28rpx;
+  color: #333;
+  box-sizing: border-box;
+}
+
+.textarea {
+  height: 160rpx;
+  padding: 20rpx;
+  resize: none;
+  line-height: 1.6;
+}
+
+/* 组合商品列表样式 */
+.subProductsSection {
+  margin: 40rpx 0;
+}
+
+.subProductsTitle {
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 20rpx;
+  display: flex;
   align-items: center;
 }
 
-.inputArea .label{
-  font-size: 27rpx;
+.countBadge {
+  background-color: #ff4d4f;
+  color: white;
+  font-size: 22rpx;
+  padding: 2rpx 15rpx;
+  border-radius: 20rpx;
+  margin-left: 10rpx;
 }
 
-.input {
-  height: 50rpx;
+.emptyTips {
+  text-align: center;
+  padding: 60rpx 0;
+  color: #999;
+  font-size: 28rpx;
+  background-color: #fafafa;
+  border-radius: 8rpx;
+}
+
+.subProductList {
+  border-radius: 8rpx;
+  overflow: hidden;
+  border: 2rpx solid #eee;
+}
+
+.subProductHeader {
+  display: flex;
+  background-color: #f5f5f5;
+  border-bottom: 2rpx solid #eee;
+}
+
+.subProductItem {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+}
+
+.evenRow {
+  background-color: #fafafa;
+}
+
+.subProductCol {
+  padding: 20rpx 15rpx;
+  font-size: 26rpx;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.col-name {
+  width: 35%;
   text-align: left;
-  padding: 10rpx 25rpx;
-  border: 1px solid lightgray;
-  border-radius: 5px;
-  font-size: 27rpx;
-  font-weight: lighter;
 }
 
-.deleteButton {
-  margin-top: 50rpx;
-  border: 1px solid red;
-  background-color: white;
-  color: red;
-  width: 300rpx;
-  height: 85rpx;
-  font-size: 32rpx;
+.col-price, .col-subtotal {
+  width: 20%;
+}
+
+.col-quantity {
+  width: 25%;
+}
+
+/* 子商品名称与编码 */
+.productCode {
+  display: block;
+  font-size: 22rpx;
+  color: #999;
+  margin-bottom: 5rpx;
+}
+
+/* 数量控制器 */
+.quantityController {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
-  font-weight: lighter;
+}
+
+.quantityBtn {
+  width: 50rpx;
+  height: 50rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  border-radius: 8rpx;
+  font-size: 30rpx;
+  touch-action: manipulation;
+}
+
+.quantityBtn.minus {
+  background-color: #fff1f0;
+  color: #ff4d4f;
+  border: 2rpx solid #ffccc7;
+}
+
+.quantityBtn.minus.disabled {
+  background-color: #f5f5f5;
+  color: #ccc;
+  border: 2rpx solid #eee;
+}
+
+.quantityBtn.plus {
+  background-color: #f6ffed;
+  color: #52c41a;
+  border: 2rpx solid #b7eb8f;
+}
+
+.quantityNum {
+  width: 60rpx;
+  text-align: center;
+  font-size: 28rpx;
+  margin: 0 10rpx;
+}
+
+/* 总价区域 */
+.totalArea {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin: 30rpx 0;
+  padding: 20rpx 0;
+  border-top: 2rpx dashed #eee;
+}
+
+.totalLabel {
+  font-size: 30rpx;
+  color: #666;
+  margin-right: 15rpx;
+}
+
+.totalValue {
+  font-size: 36rpx;
+  color: #ff4d4f;
+  font-weight: bold;
+}
+
+/* 按钮样式 */
+.deleteButton {
+  color: #ff4d4f;
+  font-size: 28rpx;
+  text-align: center;
+  padding: 20rpx 0;
+  margin: 10rpx 0 30rpx;
+  border: 2rpx solid #ffccc7;
+  border-radius: 8rpx;
+  background-color: #fff1f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.deleteIcon {
+  margin-right: 10rpx;
 }
 
 .buttonGroup {
@@ -70,6 +230,17 @@ page{
   display: flex;
   align-items: center;
   justify-content: space-around;
+}
+
+.cancelButton, .confirmButton {
+  flex: 1;
+  height: 90rpx;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  font-weight: 500;
 }
 
 .cancelButton {

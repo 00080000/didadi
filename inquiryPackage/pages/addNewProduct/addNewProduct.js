@@ -50,14 +50,14 @@ Page({
     });
   },
 
-  // 1. 获取单商品列表（添加productCode字段）
+  // 1. 获取单商品列表
   fetchSingleProducts() {
     this.setData({ isLoading: true, errorMsg: '' });
     const { enterpriseId, keyword } = this.data;
 
     const params = {
       enterpriseId,
-      ...(keyword && { productName: keyword }) // 关键字搜索
+      ...(keyword && { productName: keyword })
     };
 
     wx.request({
@@ -70,19 +70,15 @@ Page({
       },
       success: (res) => {
         if (res.statusCode === 200 && res.data.code === 200) {
-          // 打印接口返回的原始数据（检查编码字段）
-          console.log('单商品接口原始数据:', res.data.rows);
-
-          // 格式化数据（新增productCode字段）
           const formattedData = (res.data.rows || []).map(item => ({
             id: item.id,
             name: item.productName || '未知商品',
             type: item.type || item.specs || '无型号',
-            price: this.getValidPrice(item),
+            price: this.getValidPrice(item, 'single'),
             number: 1,
             select: false,
-            // 提取商品编码（优先用productCode，其次用code，兼容接口差异）
-            productCode: item.productCode || item.code || '无编码'
+            productCode: item.productCode || item.code || '无编码',
+            totalPrice: this.getValidPrice(item, 'single') // 计算初始总价
           }));
           this.setData({
             singleProduct: formattedData,
@@ -101,14 +97,14 @@ Page({
     });
   },
 
-  // 2. 获取组合商品列表（添加productCode字段）
+  // 2. 获取组合商品列表
   fetchCombinationProducts() {
     this.setData({ isLoading: true, errorMsg: '' });
     const { enterpriseId, combinationKeyword } = this.data;
 
     const params = {
       enterpriseId,
-      ...(combinationKeyword && { name: combinationKeyword }) // 关键字搜索
+      ...(combinationKeyword && { name: combinationKeyword })
     };
 
     wx.request({
@@ -120,19 +116,20 @@ Page({
       },
       success: (res) => {
         if (res.statusCode === 200 && res.data.code === 200) {
-          // 打印接口返回的原始数据（检查编码字段）
-          console.log('组合商品接口原始数据:', res.data.rows);
-
-          // 格式化数据（新增productCode字段）
           const formattedData = (res.data.rows || []).map(item => ({
             id: item.id,
             name: item.name || '未知组合商品',
-            price: this.getValidPrice(item),
+            price: 0, // 初始价格设为0，将在详情中计算
             number: 1,
             select: false,
-            // 提取商品编码（兼容接口可能的字段名）
-            productCode: item.productCode || item.code || '组合无编码'
+            productCode: item.productCode || item.code || '组合无编码',
+            products: [],
+            totalPrice: 0 // 初始总价设为0
           }));
+          
+          // 为每个组合商品获取详情（包含内部商品）
+          this.fetchCombinationDetails(formattedData);
+          
           this.setData({
             combinationProduct: formattedData,
             filterCombinationProduct: formattedData
@@ -150,14 +147,64 @@ Page({
     });
   },
 
-  // 3. 获取临时商品列表（添加productCode字段）
+  // 获取组合商品详情（包含内部商品）
+  fetchCombinationDetails(combinations) {
+    if (!combinations || combinations.length === 0) return;
+    
+    combinations.forEach((combination, index) => {
+      wx.request({
+        url: `${getApp().globalData.serverUrl}/diServer/product/group/${combination.id}`,
+        method: 'GET',
+        header: {
+          'Authorization': `Bearer ${getApp().globalData.token}`
+        },
+        success: (res) => {
+          if (res.statusCode === 200 && res.data.code === 200) {
+            const details = res.data.data || {};
+            // 处理组合内商品数据，计算单价和总价
+            const products = (details.productList || []).map(item => ({
+              id: item.id,
+              productId: item.productId,
+              name: item.productName || '未知商品',
+              unitPrice: this.getValidPrice(item, 'single'),
+              quantity: item.quantity || 1,
+              productCode: item.productCode || item.code || '无编码',
+              totalPrice: this.getValidPrice(item, 'single') * (item.quantity || 1)
+            }));
+            
+            // 计算组合商品总价（内部商品总价之和）
+            const combinationPrice = products.reduce((sum, item) => sum + item.totalPrice, 0);
+            
+            // 更新组合商品数据
+            const updatedCombinations = [...this.data.combinationProduct];
+            updatedCombinations[index] = {
+              ...updatedCombinations[index],
+              products: products,
+              price: combinationPrice, // 组合商品单价 = 内部商品总价
+              totalPrice: combinationPrice * updatedCombinations[index].number // 组合总价 = 单价 × 数量
+            };
+            
+            this.setData({
+              combinationProduct: updatedCombinations,
+              filterCombinationProduct: updatedCombinations
+            });
+          }
+        },
+        fail: () => {
+          console.error(`获取组合商品[${combination.id}]详情失败`);
+        }
+      });
+    });
+  },
+
+  // 3. 获取临时商品列表
   fetchTemporaryProducts() {
     this.setData({ isLoading: true, errorMsg: '' });
     const { enterpriseId, temporaryKeyword } = this.data;
 
     const params = {
       enterpriseId,
-      ...(temporaryKeyword && { productName: temporaryKeyword }) // 关键字搜索
+      ...(temporaryKeyword && { productName: temporaryKeyword })
     };
 
     wx.request({
@@ -170,19 +217,19 @@ Page({
       },
       success: (res) => {
         if (res.statusCode === 200 && res.data.code === 200) {
-          // 打印接口返回的原始数据（检查编码字段）
-          console.log('临时商品接口原始数据:', res.data.rows);
-
-          // 格式化数据（新增productCode字段）
-          const formattedData = (res.data.rows || []).map(item => ({
-            id: item.id,
-            name: item.productName || '未知临时商品',
-            price: this.getValidPrice(item),
-            number: 1,
-            select: false,
-            // 提取商品编码（兼容接口可能的字段名）
-            productCode: item.productCode || item.code || '临时无编码'
-          }));
+          // 格式化临时商品数据，特别处理临时商品价格
+          const formattedData = (res.data.rows || []).map(item => {
+            const price = this.getValidPrice(item, 'temporary');
+            return {
+              id: item.id,
+              name: item.productName || '未知临时商品',
+              price: price,
+              number: 1,
+              select: false,
+              productCode: item.productCode || item.code || '临时无编码',
+              totalPrice: price // 初始总价 = 单价 × 1
+            };
+          });
           this.setData({
             temporaryProduct: formattedData,
             filterTemporaryProduct: formattedData
@@ -200,17 +247,66 @@ Page({
     });
   },
 
-  // 核心工具函数：从接口返回的商品数据中提取有效价格
-  getValidPrice(item) {
-    const priceFields = ['price', 'unitPrice', 'totalPrice', 'salePrice', 'retailPrice'];
+  // 核心工具函数：根据商品类型获取有效价格
+  getValidPrice(item, type) {
+    // 针对不同类型商品使用不同的价格字段优先级
+    let priceFields = [];
+    
+    switch(type) {
+      case 'single':
+        // 单商品价格字段优先级
+        priceFields = ['price', 'unitPrice', 'salePrice', 'retailPrice', 'totalPrice'];
+        break;
+      case 'combination':
+        // 组合商品价格字段优先级
+        priceFields = ['groupPrice', 'packagePrice', 'price', 'totalPrice'];
+        break;
+      case 'temporary':
+        // 临时商品价格字段优先级
+        priceFields = ['temporaryPrice', 'customPrice', 'price', 'unitPrice'];
+        break;
+      default:
+        priceFields = ['price', 'unitPrice', 'totalPrice'];
+    }
+    
+    // 查找有效价格
     for (const field of priceFields) {
       if (item[field] !== undefined && item[field] !== null) {
         const numericPrice = Number(item[field]);
         return isNaN(numericPrice) ? 0 : Math.max(0, numericPrice);
       }
     }
+    
+    // 如果没有找到价格，尝试通用字段
+    const commonFields = ['price', 'unitPrice'];
+    for (const field of commonFields) {
+      if (item[field] !== undefined && item[field] !== null) {
+        const numericPrice = Number(item[field]);
+        return isNaN(numericPrice) ? 0 : Math.max(0, numericPrice);
+      }
+    }
+    
     console.warn(`商品[${item.name || item.id}]未找到有效价格字段`, item);
     return 0;
+  },
+
+  // 更新商品总价
+  updateTotalPrice(productType, id, number) {
+    const productList = [...this.data[productType]];
+    const updatedList = productList.map(item => {
+      if (item.id === id) {
+        // 计算新总价 = 单价 × 数量
+        const newTotalPrice = item.price * number;
+        return { ...item, number, totalPrice: newTotalPrice };
+      }
+      return item;
+    });
+    
+    // 更新数据
+    this.setData({
+      [productType]: updatedList,
+      [`filter${productType.charAt(0).toUpperCase() + productType.slice(1)}`]: updatedList
+    });
   },
 
   // 单商品搜索
@@ -266,7 +362,7 @@ Page({
     this.setData({
       showSelectedSingleProduct: !this.data.showSelectedSingleProduct
     }, () => {
-      this.inputProduct(); // 切换后重新筛选
+      this.inputProduct();
     });
   },
 
@@ -275,7 +371,7 @@ Page({
     this.setData({
       showSelectedCombinationProduct: !this.data.showSelectedCombinationProduct
     }, () => {
-      this.inputCombinationProduct(); // 切换后重新筛选
+      this.inputCombinationProduct();
     });
   },
 
@@ -284,11 +380,11 @@ Page({
     this.setData({
       showSelectedTemporaryProduct: !this.data.showSelectedTemporaryProduct
     }, () => {
-      this.inputTemporaryProduct(); // 切换后重新筛选
+      this.inputTemporaryProduct();
     });
   },
 
-  // 选择/取消单商品
+  // 选择/取消商品
   selectSingleProduct(e) {
     const id = e.currentTarget.dataset.index;
     const singleProduct = this.data.singleProduct.map(item => {
@@ -297,11 +393,10 @@ Page({
     });
 
     this.setData({ singleProduct }, () => {
-      this.inputProduct(); // 重新筛选
+      this.inputProduct();
     });
   },
 
-  // 选择/取消组合商品
   selectCombinationProduct(e) {
     const id = e.currentTarget.dataset.index;
     const combinationProduct = this.data.combinationProduct.map(item => {
@@ -310,11 +405,10 @@ Page({
     });
 
     this.setData({ combinationProduct }, () => {
-      this.inputCombinationProduct(); // 重新筛选
+      this.inputCombinationProduct();
     });
   },
 
-  // 选择/取消临时商品
   selectTemporaryProduct(e) {
     const id = e.currentTarget.dataset.index;
     const temporaryProduct = this.data.temporaryProduct.map(item => {
@@ -323,58 +417,52 @@ Page({
     });
 
     this.setData({ temporaryProduct }, () => {
-      this.inputTemporaryProduct(); // 重新筛选
+      this.inputTemporaryProduct();
     });
   },
 
-  // 商品数量调整方法（单商品/组合/临时商品）
+  // 商品数量调整方法
   addSingleProduct(e) {
     const id = e.currentTarget.dataset.index;
-    const singleProduct = this.data.singleProduct.map(item => {
-      if (item.id === id) item.number++;
-      return item;
-    });
-    this.setData({ singleProduct }, () => this.inputProduct());
+    const item = this.data.singleProduct.find(item => item.id === id);
+    if (item) {
+      this.updateTotalPrice('singleProduct', id, item.number + 1);
+    }
   },
   subSingleProduct(e) {
     const id = e.currentTarget.dataset.index;
-    const singleProduct = this.data.singleProduct.map(item => {
-      if (item.id === id && item.number > 1) item.number--;
-      return item;
-    });
-    this.setData({ singleProduct }, () => this.inputProduct());
+    const item = this.data.singleProduct.find(item => item.id === id);
+    if (item && item.number > 1) {
+      this.updateTotalPrice('singleProduct', id, item.number - 1);
+    }
   },
   addCombinationProduct(e) {
     const id = e.currentTarget.dataset.index;
-    const combinationProduct = this.data.combinationProduct.map(item => {
-      if (item.id === id) item.number++;
-      return item;
-    });
-    this.setData({ combinationProduct }, () => this.inputCombinationProduct());
+    const item = this.data.combinationProduct.find(item => item.id === id);
+    if (item) {
+      this.updateTotalPrice('combinationProduct', id, item.number + 1);
+    }
   },
   subCombinationProduct(e) {
     const id = e.currentTarget.dataset.index;
-    const combinationProduct = this.data.combinationProduct.map(item => {
-      if (item.id === id && item.number > 1) item.number--;
-      return item;
-    });
-    this.setData({ combinationProduct }, () => this.inputCombinationProduct());
+    const item = this.data.combinationProduct.find(item => item.id === id);
+    if (item && item.number > 1) {
+      this.updateTotalPrice('combinationProduct', id, item.number - 1);
+    }
   },
   addTemporaryProduct(e) {
     const id = e.currentTarget.dataset.index;
-    const temporaryProduct = this.data.temporaryProduct.map(item => {
-      if (item.id === id) item.number++;
-      return item;
-    });
-    this.setData({ temporaryProduct }, () => this.inputTemporaryProduct());
+    const item = this.data.temporaryProduct.find(item => item.id === id);
+    if (item) {
+      this.updateTotalPrice('temporaryProduct', id, item.number + 1);
+    }
   },
   subTemporaryProduct(e) {
     const id = e.currentTarget.dataset.index;
-    const temporaryProduct = this.data.temporaryProduct.map(item => {
-      if (item.id === id && item.number > 1) item.number--;
-      return item;
-    });
-    this.setData({ temporaryProduct }, () => this.inputTemporaryProduct());
+    const item = this.data.temporaryProduct.find(item => item.id === id);
+    if (item && item.number > 1) {
+      this.updateTotalPrice('temporaryProduct', id, item.number - 1);
+    }
   },
 
   // 取消选择，返回上一页
@@ -382,19 +470,35 @@ Page({
     wx.navigateBack();
   },
 
-  // 确认选择，返回上一页并传递数据（包含productCode）
+  // 确认选择，返回上一页并传递数据
   confirm() {
-    // 收集所有已选中的商品，并添加类型标识（自动包含productCode）
+    // 收集所有已选中的商品，统一格式
     const selected = [
       ...this.data.singleProduct
         .filter(item => item.select)
-        .map(item => ({ ...item, type: 'singleProduct' })),
+        .map(item => ({ 
+          ...item, 
+          type: 'singleProduct', 
+          productId: item.id,
+          amount: item.totalPrice // 统一使用totalPrice作为金额
+        })),
       ...this.data.combinationProduct
         .filter(item => item.select)
-        .map(item => ({ ...item, type: 'combinationProduct' })),
+        .map(item => ({ 
+          ...item, 
+          type: 'combinationProduct', 
+          productId: item.id,
+          amount: item.totalPrice, // 统一使用totalPrice作为金额
+          products: item.products || []
+        })),
       ...this.data.temporaryProduct
         .filter(item => item.select)
-        .map(item => ({ ...item, type: 'customProduct' }))
+        .map(item => ({ 
+          ...item, 
+          type: 'customProduct', 
+          productId: item.id,
+          amount: item.totalPrice // 统一使用totalPrice作为金额
+        }))
     ];
 
     if (selected.length === 0) {
@@ -402,23 +506,29 @@ Page({
       return;
     }
 
-    // 打印选中商品的编码信息（验证是否包含productCode）
-    console.log('选中的商品及编码:', selected.map(item => ({
-      name: item.name,
-      productCode: item.productCode, // 确认编码已存在
-      price: item.price
-    })));
+    // 更新全局数据
+    const app = getApp();
+    if (!app.globalData.selectedProducts) {
+      app.globalData.selectedProducts = [];
+    }
+    app.globalData.selectedProducts = [...app.globalData.selectedProducts, ...selected];
 
-    // 获取上一页实例并传递数据
+    // 更新上一页数据
     const pages = getCurrentPages();
     const prevPage = pages[pages.length - 2];
     if (prevPage) {
+      const newProducts = [...prevPage.data.product, ...selected];
       prevPage.setData({
-        product: [...prevPage.data.product, ...selected]
+        product: newProducts
       }, () => {
-        prevPage.calculateTotal(); // 触发上一页重新计算总价
+        if (prevPage.calculateTotal) {
+          prevPage.calculateTotal();
+        }
         wx.navigateBack();
       });
+    } else {
+      wx.navigateBack();
     }
   }
 });
+    
