@@ -17,7 +17,7 @@ Page({
     this.loadQuotationData();
   },
   onReady() {
-    // 页面渲染完成后生成二维码（确保先完成链接生成）
+    // 页面渲染完成后生成二维码
   },
   loadQuotationData() {
     wx.request({
@@ -51,14 +51,13 @@ Page({
   // 生成分享链接
   generateShareUrl() {
     try {
-      // 加密ID
-      const encryptedId = encryptId(parseInt(this.data.id, 10));
       // 生成包含加密ID的网页链接
+      const encryptedId = encryptId(parseInt(this.data.id, 10));
       const shareUrl = `${getApp().globalData.webUrl}/#/preview?i=${encryptedId}`;
       console.log('生成的分享链接:', shareUrl);
       
       this.setData({ forwardUrl: shareUrl }, () => {
-        // 链接生成后再创建二维码
+        // 创建二维码
         this.createQrCode();
       });
     } catch (err) {
@@ -131,7 +130,7 @@ Page({
           title: '保存失败，请授权相册权限',
           icon: 'none'
         });
-        // 如果用户拒绝过权限，可引导重新授权
+        // 如果用户拒绝过权限，引导重新授权
         if (err.errMsg.includes('auth deny')) {
           wx.openSetting({
             success(settingRes) {

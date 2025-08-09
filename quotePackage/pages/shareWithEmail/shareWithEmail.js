@@ -36,7 +36,6 @@ onShow() {
           name: selectedData.companyName
         },
         email: selectedData.contactEmail || selectedData.contactTel || '',
-        // 新增：保存选中的联系人ID
         selectedContactId: selectedData.contactId || ''
       });
       console.log('email:',this.data.email,)
@@ -90,7 +89,6 @@ onShow() {
     },
   
     // 根据商家ID获取联系人列表
-  // 修改fetchContactsByCompanyId方法，根据返回的contactId选中对应的联系人
   fetchContactsByCompanyId(companyId) {
     wx.showLoading({ title: '加载联系人...' });
     wx.request({
@@ -105,7 +103,6 @@ onShow() {
           console.log('contacts:',contacts);
           const contactNames = contacts.map(contact => contact.userName || '未知联系人');
           
-          // 关键修改：查找返回的联系人在列表中的索引
           let selectedIndex = 0;
           const { selectedContactId } = this.data;
           if (selectedContactId) {

@@ -24,7 +24,6 @@
       </view>
     </view>
     
-    <!-- 分隔线 -->
     <view class="divider">商品列表区域</view>
     
     <!-- 底部内容预览 -->

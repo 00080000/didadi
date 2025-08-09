@@ -81,14 +81,12 @@ Page({
         'Authorization': `Bearer ${getApp().globalData.token}`
       },
       success: (res) => {
-        console.log('loadQuotationData:', res);
         if (res.statusCode === 200 && res.data.code === 200) {
           const viewData = res.data.data || {};
-          console.log('viewData:', viewData);
           this.setData({
-            item: viewData.quote || {} // 修正数据层级，从quote字段获取主数据
+            item: viewData.quote || {}
           });
-          this.viewQuotationData(viewData); // 传入完整数据
+          this.viewQuotationData(viewData);
         } else {
           // 请求失败
           this.setData({
@@ -110,7 +108,6 @@ Page({
   },
 
   viewQuotationData(fullData) {
-    console.log('完整报价单数据：', fullData);
     app.globalData.quoteData = fullData;
     const { quote, productGroupList, quoteCostCategoryList } = fullData;
     let tableData = [];
@@ -124,9 +121,7 @@ Page({
             ...col,
             width: col.width || '150rpx' 
           }));
-        this.setData({
-             tableColumns: columns,
-             });
+        this.setData({ tableColumns: columns });
       } catch (e) {
         console.error('解析表格配置失败', e);
       }
@@ -135,25 +130,46 @@ Page({
     // 处理商品分组数据
     if (productGroupList && productGroupList.length) {
       productGroupList.forEach(group => {
-        // 添加分组名称行
-        tableData.push({
-          index: index++,
-          productName: group.productGroupName,
-          productCode: '',
-          unitPrice: '',
-          quantity: '',
-          money: '',
-          remark: ''
-        });
+        // 只在分组名称存在且有效时添加分组名称行
+        if (group.productGroupName) {
+          tableData.push({
+            index: index++,
+            productName: group.productGroupName,
+            productCode: '',
+            unitPrice: '',
+            quantity: '',
+            money: '',
+            remark: ''
+          });
+        }
 
         // 添加分组下的商品行
         if (group.quoteProductList && group.quoteProductList.length) {
           group.quoteProductList.forEach(product => {
-            const productData = product.productData ? JSON.parse(product.productData) : {};
+            let productData = {};
+            try {
+              productData = product.productData ? JSON.parse(product.productData) : {};
+            } catch (e) {
+              console.error('解析商品数据失败:', e, product.productData);
+              productData = {};
+            }
+            
+            // 显式提取商品名称和编码
+            const prodName = productData.productName || '';
+            const prodCode = productData.productCode || '';
+            
+            if (!prodName || !prodCode) {
+              console.warn('商品数据不完整', {
+                productId: product.productId,
+                productName: prodName,
+                productCode: prodCode
+              });
+            }
+            
             tableData.push({
               index: index++,
-              productName: productData.productName || '',
-              productCode: productData.productCode || '',
+              productName: prodName,
+              productCode: prodCode,
               unitPrice: product.unitPrice ? product.unitPrice.toFixed(2) : '',
               quantity: product.quantity || '',
               money: product.calcPrice ? product.calcPrice.toFixed(2) : '',
@@ -162,29 +178,33 @@ Page({
           });
         }
 
-        // 添加分组小计行
-        tableData.push({
-          index: index++,
-          productName: '小计',
-          productCode: '',
-          unitPrice: '',
-          quantity: '',
-          money: group.subtotal ? group.subtotal.toFixed(2) : '',
-          remark: ''
-        });
+        // 只在分组小计存在且有效时添加分组小计行
+        if (group.subtotal || group.subtotal === 0) {
+          tableData.push({
+            index: index++,
+            productName: '小计',
+            productCode: '',
+            unitPrice: '',
+            quantity: '',
+            money: group.subtotal ? group.subtotal.toFixed(2) : '',
+            remark: ''
+          });
+        }
       });
     }
 
     // 添加合计行
-    tableData.push({
-      index: index++,
-      productName: '合计',
-      productCode: '',
-      unitPrice: '',
-      quantity: '',
-      money: quote.amountPrice ? quote.amountPrice.toFixed(2) : '',
-      remark: ''
-    });
+    if (quote.amountPrice || quote.amountPrice === 0) {
+      tableData.push({
+        index: index++,
+        productName: '合计',
+        productCode: '',
+        unitPrice: '',
+        quantity: '',
+        money: quote.amountPrice ? quote.amountPrice.toFixed(2) : '',
+        remark: ''
+      });
+    }
 
     // 添加费用和优惠行
     if (quoteCostCategoryList && quoteCostCategoryList.length) {
@@ -203,15 +223,17 @@ Page({
     }
 
     // 添加总计行
-    tableData.push({
-      index: index++,
-      productName: '总计',
-      productCode: '',
-      unitPrice: '',
-      quantity: '',
-      money: quote.totalPrice ? quote.totalPrice.toFixed(2) : '',
-      remark: ''
-    });
+    if (quote.totalPrice || quote.totalPrice === 0) {
+      tableData.push({
+        index: index++,
+        productName: '总计',
+        productCode: '',
+        unitPrice: '',
+        quantity: '',
+        money: quote.totalPrice ? quote.totalPrice.toFixed(2) : '',
+        remark: ''
+      });
+    }
 
     this.setData({ tableData });
 
@@ -237,14 +259,12 @@ Page({
   // 打印功能
   printQuotation() {
     wx.showToast({
-      title: '准备打印...',
+      title: '请前往电脑端打印...',
       icon: 'loading',
       duration: 1000
     })
-    // 实际项目中可调用打印API
   },
 
-  // 关闭错误提示
   closeError() {
     this.setData({ errorMsg: '' });
   }
