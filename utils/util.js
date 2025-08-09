@@ -62,74 +62,99 @@ const formatTime = date => {
   
     return res
   }
-
-  // 加密密钥（增加长度以提高安全性）
-  const ENCRYPT_KEY = 'QuoteShare2023Key';
   
   /**
-   * 加密ID（支持1-99999范围的整数）
-   * @param {number} id - 需要加密的数字ID
-   * @returns {string} 加密后的字符串
+   * Base64加密（微信小程序环境兼容版，不依赖TextEncoder）
+   * @param {string} str - 需要加密的字符串
+   * @returns {string} Base64加密后的字符串
    */
-  const encryptId = (id) => {
-    // 确保ID是有效范围内的整数
-    if (typeof id !== 'number' || id < 1 || id > 99999 || !Number.isInteger(id)) {
-      throw new Error('请传入1-99999之间的有效整数ID');
+  const base64Encode = (str) => {
+    // 字符串转ArrayBuffer（兼容小程序环境）
+    const buffer = new ArrayBuffer(str.length);
+    const uint8Array = new Uint8Array(buffer);
+    for (let i = 0; i < str.length; i++) {
+      uint8Array[i] = str.charCodeAt(i); // 逐个字符转换为ASCII码
     }
-    
-    // 将ID转换为5位字符串（不足5位前面补零），统一长度
-    let idStr = id.toString().padStart(5, '0');
-    let result = [];
-    
-    // 使用异或运算加密每个字符
-    for (let i = 0; i < idStr.length; i++) {
-      // 循环使用密钥的每个字符
-      const keyChar = ENCRYPT_KEY.charCodeAt(i % ENCRYPT_KEY.length);
-      // 异或运算并转换为16进制
-      const encrypted = (idStr.charCodeAt(i) ^ keyChar).toString(16);
-      // 确保每个加密后的字符是两位
-      result.push(encrypted.padStart(2, '0'));
-    }
-    
-    // 添加6位随机字符串混淆，增加破解难度
-    const randomStr = Math.random().toString(36).substr(2, 6);
-    return result.join('') + randomStr;
+    // 调用小程序原生API转换为Base64
+    return wx.arrayBufferToBase64(buffer);
   };
   
   /**
-   * 解密ID
-   * @param {string} encryptedStr - 加密后的字符串
+   * Base64解密（微信小程序环境兼容版，不依赖TextDecoder）
+   * @param {string} base64Str - 需要解密的Base64字符串
+   * @returns {string} 解密后的原始字符串
+   */
+  const base64Decode = (base64Str) => {
+    // 处理URL安全Base64和填充符
+    const safeStr = base64Str.replace(/-/g, '+').replace(/_/g, '/');
+    const padLength = (4 - (safeStr.length % 4)) % 4;
+    const paddedStr = safeStr + '='.repeat(padLength);
+    
+    // 调用小程序原生API转换为ArrayBuffer
+    const arrayBuffer = wx.base64ToArrayBuffer(paddedStr);
+    const uint8Array = new Uint8Array(arrayBuffer);
+    
+    // ArrayBuffer转字符串（兼容小程序环境）
+    let str = '';
+    for (let i = 0; i < uint8Array.length; i++) {
+      str += String.fromCharCode(uint8Array[i]);
+    }
+    return str;
+  };
+  
+  /**
+   * 加密ID（Base64加密后附加YWI后缀）
+   * @param {number} id - 需要加密的数字ID
+   * @returns {string} 加密后的字符串（Base64+YWI）
+   */
+  const encryptId = (id) => {
+    // 验证ID有效性
+    if (typeof id !== 'number' || id < 1 || !Number.isInteger(id)) {
+      throw new Error('请传入有效的正整数ID');
+    }
+    
+    // 转换为字符串后进行Base64加密
+    const idStr = id.toString();
+    const base64Str = base64Encode(idStr);
+    
+    // 附加YWI后缀并返回
+    return base64Str + 'YWI';
+  };
+  
+  /**
+   * 解密ID（先移除YWI后缀再Base64解密）
+   * @param {string} encryptedStr - 加密后的字符串（Base64+YWI）
    * @returns {number} 解密后的ID
    */
   const decryptId = (encryptedStr) => {
-    if (typeof encryptedStr !== 'string' || encryptedStr.length !== 16) {
+    if (typeof encryptedStr !== 'string' || encryptedStr.trim() === '') {
       throw new Error('请传入有效的加密字符串');
     }
     
-    // 移除随机混淆字符串（最后6位）
-    const encryptedPart = encryptedStr.slice(0, -6);
-    let result = [];
-    
-    // 每两位16进制字符为一组进行解密
-    for (let i = 0; i < encryptedPart.length; i += 2) {
-      const hexStr = encryptedPart.substr(i, 2);
-      // 转换16进制为10进制
-      const encryptedCode = parseInt(hexStr, 16);
-      // 使用异或运算解密
-      const keyChar = ENCRYPT_KEY.charCodeAt((i/2) % ENCRYPT_KEY.length);
-      const decryptedCode = encryptedCode ^ keyChar;
-      // 转换为字符
-      result.push(String.fromCharCode(decryptedCode));
+    // 移除末尾的YWI后缀
+    let base64Str = encryptedStr;
+    if (encryptedStr.endsWith('YWI')) {
+      base64Str = encryptedStr.slice(0, -3);
+    } else {
+      console.warn('加密字符串未包含YWI后缀，尝试直接解密');
     }
     
-    // 转换为数字并返回（自动去除前面的补零）
-    return parseInt(result.join(''), 10);
+    // Base64解密并转换为数字
+    const decodedStr = base64Decode(base64Str);
+    const id = parseInt(decodedStr, 10);
+    
+    if (isNaN(id) || id < 1) {
+      throw new Error('解密后ID无效');
+    }
+    
+    return id;
   };
   
   // 导出所有工具函数
   module.exports = {
     formatTime,
+    formatNumber,
     numberToChinese,
-    encryptId,   // ID加密函数
-    decryptId    // ID解密函数
-  }
+    encryptId,  // Base64加密并附加YWI后缀
+    decryptId   // 移除YWI后缀并Base64解密
+  };

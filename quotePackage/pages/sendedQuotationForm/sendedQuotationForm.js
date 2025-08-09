@@ -190,7 +190,7 @@ Page({
               // 复制链接时也使用加密ID
               try {
                 const encryptedId = encryptId(id);
-                const shareUrl = `${getApp().globalData.webUrl}/quote/view?id=${encryptedId}`;
+                const shareUrl = `${getApp().globalData.webUrl}/#/preview?i=${encryptedId}`;
                 wx.setClipboardData({
                   data: shareUrl,
                   success: () => {

@@ -1,7 +1,6 @@
 App({
     onLaunch: function () {
       // 从本地存储加载 token
-      wx.setStorageSync('enterpriseId',  11);
       wx.setStorageSync('token',  this.globalData.token);
       const token = wx.getStorageSync('token');
       if (token) {
@@ -121,7 +120,8 @@ App({
       userInfo: null,
       authenticated: false,
       serverUrl: 'http://121.199.52.199:8080',
-      token: 'eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjNlMmYzNjRmLWRhZGEtNDYwMS1iZDAzLWIyMGFmODI2NmFmMyJ9.wpuAGp3rpgs60Lr3_pad2G1Q_pXgmMfHCiXfj5lVHTV1d7sjR82Pfa08YJyytATqIh81ZY03r7khMgbUjCggSg' // 存储认证 token
+      webUrl: 'https://121.199.52.199',
+      token: 'eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6Ijg4YjZhODU0LTBiNzMtNDY1Ni1hN2FkLWYzYzJiMzhhZTIxNiJ9.MRoqrzxP3uPBiCURSjljSWvAbfHRZWtS8czIGNQtxobpGYhdqm5c3kNfDVMNb0oHHFgdzP5KGq2EiFJ3Fg_XwA' // 存储认证 token
 
 
 

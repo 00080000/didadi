@@ -1,23 +1,23 @@
 // quotePackage/pages/shareWithCode/shareWithCode.js
 import drawQrcode from 'weapp-qrcode'
+const { encryptId } = require('../../../utils/util');
 
 Page({
   data: {
-    id:'',
-    quotation:[],
-    forwardUrl:'https://dwedwdwrfewfewf233e',
+    id: '',
+    quotation: [],
+    forwardUrl: '', // 用于存储生成的分享链接
     qrCodePath: '' // 用于保存二维码图片路径
   },
-  onLoad(options){
-    console.log(options.id);
+  onLoad(options) {
+    console.log('传入的ID:', options.id);
     this.setData({
       id: options.id
     });
     this.loadQuotationData();
   },
   onReady() {
-    // 页面渲染完成后生成二维码
-    this.createQrCode();
+    // 页面渲染完成后生成二维码（确保先完成链接生成）
   },
   loadQuotationData() {
     wx.request({
@@ -34,6 +34,8 @@ Page({
             item: viewData.quote || {} 
           });
           
+          // 数据加载完成后生成分享链接和二维码
+          this.generateShareUrl();
         } else {
           // 请求失败
           this.setData({
@@ -42,20 +44,46 @@ Page({
         }
       },
       fail: (err) => {
-        console.error(err);
+        console.error('加载数据失败:', err);
       }
     });
+  },
+  // 生成分享链接
+  generateShareUrl() {
+    try {
+      // 加密ID
+      const encryptedId = encryptId(parseInt(this.data.id, 10));
+      // 生成包含加密ID的网页链接
+      const shareUrl = `${getApp().globalData.webUrl}/#/preview?i=${encryptedId}`;
+      console.log('生成的分享链接:', shareUrl);
+      
+      this.setData({ forwardUrl: shareUrl }, () => {
+        // 链接生成后再创建二维码
+        this.createQrCode();
+      });
+    } catch (err) {
+      console.error('生成分享链接失败:', err);
+      wx.showToast({
+        title: '生成二维码失败',
+        icon: 'none'
+      });
+    }
   },
   // 生成二维码
   createQrCode() {
     const { forwardUrl } = this.data;
-    console.log('forwardUrl:',forwardUrl);
+    if (!forwardUrl) {
+      console.error('分享链接为空，无法生成二维码');
+      return;
+    }
+    
+    console.log('二维码内容:', forwardUrl);
     // 绘制二维码
     drawQrcode({
       width: 200, // 二维码宽度（rpx）
       height: 200, // 二维码高度（rpx）
       canvasId: 'qrCode',
-      text: forwardUrl, // 二维码内容
+      text: forwardUrl, // 二维码内容为生成的分享链接
       background: '#ffffff', // 背景色
       foreground: '#000000', // 前景色
       callback: (res) => {
@@ -79,9 +107,17 @@ Page({
       }
     }, this);
   },
-  // 复制二维码
+  // 复制二维码到相册
   copyQrCode() {
     const { qrCodePath } = this.data;
+    if (!qrCodePath) {
+      wx.showToast({
+        title: '二维码未生成',
+        icon: 'none'
+      });
+      return;
+    }
+    
     wx.saveImageToPhotosAlbum({
       filePath: qrCodePath,
       success(res) {
@@ -117,10 +153,10 @@ Page({
       }
     });
   },
-  cancel(){
-    wx.navigateBack()
+  cancel() {
+    wx.navigateBack();
   },
-  confirm(){
-    wx.navigateBack()
+  confirm() {
+    wx.navigateBack();
   }
 })

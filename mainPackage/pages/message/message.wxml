@@ -35,7 +35,7 @@
         {{message.content}}
         <button size="mini" bind:tap="readed" data-id="{{message.id}}">已读</button>
         
-        <button size="mini" bind:tap="gotowatch" style="margin-right: 8px;" data-id="{{message.id}}">查看</button>
+        <button size="mini" bind:tap="gotowatch" style="margin-right: 8px;" data-id="{{message.forwardUrl}}">查看</button>
       </view>
     </view>
   </view>

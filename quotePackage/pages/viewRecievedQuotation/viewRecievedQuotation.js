@@ -23,7 +23,6 @@ Page({
     this.processIdAndLoadData();
   },
 
-  // 处理ID：判断是否加密并解密
   processIdAndLoadData() {
     const { originalId } = this.data;
     
@@ -33,22 +32,13 @@ Page({
     }
     
     try {
-      // 尝试解密ID
-      // 加密ID长度固定为16位，可作为初步判断依据
-      let decodedId;
-      if (originalId.length === 16) {
-        // 看起来像加密ID，尝试解密
-        decodedId = decryptId(originalId);
-        console.log('解密后的ID:', decodedId);
-      } else {
-        // 不是加密格式，直接使用
-        decodedId = parseInt(originalId, 10);
-        console.log('使用原始ID:', decodedId);
-      }
+      // 优先尝试解密所有格式
+      const decodedId = decryptId(originalId);
+      console.log('解密成功，ID:', decodedId);
       
       // 验证ID有效性
       if (typeof decodedId !== 'number' || isNaN(decodedId) || decodedId < 1) {
-        throw new Error('ID格式无效');
+        throw new Error('解密后ID无效');
       }
       
       // 保存解密后的ID并加载数据
@@ -57,8 +47,8 @@ Page({
       });
       
     } catch (err) {
-      console.error('ID处理失败:', err);
-      // 解密失败时，尝试直接使用原始ID（兼容旧版本或未加密情况）
+      console.error('ID解密失败:', err);
+      // 解密失败时，尝试直接使用原始ID（兼容未加密情况）
       try {
         const numericId = parseInt(originalId, 10);
         if (numericId >= 1) {

@@ -87,6 +87,7 @@ Page({
     const id = e.currentTarget.dataset.id;
     wx.navigateTo({
         url: `/quotePackage/pages/viewRecievedQuotation/viewRecievedQuotation?id=${id}`
+        //url: `/mainPackage/pages/watch/watch?i=${id}`
       });
   },
   readed(e){
