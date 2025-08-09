@@ -23,8 +23,8 @@ Page({
       
       // 获取页面栈引用
       const pages = getCurrentPages();
-      this.choosePage = pages[pages.length - 2]; // 上一页是选择页
-      this.setFormPage = pages[pages.length - 3]; // 上两页是设置页
+      this.choosePage = pages[pages.length - 2]; 
+      this.setFormPage = pages[pages.length - 3]; 
     },
   
     // 加载模板详情（备用方案）
@@ -84,14 +84,13 @@ Page({
         ...templateData
       };
       
-      // 直接更新设置页数据
       if (this.setFormPage) {
         this.setFormPage.setData({
           templateName: templateData.templateName,
           headText: templateData.headText,
           footText: templateData.footText,
           templateId: templateData.templateId,
-          buttonDisabled: false // 确保设置页按钮可点击
+          buttonDisabled: false 
         }, () => {
           this.setFormPage.syncToGlobalData();
         });

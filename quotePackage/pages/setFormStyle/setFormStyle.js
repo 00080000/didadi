@@ -20,7 +20,7 @@ Page({
           headText: data.headText || '<p>无头部内容</p>',
           footText: data.footText || '<p>无底部内容</p>',
           templateId: data.templateId,
-          buttonDisabled: false // 确保按钮可点击
+          buttonDisabled: false 
         }, () => {
           this.syncToGlobalData();
         });
@@ -30,7 +30,7 @@ Page({
     // 页面显示时同步数据，确保数据最新
     onShow() {
       this.syncFromGlobalData();
-      this.setData({ buttonDisabled: false }); // 确保按钮可点击
+      this.setData({ buttonDisabled: false }); 
     },
   
     // 从全局数据同步

@@ -15,7 +15,7 @@
         <form catchsubmit="inputQuotation" style="width: 100%;height: 100%">
           <view style="display: flex;align-items: center;width: 100%;height: 100%;justify-content: space-around;">
             <view class="inputArea">
-              <input style="width: 490rpx;" model:value="{{keyword}}" bindconfirm="inputQuotation"/>
+              <input style="width: 490rpx;" model:value="{{keyword}}" bindconfirm="inputQuotation" placeholder="搜索报价单名称、编号或供应商"/>
               <image src="/static/cancel.png" bind:tap="showSearch"></image>
             </view>
             <view style="display: flex;align-items: center;">
@@ -29,7 +29,7 @@
           报价单库
         </view>
         <view class="divide"></view>
-        <view class="notChooseOption" bind:tap="goToInquiry">
+        <view class="notDisabledButton" bind:tap="goToInquiry">
           询价单库
         </view>
       </view>
@@ -43,31 +43,86 @@
       </view>
     </view>
   </view>
-  <view class="add" bind:tap="goToAddQuotation">
-    新建  
+
+  <!-- 加载中提示 -->
+  <view wx:if="{{isLoading}}" class="loading-view">
+    <loading>加载中...</loading>
   </view>
-  <view class="cardList">
-    <view class="card" wx:for="{{filterQuotation}}" wx:key="index" wx:item="item">
+
+  <!-- 错误提示 -->
+  <view wx:if="{{errorMsg && !isLoading}}" class="error-view">
+    <text>{{errorMsg}}</text>
+  </view>
+
+  <view class="cardList" wx:if="{{!isLoading}}">
+    <view class="card" wx:for="{{filterQuotation}}" wx:key="id" wx:item="item">
       <view class="cardLeft">
         <view style="font-size: 22rpx;margin-top: 20rpx;">接收时间</view>
-        <view style="font-size: 20rpx;">{{item.date}}</view>
+        <view style="font-size: 20rpx;">{{item.quoteDate}}</view>
         <view style="font-size: 20rpx;margin-bottom: 20rpx;">{{item.time}}</view>
       </view>
       <view class="cardRight">
         <view class="title">
+          <view style="font-weight: bolder;font-size: 30rpx;margin-left: 15rpx;">￥{{item.totalPrice || 0}} 元</view>
+          <view style="font-size: 23rpx; color: {{item.isExpired ? 'red' : 'blue'}};">
+            {{item.isExpired ? '已过期' : '正常'}}
+          </view>
+        </view>
+        <view class='quotationNumber'>
           {{item.name}}
+          <view style="font-size: 20rpx; margin-top: 5rpx;">供应商: {{item.companyName || '未知'}}</view>
         </view>
         <view class="operation">
-          <button bind:tap="goToViewRecievedQuotation" class="notDisabledButton" size="mini"  data-id="{{item.id}}">
-          预览</button>
-          <button class="disabledButton" size="mini" data-id="{{item.id}}">编辑</button>
-          <button class="disabledButton" size="mini" data-id="{{item.id}}">复制</button>
-          <button class="disabledButton" size="mini" data-id="{{item.id}}">分享</button>
-          <image src="/static/delete.png" bind:tap="confirmDelete" data-id="{{item.id}}"></image>
+          <button 
+            class="notDisabledButton" 
+            size="mini" 
+            bind:tap="goToViewRecievedQuotation" 
+            data-id="{{item.id}}"
+          >
+            预览
+          </button>
+          <button 
+            class="disabledButton" 
+            size="mini" 
+            bind:tap="edit" 
+            data-id="{{item.id}}"
+            disabled
+          >
+            编辑
+          </button>
+          <button 
+            class="disabledButton" 
+            size="mini" 
+            bind:tap="copy" 
+            data-id="{{item.id}}"
+            disabled
+          >
+            复制
+          </button>
+          <button 
+            class="notDisabledButton" 
+            size="mini" 
+            bind:tap="share" 
+            data-id="{{item.id}}"
+          >
+            分享
+          </button>
+          <image 
+            src="/static/delete.png" 
+            bind:tap="confirmDelete" 
+            data-id="{{item.id}}"
+            class="delete-icon"
+          ></image>
         </view>
       </view>
     </view>
+
+    <!-- 空状态提示 -->
+    <view wx:if="{{filterQuotation.length === 0 && !errorMsg}}" class="empty-view">
+      <text>暂无收到的报价单</text>
+    </view>
   </view>
+
   <view class="tabBar">
     <view class="notSelectedNavigateBar" bind:tap="navigateToMain">
       <image mode="heightFix" src="/static/home-gray.png"></image>
@@ -86,4 +141,5 @@
       商家
     </view>
   </view>
-</view>  
+</view>
+    
