@@ -1,3 +1,5 @@
+const { encryptId } = require('../../../utils/util');
+
 Page({
   data: {
     quotation: [],
@@ -12,7 +14,6 @@ Page({
     requestParams: {
       pageNum: 1,
       pageSize: 9999,
-          
       linkMan: "",
       linkTel: "",
       name: "",
@@ -150,6 +151,9 @@ Page({
 
   share(e) {
     const id = e.currentTarget.dataset.id;
+    // 获取当前询价单信息用于分享
+    const currentInquiry = this.data.quotation.find(item => item.id === id) || {};
+    
     wx.showActionSheet({
       itemList: ['系统内发送', '生成二维码', '复制链接', '发送邮件', '分享至微信'],
       success: (res) => {
@@ -161,25 +165,57 @@ Page({
             wx.navigateTo({ url: `/quotePackage/pages/shareWithCode/shareWithCode?id=${id}` });
             break;
           case 2: 
-            wx.showToast({ title: '复制成功', icon: 'none' });
+            // 复制链接时使用加密ID
+            try {
+              const encryptedId = encryptId(id);
+              const shareUrl = `${getApp().globalData.webUrl}/#/preview?i=${encryptedId}`;
+              wx.setClipboardData({
+                data: shareUrl,
+                success: () => {
+                  wx.showToast({
+                    title: '链接复制成功',
+                    icon: 'none',
+                  });
+                }
+              });
+            } catch (err) {
+              wx.showToast({
+                title: '复制失败，请重试',
+                icon: 'none',
+              });
+              console.error('复制链接失败:', err);
+            }
             break;
           case 3: 
             wx.navigateTo({ url: `/quotePackage/pages/shareWithEmail/shareWithEmail?id=${id}` });
             break;
           case 4: 
-            wx.updateShareMenu({
-              withShareTicket: true,
-              success: () => {
-                wx.showToast({
-                  title: '请点击右上角“···”分享到微信',
-                  icon: 'none',
-                  duration: 3000
-                });
-              },
-              fail: (err) => {
-                wx.showToast({ title: err.errMsg + '，请稍后重试', icon: 'none' });
-              }
-            });
+            // 分享至微信，先加密ID
+            try {
+              const encryptedId = encryptId(id);
+              // 设置当前要分享的询价单ID
+              getApp().globalData.shareInquiryId = id;
+              
+              wx.updateShareMenu({
+                withShareTicket: true,
+                success: () => {
+                  wx.showToast({
+                    title: '请点击右上角“···”分享到微信',
+                    icon: 'none',
+                    duration: 3000
+                  });
+                },
+                fail: (err) => {
+                  wx.showToast({ title: err.errMsg + '，请稍后重试', icon: 'none' });
+                }
+              });
+            } catch (err) {
+              wx.showToast({
+                title: '分享准备失败，请重试',
+                icon: 'none',
+              });
+              console.error('分享准备失败:', err);
+            }
             break;
         }
       },
@@ -187,6 +223,56 @@ Page({
         wx.showToast({ title: err.errMsg + '，请稍后重试', icon: 'none' });
       }
     });
+  },
+
+  // 定义分享内容 - 使用加密ID和正确的预览路径
+  onShareAppMessage() {
+    // 获取当前要分享的询价单ID
+    const shareInquiryId = getApp().globalData.shareInquiryId;
+    if (!shareInquiryId) {
+      // 如果没有指定ID，使用第一个询价单
+      const firstInquiry = this.data.filterQuotation[0];
+      if (firstInquiry && firstInquiry.id) {
+        getApp().globalData.shareInquiryId = firstInquiry.id;
+      } else {
+        return {
+          title: '询价单分享',
+          path: '/inquiryPackage/pages/sendedInquiryForm/sendedInquiryForm',
+          imageUrl: 'https://example.com/share-image.jpg'
+        };
+      }
+    }
+    
+    try {
+      // 加密ID
+      const encryptedId = encryptId(getApp().globalData.shareInquiryId);
+      // 获取询价单名称作为分享标题
+      const inquiry = this.data.quotation.find(item => item.id === getApp().globalData.shareInquiryId) || {};
+      
+      return {
+        title: `${inquiry.name || '询价单'}`,
+        // 分享路径指向预览页面，并附带加密后的ID
+        path: `/inquiryPackage/pages/viewInquiryTemplate/viewInquiryTemplate?id=${encryptedId}`,
+        imageUrl: 'https://example.com/share-image.jpg',
+        success: () => {
+          wx.showToast({
+            title: '分享成功',
+            icon: 'success',
+            duration: 2000
+          });
+        },
+        fail: (err) => {
+          console.error('分享失败:', err);
+        }
+      };
+    } catch (err) {
+      console.error('生成分享内容失败:', err);
+      return {
+        title: '询价单分享',
+        path: '/inquiryPackage/pages/sendedInquiryForm/sendedInquiryForm',
+        imageUrl: 'https://example.com/share-image.jpg'
+      };
+    }
   },
 
   confirmDelete(e) {
