@@ -44,11 +44,11 @@
             {{item.name}}
           </view>
           <view class="price">
-            <view wx:if="{{item.type=='singleProduct'||item.type=='customProduct'}}">
+            <view >
               × {{item.number}}
             </view>
-            <view wx:if="{{item.type=='feeName'}}">
-              合计×{{item.total}}
+            <view >
+              合计：{{item.price*item.number}}
             </view>
           </view>
         </view>
