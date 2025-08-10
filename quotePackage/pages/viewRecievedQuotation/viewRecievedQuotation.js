@@ -81,6 +81,7 @@ Page({
         'Authorization': `Bearer ${getApp().globalData.token}`
       },
       success: (res) => {
+          console.log('loadQuotationData:',res);
         if (res.statusCode === 200 && res.data.code === 200) {
           const viewData = res.data.data || {};
           this.setData({
@@ -132,15 +133,14 @@ Page({
       productGroupList.forEach(group => {
         // 只在分组名称存在且有效时添加分组名称行
         if (group.productGroupName) {
-          tableData.push({
-            index: index++,
-            productName: group.productGroupName,
-            productCode: '',
-            unitPrice: '',
-            quantity: '',
-            money: '',
-            remark: ''
+          // 构建分组行数据（动态匹配所有列）
+          const groupRow = { index };
+          this.data.tableColumns.forEach(col => {
+            // 只为商品名称列设置分组名，其他列留空
+            groupRow[col.code || col.label] = col.code === 'productName' ? group.productGroupName : '';
           });
+          tableData.push(groupRow);
+          index++;
         }
 
         // 添加分组下的商品行
@@ -154,85 +154,98 @@ Page({
               productData = {};
             }
             
-            // 显式提取商品名称和编码
-            const prodName = productData.productName || '';
-            const prodCode = productData.productCode || '';
-            
-            if (!prodName || !prodCode) {
-              console.warn('商品数据不完整', {
-                productId: product.productId,
-                productName: prodName,
-                productCode: prodCode
-              });
-            }
-            
-            tableData.push({
-              index: index++,
-              productName: prodName,
-              productCode: prodCode,
-              unitPrice: product.unitPrice ? product.unitPrice.toFixed(2) : '',
-              quantity: product.quantity || '',
-              money: product.calcPrice ? product.calcPrice.toFixed(2) : '',
-              remark: product.remark || ''
+            // 构建商品行数据（动态匹配所有列）
+            const productRow = { index };
+            this.data.tableColumns.forEach(col => {
+              if (col.code) {
+                // 优先从productData获取，然后是product对象，最后留空
+                productRow[col.code] = productData[col.code] !== undefined 
+                  ? productData[col.code] 
+                  : product[col.code] !== undefined 
+                    ? product[col.code] 
+                    : '';
+                
+                // 处理价格和金额的格式化
+                if (['unitPrice', 'calcPrice', 'money'].includes(col.code)) {
+                  productRow[col.code] = productRow[col.code] ? Number(productRow[col.code]).toFixed(2) : '';
+                }
+              }
             });
+            
+            tableData.push(productRow);
+            index++;
           });
         }
 
         // 只在分组小计存在且有效时添加分组小计行
         if (group.subtotal || group.subtotal === 0) {
-          tableData.push({
-            index: index++,
-            productName: '小计',
-            productCode: '',
-            unitPrice: '',
-            quantity: '',
-            money: group.subtotal ? group.subtotal.toFixed(2) : '',
-            remark: ''
+          const subtotalRow = { index };
+          this.data.tableColumns.forEach(col => {
+            if (col.code === 'productName') {
+              subtotalRow[col.code] = '小计';
+            } else if (col.code === 'money') {
+              subtotalRow[col.code] = group.subtotal ? Number(group.subtotal).toFixed(2) : '';
+            } else {
+              subtotalRow[col.code] = '';
+            }
           });
+          tableData.push(subtotalRow);
+          index++;
         }
       });
     }
 
     // 添加合计行
     if (quote.amountPrice || quote.amountPrice === 0) {
-      tableData.push({
-        index: index++,
-        productName: '合计',
-        productCode: '',
-        unitPrice: '',
-        quantity: '',
-        money: quote.amountPrice ? quote.amountPrice.toFixed(2) : '',
-        remark: ''
+      const totalRow = { index };
+      this.data.tableColumns.forEach(col => {
+        if (col.code === 'productName') {
+          totalRow[col.code] = '合计';
+        } else if (col.code === 'money') {
+          totalRow[col.code] = quote.amountPrice ? Number(quote.amountPrice).toFixed(2) : '';
+        } else {
+          totalRow[col.code] = '';
+        }
       });
+      tableData.push(totalRow);
+      index++;
     }
 
     // 添加费用和优惠行
     if (quoteCostCategoryList && quoteCostCategoryList.length) {
       quoteCostCategoryList.forEach(cost => {
         const costData = cost.costCategoryData ? JSON.parse(cost.costCategoryData) : {};
-        tableData.push({
-          index: index++,
-          productName: costData.costName || '',
-          productCode: '',
-          unitPrice: '',
-          quantity: '',
-          money: cost.calcPrice ? cost.calcPrice.toFixed(2) : '',
-          remark: cost.remark || ''
+        const costRow = { index };
+        this.data.tableColumns.forEach(col => {
+          if (col.code === 'productName') {
+            costRow[col.code] = costData.costName || '';
+          } else if (col.code === 'money') {
+            costRow[col.code] = cost.calcPrice ? Number(cost.calcPrice).toFixed(2) : '';
+          } else if (col.code === 'remark') {
+            costRow[col.code] = cost.remark || '';
+          } else {
+            costRow[col.code] = '';
+          }
         });
+        tableData.push(costRow);
+        index++;
       });
     }
 
     // 添加总计行
     if (quote.totalPrice || quote.totalPrice === 0) {
-      tableData.push({
-        index: index++,
-        productName: '总计',
-        productCode: '',
-        unitPrice: '',
-        quantity: '',
-        money: quote.totalPrice ? quote.totalPrice.toFixed(2) : '',
-        remark: ''
+      const grandTotalRow = { index };
+      this.data.tableColumns.forEach(col => {
+        if (col.code === 'productName') {
+          grandTotalRow[col.code] = '总计';
+        } else if (col.code === 'money') {
+          grandTotalRow[col.code] = quote.totalPrice ? Number(quote.totalPrice).toFixed(2) : '';
+        } else {
+          grandTotalRow[col.code] = '';
+        }
       });
+      tableData.push(grandTotalRow);
+      index++;
     }
 
     this.setData({ tableData });
