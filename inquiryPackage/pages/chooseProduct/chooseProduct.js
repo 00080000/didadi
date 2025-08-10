@@ -3,20 +3,34 @@ Page({
     product: [], // 当前页面的商品列表
     totalAmount: 0.00, // 总金额
     fileName: '小喇叭公司询价单',
-    ifShow: false
+    ifShow: false,
+    selectedFields: [] // 选中的商品字段
   },
 
   onLoad(options) {
-    // 接收第一个页面传递的历史商品数据
+    // 初始化全局数据
+    const app = getApp();
+    if (!app.globalData.selectedFields) {
+      app.globalData.selectedFields = {
+        all: ['productName', 'unitPrice'] // 默认字段
+      };
+    } else {
+      this.setData({
+        selectedFields: app.globalData.selectedFields.all
+      });
+    }
+
+    // 接收传递的历史商品数据
     if (options && options.currentProducts) {
       try {
         // 解析并加载已添加的商品
         const historyProducts = JSON.parse(decodeURIComponent(options.currentProducts));
+        // 过滤历史商品数据，只保留选中的字段
+        const filteredProducts = this.filterProductFields(historyProducts);
         this.setData({
-          product: historyProducts
+          product: filteredProducts
         }, () => {
           this.calculateTotal();
-          console.log('加载的历史商品:', this.data.product);
         });
       } catch (err) {
         console.error('解析历史商品数据失败:', err);
@@ -25,9 +39,66 @@ Page({
     this.calculateTotal();
   },
 
+  // 更新商品显示字段
+  updateProductFields(selectedFields) {
+    this.setData({
+      selectedFields: selectedFields
+    }, () => {
+      // 过滤现有商品数据
+      const filteredProducts = this.filterProductFields(this.data.product);
+      this.setData({
+        product: filteredProducts
+      });
+    });
+  },
+
+  // 过滤商品数据，只保留选中的字段
+  filterProductFields(products) {
+    if (!products || !this.data.selectedFields.length) return products;
+
+    return products.map(product => {
+      // 创建新对象，只包含选中的字段
+      const filteredProduct = {};
+      
+      // 保留基础标识字段
+      ['name','id', 'type', 'number', 'price', 'select'].forEach(field => {
+        if (product[field] !== undefined) {
+          filteredProduct[field] = product[field];
+        }
+      });
+      
+      // 添加选中的业务字段
+      this.data.selectedFields.forEach(field => {
+        if (product[field] !== undefined) {
+          filteredProduct[field] = product[field];
+        }
+      });
+      
+      // 处理组合商品的子商品
+      if (product.products && product.products.length > 0) {
+        filteredProduct.products = product.products.map(subProduct => {
+          const filteredSub = {};
+          this.data.selectedFields.forEach(field => {
+            if (subProduct[field] !== undefined) {
+              filteredSub[field] = subProduct[field];
+            }
+          });
+          // 保留子商品的基础字段
+          ['id', 'number', 'price'].forEach(field => {
+            if (subProduct[field] !== undefined) {
+              filteredSub[field] = subProduct[field];
+            }
+          });
+          return filteredSub;
+        });
+      }
+      
+      return filteredProduct;
+    });
+  },
+
   // 从商品选择页返回时更新数据
   onShow() {
-    console.log('当前页面的商品数据:', this.data.product);
     const pages = getCurrentPages();
     const addProductPage = pages.find(page => page.route === 'quotePackage/pages/addNewProduct/addNewProduct');
     
@@ -40,12 +111,14 @@ Page({
       });
 
       if (newProducts.length > 0) {
+        // 过滤新商品数据，只保留选中的字段
+        const filteredNewProducts = this.filterProductFields(newProducts);
+        
         // 合并新商品并更新
         this.setData({
-          product: [...this.data.product, ...newProducts]
+          product: [...this.data.product, ...filteredNewProducts]
         }, () => {
           this.calculateTotal();
-          console.log('新增商品后的数据:', this.data.product);
         });
       }
 
@@ -67,7 +140,7 @@ Page({
       if (item.type === "singleProduct" || item.type === 'customProduct') {
         quantity = Number(item.number) || 1;
       } else if (item.type === "combinationProduct") {
-        quantity = Number(item.number) || 1; // 修复组合商品数量计算
+        quantity = Number(item.number) || 1;
       }
 
       totalAmount += Number((price * quantity).toFixed(4));
@@ -132,7 +205,7 @@ Page({
     this.setData({ product });
   },
 
-  // 跳转到编辑页 - 修复核心：添加item数据传递
+  // 跳转到编辑页
   navigate(e) {
     const index = e.currentTarget.dataset.index;
     const item = this.data.product[index];
@@ -182,7 +255,8 @@ Page({
       });
     }
 
-    const selected = this.data.product.map(item => ({
+    // 只返回选中的字段
+    const selected = this.filterProductFields(this.data.product).map(item => ({
       ...item,
       price: Number(item.price) || 0,
       amount: item.type === 'combinationProduct' ? 1 : (Number(item.number) || 1)
@@ -192,7 +266,7 @@ Page({
     if (zeroPriceItems.length > 0) {
       wx.showModal({
         title: '提示',
-        content: `以下商品价格为0：\n${zeroPriceItems.map(item => item.name).join('、')}`,
+        content: `以下商品价格为0：\n${zeroPriceItems.map(item => item.productName || item.name).join('、')}`,
         confirmText: '继续',
         cancelText: '修改',
         success: (res) => {
@@ -206,14 +280,14 @@ Page({
     }
   },
   
-  // 直接传回当前页面所有商品
+  // 传回过滤后的商品数据（只包含选中的参数）
   passDataToPrevPage(selected) {
     const pages = getCurrentPages();
     const prevPage = pages[pages.length - 2];
     if (prevPage) {
-      // 直接将当前页面所有商品传递给主页面
+      // 只传递选中的字段
       prevPage.setData({
-        product: selected // 替换为当前页面的所有商品
+        product: selected
       }, () => {
         // 触发上一页的计算方法更新总金额
         if (typeof prevPage.calculateTotal === 'function') {

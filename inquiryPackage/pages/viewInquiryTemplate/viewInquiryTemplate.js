@@ -1,15 +1,21 @@
+const app = getApp();
+// 引入工具函数
+const { numberToChinese } = require('../../../utils/util');
+
 Page({
   data: {
     inquiryId: null,
-    quote: {}, // 询价单基础信息（包含名称、采购方等核心数据）
-    productFieldList: [], // 商品字段配置（从dataJson解析）
-    productGroupList: [], // 商品分组列表
+    quote: {}, // 询价单基础信息
+    tableColumns: [], // 表格列配置
+    tableData: [], // 表格数据
     quoteFileList: [], // 附件列表
     isLoading: true,
-    errorMsg: ''
+    errorMsg: '',
+    totalAmount: 0 // 存储计算后的总金额
   },
 
   onLoad(options) {
+    console.log('传入的参数:', options.id);
     if (options.id) {
       this.setData({ inquiryId: options.id }, () => {
         this.getInquiryDetail();
@@ -28,6 +34,7 @@ Page({
     if (!inquiryId) return;
 
     this.setData({ isLoading: true });
+    wx.showLoading({ title: '加载中...', mask: true });
 
     wx.request({
       url: `${getApp().globalData.serverUrl}/diServer/inQuote/${inquiryId}`,
@@ -37,17 +44,17 @@ Page({
         "accept": "*/*"
       },
       success: (res) => {
-        if (res.data.code === 200 && res.data.data) {
-          // 保存附件列表
-          const quoteFileList = res.data.data.quoteFileList || [];
-          this.setData({ quoteFileList });
-          
-          // 解析并更新数据
-          this.parseQuoteData(res.data.data);
+        if (res.statusCode === 200 && res.data.code === 200) {
+          const viewData = res.data.data || {};
+          this.setData({ 
+            quoteFileList: viewData.quoteFileList || [],
+            totalAmount: 0 // 重置总金额
+          });
+          this.renderInquiryData(viewData);
         } else {
           this.setData({
-            isLoading: false,
-            errorMsg: res.data.msg || '获取询价单详情失败'
+            errorMsg: res.data.msg || '获取询价单详情失败',
+            isLoading: false
           });
           wx.showToast({ title: res.data.msg || '获取失败', icon: 'none' });
         }
@@ -55,219 +62,245 @@ Page({
       fail: (err) => {
         console.error('请求失败', err);
         this.setData({
-          isLoading: false,
-          errorMsg: '网络错误，请重试'
+          errorMsg: '网络错误，请重试',
+          isLoading: false
         });
         wx.showToast({ title: '网络错误', icon: 'none' });
+      },
+      complete: () => {
+        wx.hideLoading();
       }
     });
   },
 
   /**
-   * 解析接口返回的完整数据
-   * @param {Object} data - 接口返回的data对象
+   * 渲染询价单数据（核心：补充每行金额计算）
    */
-  parseQuoteData(data) {
-    try {
-      // 解析商品字段配置
-      const productFieldList = this.parseProductFields(data.quote.dataJson);
-      
-      // 处理商品分组列表
-      const productGroupList = this.processProductGroups(data.productGroupList);
-      
-      // 计算有效期天数
-      const validPeriod = this.calculateValidDays(data.quote.createTime, data.quote.validityTime);
-      
-      // 更新页面数据（补充计算后的有效期）
-      this.setData({
-        quote: {
-          ...data.quote,
-          validPeriod // 新增计算后的有效期字段
-        },
-        productFieldList,
-        productGroupList,
-        isLoading: false,
-        errorMsg: ''
-      });
-    } catch (e) {
-      console.error('解析询价单数据失败', e);
-      this.setData({
-        isLoading: false,
-        errorMsg: '数据解析失败'
+  renderInquiryData(fullData) {
+    app.globalData.inquiryData = fullData;
+    const { quote, productGroupList } = fullData;
+    let tableData = [];
+    let index = 1;
+    let totalAmount = 0; // 累计总金额
+
+    // 解析表格列配置（确保包含金额列）
+    const tableColumns = this.parseTableColumns(quote.dataJson);
+    this.setData({ tableColumns });
+    console.log('表格列配置:', tableColumns);
+
+    // 处理商品分组数据
+    if (productGroupList && productGroupList.length) {
+      productGroupList.forEach(group => {
+        // 添加分组名称行（无金额）
+        if (group.productGroupName) {
+          const groupRow = this.createTableRow(index++, {
+            productName: group.productGroupName
+          });
+          tableData.push(groupRow);
+        }
+
+        // 处理分组下的商品，计算每行金额
+        if (group.quoteProductList && group.quoteProductList.length) {
+          group.quoteProductList.forEach(product => {
+            // 解析商品详细数据
+            let productData = {};
+            try {
+              productData = product.productData ? JSON.parse(product.productData) : {};
+            } catch (e) {
+              console.error('解析商品数据失败:', e);
+              productData = {};
+            }
+
+            // 提取单价和数量（转为数字类型）
+            const unitPrice = Number(product.unitPrice || productData.unitPrice || 0);
+            const quantity = Number(product.quantity || productData.quantity || 1);
+            // 计算当前行商品金额（单价 × 数量）
+            const rowMoney = Number((unitPrice * quantity).toFixed(2)); // 保留两位小数
+            // 累计总金额
+            totalAmount = Number((totalAmount + rowMoney).toFixed(2));
+
+            // 构建商品行数据（包含金额字段）
+            const productRow = this.createTableRow(index++, {
+              productName: product.productName || productData.productName || "未命名商品",
+              productCode: product.productCode || productData.productCode || "无编码",
+              brand: productData.brand || '未知品牌',
+              tag: productData.tag || '无标签',
+              produceCompany: productData.produceCompany || '未知厂家',
+              unit: productData.unit || '个',
+              unitPrice: unitPrice.toFixed(2), // 格式化单价
+              quantity: quantity,
+              money: rowMoney, // 本行金额（核心补充）
+              remark: product.remark || productData.remark || "-"
+            });
+            tableData.push(productRow);
+          });
+        }
       });
     }
+
+    // 添加总计行（总金额 = 所有行金额之和）
+    const totalRow = this.createTableRow(index++, {
+      productName: '总计',
+      unitPrice: '',
+      productCode: '',
+      quantity: '',
+      brand: '',
+      tag: '',
+      produceCompany: '',
+      unit: '',
+      remark: '',
+      money: totalAmount, // 总金额
+      // 突出显示总计行
+      background: '#f5f5f5',
+      fontWeight: 'bold'
+    });
+    tableData.push(totalRow);
+
+    console.log('最终表格数据（含每行金额）:', tableData);
+    console.log('计算的总金额:', totalAmount);
+
+    // 计算有效期
+    const validPeriod = this.calculateValidDays(quote.createTime, quote.validityTime);
+
+    // 更新页面数据
+    this.setData({
+      quote: { ...quote, validPeriod, calculatedTotal: totalAmount },
+      tableData,
+      totalAmount,
+      isLoading: false
+    }, () => {
+      console.log('页面数据已更新，表格行数:', this.data.tableData.length);
+    });
   },
 
   /**
-   * 计算有效期天数（根据createTime和validityTime）
-   * @param {String} createTime - 创建时间（格式：yyyy-MM-dd HH:mm:ss）
-   * @param {String} validityTime - 失效时间（格式：yyyy-MM-dd HH:mm:ss）
-   * @returns {String} 有效期描述（如"7天"）
+   * 解析表格列配置（确保金额列存在）
    */
-  calculateValidDays(createTime, validityTime) {
-    // 缺省处理：如果缺少时间字段，返回默认30天
-    if (!createTime || !validityTime) {
-      return '30天';
+  parseTableColumns(dataJson) {
+    if (dataJson) {
+      try {
+        const columns = JSON.parse(dataJson);
+        // 强制添加金额列（code: "money"），确保与行数据匹配
+        const hasMoneyColumn = columns.some(col => col.code === 'money' || col.label === '金额');
+        if (!hasMoneyColumn) {
+          columns.push({ 
+            label: "金额", 
+            align: "center", 
+            code: "money",
+            width: "150rpx",
+            background: "#f9f9f9" // 金额列背景色区分
+          });
+        }
+        return columns.map(col => ({
+          ...col,
+          width: col.width || '150rpx',
+          align: col.align || 'center',
+          code: col.code || col.label.toLowerCase().replace(/\s+/g, '')
+        }));
+      } catch (e) {
+        console.error('解析表格配置失败', e);
+      }
     }
 
+    // 默认列配置（包含金额列）
+    return [
+      { label: "序号", width: "60rpx", background: "#ececec", align: "center", code: "index" },
+      { label: "商品名称", align: "center", code: "productName" },
+      { label: "商品编码", align: "center", code: "productCode" },
+      { label: "品牌", align: "center", code: "brand" },
+      { label: "生产厂家", align: "center", code: "produceCompany" },
+      { label: "标签", align: "center", code: "tag" },
+      { label: "单位", align: "center", code: "unit" },
+      { label: "单价", align: "center", code: "unitPrice" },
+      { label: "数量", background: "#ececec", align: "left", code: "quantity" },
+      { label: "金额", align: "center", code: "money", background: "#f9f9f9" }, // 金额列
+      { label: "备注", background: "#ececec", align: "left", code: "remark", width: "140rpx" }
+    ];
+  },
+
+  /**
+   * 创建表格行数据（确保金额字段正确映射）
+   */
+  createTableRow(index, data) {
+    const row = { index };
+    this.data.tableColumns.forEach(col => {
+      // 应用行样式（如总计行背景色）
+      if (data.background) row.background = data.background;
+      if (data.fontWeight) row.fontWeight = data.fontWeight;
+      // 填充数据，金额字段特殊处理（确保数字类型）
+      if (col.code === 'money') {
+        row[col.code] = data[col.code] !== undefined ? 
+          (typeof data[col.code] === 'number' ? data[col.code].toFixed(2) : data[col.code]) : 
+          "0.00";
+      } else {
+        row[col.code] = data[col.code] !== undefined ? data[col.code] : "-";
+      }
+    });
+    return row;
+  },
+
+  /**
+   * 计算有效期天数
+   */
+  calculateValidDays(createTime, validityTime) {
+    if (!createTime || !validityTime) return '30天';
     try {
-      // 转换为时间戳（毫秒）
-      const createDate = new Date(createTime);
-      const validityDate = new Date(validityTime);
-      
-      // 验证日期格式是否有效
+      // 修复iOS日期格式问题
+      const formatDate = (dateStr) => dateStr.replace(/-/g, '/');
+      const createDate = new Date(formatDate(createTime));
+      const validityDate = new Date(formatDate(validityTime));
       if (isNaN(createDate.getTime()) || isNaN(validityDate.getTime())) {
         throw new Error('日期格式无效');
       }
-      
-      // 计算毫秒差
       const timeDiff = validityDate.getTime() - createDate.getTime();
-      
-      // 转换为天数（向上取整）
       const days = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
-      
-      // 确保至少1天
       return days > 0 ? `${days}天` : '1天';
     } catch (e) {
       console.error('计算有效期失败:', e);
-      return '30天'; // 异常时返回默认值
+      return '30天';
     }
   },
 
   /**
-   * 解析商品字段配置（从quote.dataJson提取）
-   * @param {String} dataJson - quote中的dataJson字符串
-   * @returns {Array} 格式化后的字段配置列表
+   * 获取列值（格式化金额显示）
    */
-  parseProductFields(dataJson) {
-    if (!dataJson) {
-      return [
-        { label: "序号", width: "50px", background: "#ececec", align: "center" },
-        { label: "商品名称", align: "center", code: "productName" },
-        { label: "商品编码", align: "center", code: "productCode" },
-        { label: "单价", align: "center", code: "unitPrice" },
-        { label: "数量", background: "#ececec", align: "left", code: "quantity" },
-        { label: "备注", background: "#ececec", align: "left", code: "remark", width: "140px" }
-      ];
+  getColumnValue(row, column) {
+    if (row && column && column.code) {
+      // 金额列显示两位小数
+      if (column.code === 'money') {
+        return row[column.code] !== undefined ? 
+          (typeof row[column.code] === 'number' ? row[column.code].toFixed(2) : row[column.code]) : 
+          "0.00";
+      }
+      return row[column.code] !== undefined ? row[column.code] : "-";
     }
-
-    try {
-      const fields = JSON.parse(dataJson);
-      return fields.filter(field => field.label !== "序号");
-    } catch (e) {
-      console.error('解析dataJson失败', e);
-      return [
-        { label: "商品名称", align: "center", code: "productName" },
-        { label: "商品编码", align: "center", code: "productCode" },
-        { label: "单价", align: "center", code: "unitPrice" },
-        { label: "数量", background: "#ececec", align: "left", code: "quantity" },
-        { label: "备注", background: "#ececec", align: "left", code: "remark", width: "140px" }
-      ];
-    }
-  },
-
-  /**
-   * 处理商品分组列表
-   * @param {Array} groups - 接口返回的productGroupList
-   * @returns {Array} 处理后的分组列表
-   */
-  processProductGroups(groups) {
-    if (!groups || !groups.length) {
-      return [];
-    }
-
-    return groups.map(group => ({
-      ...group,
-      productGroupName: group.productGroupName || "商品组",
-      quoteProductList: (group.quoteProductList || []).map(product => this.processProduct(product))
-    }));
-  },
-
-  /**
-   * 处理单个商品数据（解析productData）
-   * @param {Object} product - 单个商品对象
-   * @returns {Object} 处理后的商品对象
-   */
-  processProduct(product) {
-    try {
-      const productData = typeof product.productData === 'string' 
-        ? JSON.parse(product.productData) 
-        : (product.productData || {});
-      
-      return {
-        ...product,
-        productData,
-        productName: product.productName || productData.productName || "未命名商品",
-        productCode: product.productCode || productData.productCode || "无编码",
-        unitPrice: product.unitPrice || productData.unitPrice || 0,
-        quantity: product.quantity || 1
-      };
-    } catch (e) {
-      console.error('解析商品数据失败', e);
-      return {
-        ...product,
-        productData: {},
-        productName: product.productName || "未命名商品",
-        productCode: product.productCode || "无编码"
-      };
-    }
-  },
-
-  /**
-   * 获取商品字段值的辅助函数
-   * @param {Object} product - 商品对象
-   * @param {String} code - 字段编码
-   * @returns {any} 字段值
-   */
-  getProductValue(product, code) {
-    return product[code] || product.productData?.[code] || "-";
+    return "-";
   },
 
   // 下载询价单文档
   goToDownloadQuotation() {
-    // 1. 从页面数据中获取所有所需数据
-    const { quote, productFieldList, productGroupList } = this.data;
-    
-    // 2. 收集表格表头数据
-    const header = ['序号', ...productFieldList.map(field => field.label || field.productFieldName)];
-    
-    // 3. 整理商品数据为二维数组（表格行）
-    const rows = [];
-    productGroupList.forEach(group => {
-      group.quoteProductList.forEach((product, idx) => {
-        const row = [
-          idx + 1, // 序号
-          product.productName,
-          product.productCode,
-          product.unitPrice,
-          product.quantity,
-          product.remark || '-'
-        ];
-        rows.push(row);
-      });
-    });
-    
-    // 4. 保存到全局变量，供下载页使用
+    const { quote, tableColumns, tableData, totalAmount } = this.data;
+    const header = tableColumns.map(col => col.label);
+    const rows = tableData.map(row => 
+      tableColumns.map(col => this.getColumnValue(row, col))
+    );
+
     const app = getApp();
     app.globalData.tableExportData = {
-      // 从quote中提取标题（名称）
       title: quote.name || `询价单${new Date().getTime()}`,
-      // 表格数据
       header,
       rows,
-      // 从quote中提取其他核心信息
       inquiryInfo: {
         purchaseCompany: quote.companyName || '未知采购方',
         supplierCompany: quote.supplierCompany || '贵公司',
         contactPerson: quote.linkMan || '未知联系人',
-        quotePerson: quote.linkMan || '未知报价人',
         phone: quote.linkTel || '未知电话',
         inquiryDate: quote.createTime ? new Date(quote.createTime).toLocaleDateString() : new Date().toLocaleDateString(),
-        validPeriod: quote.validPeriod || '30天' // 使用计算后的有效期
+        validPeriod: quote.validPeriod || '30天',
+        totalAmount: totalAmount.toFixed(2)
       }
     };
-    
-    // 5. 跳转到下载页
+
     wx.navigateTo({
       url: '/inquiryPackage/pages/downloadRecievedInquiry/downloadRecievedInquiry'
     });
@@ -276,9 +309,8 @@ Page({
   // 跳转到附件下载页
   goToDownloadAttachment() {
     const { quoteFileList, quote } = this.data;
-    
     const app = getApp();
-    app.globalData.quoteData = {
+    app.globalData.inquiryData = {
       quote: { name: quote.name || '询价单附件' },
       quoteFileList
     };
@@ -294,6 +326,10 @@ Page({
 
   // 打印功能
   printQuotation() {
-    wx.showToast({ title: '打印功能开发中', icon: 'none' });
+    wx.showToast({ title: '请前往电脑端打印...', icon: 'loading', duration: 1000 });
+  },
+
+  closeError() {
+    this.setData({ errorMsg: '' });
   }
 });

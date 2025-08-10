@@ -1,89 +1,103 @@
 <view class="container">
-    <!-- 顶部信息区域 -->
+  <!-- 加载中状态 -->
+  <view wx:if="{{isLoading}}" class="loading">
+    <view class="loading-icon"></view>
+    <view class="loading-text">加载中...</view>
+  </view>
+
+  <!-- 错误提示 -->
+  <view wx:if="{{errorMsg}}" class="error-area">
+    <view class="error-text">{{errorMsg}}</view>
+    <button class="error-btn" bindtap="closeError">关闭</button>
+  </view>
+
+  <!-- 调试信息（开发时使用） -->
+  <view class="debug" wx:if="{{false}}">
+    <view>列配置数量: {{tableColumns.length}}</view>
+    <view>数据行数量: {{tableData.length}}</view>
+    <view wx:if="{{tableData.length > 0}}">第一行数据: {{tableData[0]}}</view>
+  </view>
+
+  <!-- 内容区域 -->
+  <view wx:if="{{!isLoading && !errorMsg}}">
+  <!-- 顶部信息区域 -->
     <view class="topArea">
-        <header></header>
-        <view class="information">询价单{{quote.quoteNo}}</view>
-        <view class="operation">
-            <view>
-                <button size="mini" bind:tap="goToDownloadQuotation">下载文档</button>
-                <button size="mini" bind:tap="goToDownloadAttachment">查看附件</button>
-            </view>
-            <view bind:tap="printQuotation">
-                <image src="/static/print.png" class="print-icon" mode="widthFix"></image>
-            </view>
-        </view>
+    <header></header>
+    <view class="information">
+      询价单{{quote.quoteNo || ''}}
     </view>
+    <view class="operation">
+      <view>
+        <button size="mini" bind:tap="goToDownloadQuotation">下载文档</button>
+        <button size="mini" bind:tap="goToDownloadAttachment" >查看附件</button>
+      </view>
+      <view bind:tap="printQuotation">
+        <image src="/static/print.png" mode="widthFix"></image>
+      </view>
+    </view>
+  </view>
+    
+    
 
-    <!-- 报价单内容区域 -->
+    <!-- 询价单内容区域 -->
+    
     <view class="contentArea">
-        <!-- 头部文本 -->
-        <view class="headText" wx:if="{{quote.headText}}" bindtap="openHtmlViewer" data-html="{{quote.headText}}">
-            <rich-text nodes="{{quote.headText}}"></rich-text>
-        </view>
-        
-        <!-- 商品表格 - 横向滚动容器 -->
-        <view class="tableScroll">
-            <view class="tableContainer">
-                <!-- 表头 - 横向排列（修正后） -->
-                <view class="tableRow headerRow" style="display: flex; width: 100%;">
-                    <!-- 序号表头 -->
-                    <view class="tableCell" style="min-width: 60px; width: 60px; text-align: center; background: #DDDDDD; padding: 8px; box-sizing: border-box; border: 1px solid #eee; font-weight: bold;">
-                        序号
-                    </view>
-                    
-                    <!-- 其他表头（核心修正：调整style格式） -->
-                    <view 
-                        class="tableCell"
-                        wx:for="{{productFieldList}}" 
-                        wx:key="index"
-                        style="flex: 1; min-width: {{item.width ? item.width : '120px'}}; text-align: {{item.align ? item.align : 'center'}}; background: {{item.background ? item.background : '#DDDDDD'}}; padding: 8px; box-sizing: border-box; border: 1px solid #eee; font-weight: bold;"
-                    >
-                        {{item.productFieldName || item.label}}
-                    </view>
-                </view>
-
-                <!-- 商品数据 -->
-                <view class="table-body">
-                    <view wx:for="{{productGroupList}}" wx:key="groupIndex" class="product-group">
-                        <view 
-                            class="tableRow data-row" 
-                            wx:for="{{item.quoteProductList}}" 
-                            wx:for-item="product" 
-                            wx:for-index="productIdx" 
-                            wx:key="id"
-                            style="display: flex; width: 100%; border-bottom: 1px solid #eee;"
-                        >
-                            <view class="tableCell" style="min-width: 60px; width: 60px; text-align: center; background: #fff; padding: 8px; box-sizing: border-box; border: 1px solid #eee; border-top: none;">
-                                {{productIdx + 1}}
-                            </view>
-
-                            <view class="tableCell" style="flex: 1; min-width: {{productFieldList[0].width || '120px'}}; text-align: {{productFieldList[0].align || 'center'}}; padding: 8px; box-sizing: border-box; border: 1px solid #eee; border-left: none; border-top: none;">
-                                {{product.productName}}
-                            </view>
-
-                            <view class="tableCell" style="flex: 1; min-width: {{productFieldList[1].width || '120px'}}; text-align: {{productFieldList[1].align || 'center'}}; padding: 8px; box-sizing: border-box; border: 1px solid #eee; border-left: none; border-top: none;">
-                                {{product.productCode}}
-                            </view>
-
-                            <view class="tableCell" style="flex: 1; min-width: {{productFieldList[2].width || '120px'}}; text-align: {{productFieldList[2].align || 'center'}}; padding: 8px; box-sizing: border-box; border: 1px solid #eee; border-left: none; border-top: none;">
-                                {{product.unitPrice}}
-                            </view>
-
-                            <view class="tableCell" style="flex: 1; min-width: {{productFieldList[3].width || '120px'}}; text-align: {{productFieldList[3].align || 'center'}}; background: {{productFieldList[3].background || '#fff'}}; padding: 8px; box-sizing: border-box; border: 1px solid #eee; border-left: none; border-top: none;">
-                                {{product.quantity}}
-                            </view>
-
-                            <view class="tableCell" style="flex: 1; min-width: {{productFieldList[4].width || '120px'}}; text-align: {{productFieldList[4].align || 'center'}}; background: {{productFieldList[4].background || '#fff'}}; padding: 8px; box-sizing: border-box; border: 1px solid #eee; border-left: none; border-top: none;">
-                                {{product.remark || '-'}}
-                            </view>
-                        </view>
-                    </view>
-                </view>
+      <!-- 头部文本 -->
+      <view class="headText" wx:if="{{quote.headText}}">
+        <rich-text nodes="{{quote.headText}}"></rich-text>
+      </view>
+      
+      <!-- 商品表格 -->
+      <view class="tableScroll">
+        <view class="tableContainer">
+          <!-- 表头 -->
+          <view class="tableRow headerRow" style="display: flex;">
+            <view 
+              class="tableCell" 
+              wx:for="{{tableColumns}}" 
+              wx:key="index"
+              style="min-width: {{item.width || '120rpx'}}; width: {{item.width || '120rpx'}}; text-align: {{item.align || 'center'}}; background: {{item.background || '#ececec'}}; padding: 8px; box-sizing: border-box; border: 1px solid #eee; font-weight: bold;"
+            >
+              {{item.label}}
             </view>
+          </view>
+
+          <!-- 表格数据 -->
+          <view class="table-body">
+            <!-- 无数据提示 -->
+            <view wx:if="{{tableData.length === 0}}" class="no-data">
+              暂无商品数据
+            </view>
+            
+            <!-- 数据行 -->
+            <view 
+              class="tableRow data-row" 
+              wx:for="{{tableData}}" 
+              wx:for-item="row" 
+              wx:key="index"
+              style="display: flex; border-bottom: 1px solid #eee;"
+            >
+              <view 
+                class="tableCell" 
+                wx:for="{{tableColumns}}" 
+                wx:for-item="col" 
+                wx:for-index="colIdx"
+                wx:key="colIdx"
+                style="min-width: {{col.width || '120rpx'}}; width: {{col.width || '120rpx'}}; text-align: {{col.align || 'center'}}; background: {{col.background || '#fff'}}; padding: 8px; box-sizing: border-box; border: 1px solid #eee; border-top: none; {{colIdx > 0 ? 'border-left: none;' : ''}}"
+              >
+                <!-- 直接绑定字段，确保与数据结构匹配 -->
+                {{row[col.code]}}
+              </view>
+            </view>
+          </view>
         </view>
-        
-        <view class="footText" wx:if="{{quote.footText}}" style="margin-top: 20px; padding: 10px;">
-            <rich-text nodes="{{quote.footText}}"></rich-text>
-        </view>
+      </view>
+      
+      <!-- 底部文本 -->
+      <view class="footText" wx:if="{{quote.footText}}" style="margin-top: 20px; padding: 10px;">
+        <rich-text nodes="{{quote.footText}}"></rich-text>
+      </view>
     </view>
+  </view>
 </view>
+    

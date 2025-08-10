@@ -71,6 +71,7 @@ Page({
           'Authorization': `Bearer ${getApp().globalData.token}`
         },
         success: (res) => {
+            console.log('报价单:',res);
           if (res.statusCode === 200 && res.data.code === 200) {
             const quotation = res.data.rows || [];
             const hasMore = this.data.pageNum * this.data.pageSize < res.data.total;

@@ -9,7 +9,7 @@ page{
 /* 上方区域 */
 .topArea {
   width: 100%;
-  height: 15%;
+  height: 25%;
   background-color: #DDDDDD;
   padding: 20rpx 0;
   display: flex;
@@ -20,7 +20,7 @@ page{
 .add {
   position: absolute;
   right: 30rpx;
-  top: 13.5%;
+  top: 23.5%;
   height: 120rpx;
   width: 120rpx;
   background-color: #F9B712;
@@ -37,11 +37,11 @@ page{
 
 .addNewItem {
   position: absolute;
-  top:23%;
+  top:33%;
   right: 30rpx;
   background-color: #DDDDDD;
   border-radius: 10px;
-  height: 170rpx;
+  height: 200rpx;
   width: 240rpx;
   display: flex;
   flex-direction: column;
@@ -71,13 +71,13 @@ page{
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  height: 100%;
-  justify-content: space-between;
 }  
 
 .information {
-  font-size: 35rpx;
-  font-weight: bolder;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-around;
   color: #23394D;
 }  
 

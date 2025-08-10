@@ -2,26 +2,51 @@
   <view class="header">
     以下信息将显示在您对外发送的文档中，请仔细填写！
   </view>
-  <view class="form">
-    <view class="fieldCard" wx:for="{{fields}}" wx:for-item="field" wx:key="index" data-index="{{index}}" bind:tap="chooseField">
-      <view wx:if="{{field.ifChoose==true}}" style="display: flex;width: 100%;height: 100%;align-items: center;">
-        <view class="blueSidebar">
-          <view class="checkbox">✔</view>
-        </view>
-        <view class="fieldName" style="color: #23394D;">
-          {{field.name}}
-        </view>
-      </view>
-      <view wx:if="{{field.ifChoose==false}}" style="display: flex;width: 100%;height: 100%;align-items: center;">
-        <view class="graySidebar">
-          <view class="checkbox"></view>
-        </view>
-        <view class="fieldName" style="color: gray;">
-          {{field.name}}
+
+  <!-- 必选字段区域 -->
+  <view class="field-section">
+   
+    <view class="form">
+      <view class="fieldCard" wx:for="{{requiredFields}}" wx:for-item="field" wx:key="code">
+        <view style="display: flex; width: 100%; height: 100%; align-items: center;">
+          <view class="blueSidebar">
+            <view class="checkbox">✔</view>
+          </view>
+          <view class="fieldName" style="color: #23394D;">
+            {{field.name}}
+            <text class="required-tag">必选</text>
+          </view>
         </view>
       </view>
     </view>
   </view>
+
+  <!-- 可选字段区域 -->
+  <view class="field-section">
+
+    <view class="form">
+      <view class="fieldCard" wx:for="{{optionalFields}}" wx:for-item="field" wx:key="code" 
+            data-index="{{index}}" bind:tap="toggleField">
+        <view wx:if="{{field.isSelected}}" style="display: flex; width: 100%; height: 100%; align-items: center;">
+          <view class="blueSidebar">
+            <view class="checkbox">✔</view>
+          </view>
+          <view class="fieldName" style="color: #23394D;">
+            {{field.name}}
+          </view>
+        </view>
+        <view wx:if="{{!field.isSelected}}" style="display: flex; width: 100%; height: 100%; align-items: center;">
+          <view class="graySidebar">
+            <view class="checkbox"></view>
+          </view>
+          <view class="fieldName" style="color: gray;">
+            {{field.name}}
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
   <view class="buttonGroup">
     <view class="cancelButton" bind:tap="cancel">
       取消

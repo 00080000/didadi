@@ -32,6 +32,12 @@ Page({
       { label: "序号", width: "50px", background: "#ececec", "align": "center" },
       { label: "商品名称", "align": "center", code: "productName" },
       { label: "商品编码", "align": "center", code: "productCode" },
+     
+      { label: "品牌", "align": "center", code: "brand" },
+      { label: "生产厂家", "align": "center", code: "produceCompany" },
+      { label: "标签", "align": "center", code: "tag" },
+      { label: "单位", "align": "center", code: "unit" },
+
       { label: "单价", "align": "center", code: "unitPrice" },
       { label: "数量", background: "#ececec", "align": "left", code: "quantity" },
       { label: "备注", background: "#ececec", "align": "left", code: "remark", width: "140px" }
@@ -135,6 +141,7 @@ Page({
       productData: {
         productName: item.name || item.productName || '',
         productCode: item.productCode || '',
+        brand:item.data.brand,
         unitPrice: (Number(item.price) || Number(item.unitPrice) || 0).toFixed(2),
         quantity: item.number || item.quantity || 1,
         remark: item.remark || '',
@@ -195,6 +202,7 @@ Page({
                     id: item.productId || item.id || `temp_${Date.now()}_${index}`,
                     name: productData.productName || item.productName || '未知商品',
                     productCode: productData.productCode || item.productCode || '',
+                    //brand:productData.brand||item.brand||'未知品牌',
                     price: Number(item.unitPrice || productData.unitPrice || 0),
                     number: Number(item.quantity || 1),
                     type: itemType,
@@ -383,72 +391,77 @@ Page({
   
   // 准备提交数据
   prepareSubmitData() {
+    const app = getApp();
+    const selectedFields = app.globalData.selectedFields?.all || ['productName', 'unitPrice'];
     const { productTypes } = this.data;
     
-    // 商品字段配置
-    const productFieldList = [
-      { productFieldCode: "productName", productFieldName: "商品名称" },
-      { productFieldCode: "productCode", productFieldName: "商品编码" },
-      { productFieldCode: "unitPrice", productFieldName: "单价" },
-      { productFieldCode: "quantity", productFieldName: "数量" },
-      { productFieldCode: "remark", productFieldName: "备注" }
-    ];
+    // 商品字段配置 - 只包含选中的字段
+    const productFieldList = selectedFields.map(code => {
+      const fieldMap = {
+        'productName': '商品名称',
+        'productCode': '商品编码',
+        'tag': '标签',
+        'unit': '单位',
+        'unitPrice': '单价',
+        'brand': '品牌',
+        'produceCompany': '生产商'
+      };
+      return { productFieldCode: code, productFieldName: fieldMap[code] || code };
+    });
   
-    // 商品列表
+    // 商品列表 - 只包含选中的字段
     const quoteProductGroupFormList = [{
       groupName: '',
       quoteProductFormList: this.data.product.map((item) => {
-        // 组合商品数据
-        const combinationProductData = item.type === productTypes.COMBINATION ? {
-          products: item.products.map(sub => ({
-            productName: sub.name,
-            productCode: sub.productCode,
-            unitPrice: sub.unitPrice.toFixed(2),
-            quantity: sub.quantity,
-            subtotal: sub.subtotal,
-            type: 0
-          })),
-          sp: true,
-          type: 1,
-          templateId: 5,
-          validityTime: '2099-12-31 08:00:00'
-        } : {};
+        // 构建productData - 只包含选中的字段
+        const productData = {};
+        selectedFields.forEach(field => {
+          if (item[field] !== undefined) {
+            productData[field] = item[field];
+          } else if (item.productData && item.productData[field] !== undefined) {
+            productData[field] = item.productData[field];
+          }
+        });
 
-        // 商品组数据
-        const groupProductData = item.type === productTypes.GROUP ? {
-          products: item.products.map(sub => ({
-            productName: sub.name,
-            productCode: sub.productCode,
-            unitPrice: sub.unitPrice.toFixed(2),
-            quantity: sub.quantity,
-            subtotal: sub.subtotal,
-            type: 0
-          })),
-          sp: false,
-          type: 2,
-          templateId: 6
-        } : {};
+        // 添加必要的计算字段
+        productData.quantity = (item.type === productTypes.COMBINATION || item.type === productTypes.GROUP) 
+          ? 1 
+          : (item.number || 1);
+        productData.unitPrice = (Number(item.price) || 0).toFixed(2);
+        productData.remark = item.remark || '';
 
-        // 构建productData
-        const productData = {
-          productName: item.name || item.productName || '',
-          productCode: item.productCode || '',
-          unitPrice: (Number(item.price) || 0).toFixed(2),
-          quantity: (item.type === productTypes.COMBINATION || item.type === productTypes.GROUP) 
-            ? 1 
-            : (item.number || 1),
-          remark: item.remark || '',
-          ...combinationProductData,
-          ...groupProductData
-        };
+        // 处理组合商品和商品组
+        if (item.type === productTypes.COMBINATION) {
+          productData.products = item.products?.map(sub => {
+            const subData = {};
+            selectedFields.forEach(field => {
+              if (sub[field] !== undefined) {
+                subData[field] = sub[field];
+              }
+            });
+            return subData;
+          }) || [];
+          productData.sp = true;
+          productData.type = 1;
+        } else if (item.type === productTypes.GROUP) {
+          productData.products = item.products?.map(sub => {
+            const subData = {};
+            selectedFields.forEach(field => {
+              if (sub[field] !== undefined) {
+                subData[field] = sub[field];
+              }
+            });
+            return subData;
+          }) || [];
+          productData.sp = false;
+          productData.type = 2;
+        }
 
         return {
           productId: item.id || item.productId,
-          quantity: (item.type === productTypes.COMBINATION || item.type === productTypes.GROUP)
-            ? 1
-            : (item.number || 1),
-          unitPrice: (Number(item.price) || 0).toFixed(2),
-          remark: item.remark || '',
+          quantity: productData.quantity,
+          unitPrice: productData.unitPrice,
+          remark: productData.remark,
           productData: productData
         };
       })
@@ -461,7 +474,6 @@ Page({
       fileType: file.type || ''
     }));
     
-    const app = getApp();
     const currentTime = this.data.time + ' ' + this.formatCurrentTime();
     const isNewOrCopy = this.data.copyMode === 1 || this.data.isNew;
     
@@ -484,7 +496,9 @@ Page({
       description: this.data.description || '',
       headText: this.getDefaultHeadText(),
       footText: this.getDefaultFootText(),
-      dataJson: JSON.stringify(this.data.tableColumns),
+      dataJson: JSON.stringify(this.data.tableColumns.filter(col => 
+        selectedFields.includes(col.code) || col.code === 'quantity' || col.code === 'remark'
+      )),
       totalPrice: this.data.totalPrice,
       fileList: quoteFileList
     };

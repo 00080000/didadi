@@ -3,12 +3,16 @@
   <view class="topArea">
     <header></header>
     <view class="content">
-      <view></view>
-      <view class="information">{{fileName}}</view>
-      <view class="information">当前总价：{{totalAmount}}元</view>
+      <view class="information">
+        <view style="font-size: 35rpx;font-weight: bolder;">{{fileName}}</view>
+        <view style="font-size: 30rpx;margin-top: 20rpx;">总价：￥ {{totalAmount}} 元</view>
+      </view>
+      <view class="productButton">
+        
+        <button size="mini" bind:tap="goToChooseProductFields">选择商品字段</button>
+      </view>  
     </view>
   </view>
-
   <view class="add" bind:tap="setIfShow">
     <view>新增</view>
     <view>商品</view> 
