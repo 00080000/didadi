@@ -28,7 +28,7 @@ Page({
       }
     },
   
-    // 初始化表单数据，修复名称和编码不显示问题
+    // 初始化表单数据
     initFormData() {
       const app = getApp();
       let targetProduct = null;
@@ -67,10 +67,10 @@ Page({
         this.setData({
           productId: targetProduct.productId,
           formData: {
-            productName: targetProduct.productName || productData.productName || '',
+            productName: targetProduct.name || productData.productName || '',
             productCode: targetProduct.productCode || productData.productCode || '',
-            price: targetProduct.unitPrice !== undefined ? String(targetProduct.unitPrice) : String(productData.unitPrice || ''),
-            number: targetProduct.quantity !== undefined ? String(targetProduct.quantity) : String(productData.quantity || ''),
+            price: targetProduct.price !== undefined ? String(targetProduct.price) : String(productData.unitPrice || ''),
+            number: targetProduct.number !== undefined ? String(targetProduct.number) : String(productData.quantity || ''),
             unit: targetProduct.unit || productData.unit || '',
             specs: targetProduct.specs || productData.specs || '',
             brand: targetProduct.brand || productData.brand || '',
@@ -79,6 +79,7 @@ Page({
             remark: targetProduct.remark || productData.remark || ''
           }
         });
+        console.log('productName:',targetProduct);
       }
     },
   

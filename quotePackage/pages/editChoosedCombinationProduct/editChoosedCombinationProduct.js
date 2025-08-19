@@ -168,15 +168,11 @@ Page({
         }
       }
       
-      wx.showToast({
-        title: '更新成功',
-        icon: 'success',
-        duration: 1500
-      });
+      
       
       setTimeout(() => {
         wx.navigateBack();
-      }, 1500);
+      }, 1000);
     },
   
     // 更新提交数据中的组合商品信息

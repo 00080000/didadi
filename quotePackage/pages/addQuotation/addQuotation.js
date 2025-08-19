@@ -11,7 +11,8 @@ Page({
       submitData: {}, // 提交的完整数据
       isNew: false, // 是否为新建模式
       isCopy: false, // 是否为复制模式
-      errorMsg: '' // 错误提示
+      errorMsg: '' ,// 错误提示
+      isShow: false
     },
   
     onLoad(options) {
@@ -128,6 +129,11 @@ Page({
       }
     },
   
+    onShow(){
+        this.setData({
+            isShow: true
+        });
+    },
     // 加载复制的数据
     loadCopyData(originalId, currentTime, validityTime, userInfo) {
       wx.showLoading({ title: '复制中...' });
