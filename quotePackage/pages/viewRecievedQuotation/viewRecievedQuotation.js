@@ -81,7 +81,7 @@ Page({
         'Authorization': `Bearer ${getApp().globalData.token}`
       },
       success: (res) => {
-          console.log('loadQuotationData:',res);
+          console.log('loadQuotationData:', res);
         if (res.statusCode === 200 && res.data.code === 200) {
           const viewData = res.data.data || {};
           this.setData({
@@ -158,16 +158,45 @@ Page({
             const productRow = { index };
             this.data.tableColumns.forEach(col => {
               if (col.code) {
-                // 优先从productData获取，然后是product对象，最后留空
-                productRow[col.code] = productData[col.code] !== undefined 
-                  ? productData[col.code] 
-                  : product[col.code] !== undefined 
-                    ? product[col.code] 
-                    : '';
-                
-                // 处理价格和金额的格式化
-                if (['unitPrice', 'calcPrice', 'money'].includes(col.code)) {
+                // 对于特定字段，优先使用product对象本身的值，再使用productData的值
+                if (['unitPrice', 'quantity', 'calcPrice', 'remark'].includes(col.code)) {
+                  // 检查product对象本身的属性是否存在且有效
+                  const productValue = product[col.code];
+                  if (productValue !== undefined && productValue !== null && productValue !== '') {
+                    productRow[col.code] = productValue;
+                  } else {
+                    // 否则使用productData中的值
+                    productRow[col.code] = productData[col.code] !== undefined ? productData[col.code] : '';
+                  }
+                } else {
+                  // 其他字段保持原有逻辑
+                  productRow[col.code] = productData[col.code] !== undefined 
+                    ? productData[col.code] 
+                    : product[col.code] !== undefined 
+                      ? product[col.code] 
+                      : '';
+                }
+
+                // 特别处理money列，确保它显示的是calcPrice（商品金额）
+                if (col.code === 'money') {
+                  // 优先使用product对象的calcPrice，其次使用productData的calcPrice或money
+                  const moneyValue = product.calcPrice !== undefined && product.calcPrice !== null 
+                    ? product.calcPrice 
+                    : productData.calcPrice !== undefined && productData.calcPrice !== null
+                      ? productData.calcPrice
+                      : productData.money || '';
+                  productRow[col.code] = moneyValue ? Number(moneyValue).toFixed(2) : '';
+                }
+                // 处理单价格式化
+                else if (col.code === 'unitPrice') {
                   productRow[col.code] = productRow[col.code] ? Number(productRow[col.code]).toFixed(2) : '';
+                }
+                // 处理数量格式化（保持原样，不强制小数）
+                else if (col.code === 'quantity') {
+                  // 检查是否为数字类型
+                  if (!isNaN(productRow[col.code])) {
+                    productRow[col.code] = String(productRow[col.code]);
+                  }
                 }
               }
             });
@@ -282,3 +311,4 @@ Page({
     this.setData({ errorMsg: '' });
   }
 })
+    
