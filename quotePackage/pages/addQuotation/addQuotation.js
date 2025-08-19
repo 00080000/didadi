@@ -134,7 +134,7 @@ Page({
             isShow: true
         });
     },
-    // 加载复制的数据
+    // 加载复制的数据 - 修复电脑端组合商品识别错误
     loadCopyData(originalId, currentTime, validityTime, userInfo) {
       wx.showLoading({ title: '复制中...' });
       wx.request({
@@ -168,19 +168,48 @@ Page({
               linkEmail: userInfo.email || ''
             };
   
-            // 处理商品列表
+            // 处理商品列表 - 修复电脑端组合商品识别错误
             let productList = [];
             if (viewData.productGroupList && viewData.productGroupList.length) {
-              // 使用传统for循环替代for...of
+              // 使用传统for循环遍历所有商品组
               for (let i = 0; i < viewData.productGroupList.length; i++) {
                 const group = viewData.productGroupList[i];
+                
+                // 修复电脑端组合商品识别逻辑：必须同时存在productGroupName和id
+                const isComputerCombination = 
+                  typeof group.productGroupName === 'string' && group.productGroupName.trim() !== '' &&
+                  group.id !== null && group.id !== undefined;
+                
+                // 如果是电脑端组合商品，先添加组合商品本身
+                if (isComputerCombination) {
+                  // 计算组合商品总价
+                  const combinationPrice = group.quoteProductList.reduce((sum, item) => {
+                    return sum + (parseFloat(item.unitPrice || 0) * parseInt(item.quantity || 0));
+                  }, 0);
+                  
+                  // 添加组合商品到列表
+                  productList.push({
+                    id: `group_${group.id}`, // 用group_前缀区分组合商品
+                    productId: `group_${group.id}`,
+                    name: group.productGroupName,
+                    price: combinationPrice,
+                    unitPrice: combinationPrice,
+                    quantity: 1,
+                    number: 1,
+                    calcPrice: combinationPrice,
+                    type: 'combinationProduct', // 标记为组合商品
+                    products: [], // 用于存储子商品
+                    select: false
+                  });
+                }
+                
+                // 处理组内商品
                 if (group.quoteProductList && group.quoteProductList.length) {
-                  // 使用传统for循环替代for...of
                   for (let j = 0; j < group.quoteProductList.length; j++) {
                     const product = group.quoteProductList[j];
                     try {
                       const productData = product.productData ? JSON.parse(product.productData) : {};
-                      productList.push({
+                      const productItem = {
                         ...product,
                         ...productData,
                         id: product.id,
@@ -190,11 +219,21 @@ Page({
                         unitPrice: Number(product.unitPrice || 0),
                         quantity: Number(product.quantity || 0),
                         number: Number(product.quantity || 0),
-                        calcPrice: Number(product.calcPrice || 0)
-                      });
+                        calcPrice: Number(product.calcPrice || 0),
+                        type: productData.type === 1 ? 'combinationProduct' : 
+                               productData.type === 2 ? 'customProduct' : 'singleProduct',
+                        select: false
+                      };
+                      
+                      // 如果是电脑端组合商品，添加到组合商品的子商品列表中
+                      if (isComputerCombination) {
+                        productList[productList.length - 1].products.push(productItem);
+                      } else {
+                        productList.push(productItem);
+                      }
                     } catch (e) {
                       console.error('解析商品数据失败:', e);
-                      productList.push({
+                      const productItem = {
                         ...product,
                         productId: product.productId || product.id, // 确保有productId
                         name: product.name || '未知商品',
@@ -202,8 +241,16 @@ Page({
                         unitPrice: Number(product.unitPrice || 0),
                         quantity: Number(product.quantity || 0),
                         number: Number(product.quantity || 0),
-                        calcPrice: Number(product.calcPrice || 0)
-                      });
+                        calcPrice: Number(product.calcPrice || 0),
+                        type: 'singleProduct',
+                        select: false
+                      };
+                      
+                      if (isComputerCombination) {
+                        productList[productList.length - 1].products.push(productItem);
+                      } else {
+                        productList.push(productItem);
+                      }
                     }
                   }
                 }
@@ -557,37 +604,71 @@ Page({
             // 从productGroupList中提取商品数据（与接口返回格式保持一致）
             let productList = [];
             if (viewData.productGroupList && viewData.productGroupList.length) {
-              // 使用传统for循环替代for...of
+              // 使用传统for循环遍历所有商品组
               for (let i = 0; i < viewData.productGroupList.length; i++) {
                 const group = viewData.productGroupList[i];
+                
+                // 修复电脑端组合商品识别逻辑
+                const isComputerCombination = 
+                  typeof group.productGroupName === 'string' && group.productGroupName.trim() !== '' &&
+                  group.id !== null && group.id !== undefined;
+                
+                // 如果是电脑端组合商品，先添加组合商品本身
+                if (isComputerCombination) {
+                  // 计算组合商品总价
+                  const combinationPrice = group.quoteProductList.reduce((sum, item) => {
+                    return sum + (parseFloat(item.unitPrice || 0) * parseInt(item.quantity || 0));
+                  }, 0);
+                  
+                  // 添加组合商品到列表
+                  productList.push({
+                    id: `group_${group.id}`, // 用group_前缀区分组合商品
+                    productId: `group_${group.id}`,
+                    name: group.productGroupName,
+                    price: combinationPrice,
+                    unitPrice: combinationPrice,
+                    quantity: 1,
+                    number: 1,
+                    calcPrice: combinationPrice,
+                    type: 'combinationProduct', // 标记为组合商品
+                    products: [], // 用于存储子商品
+                    select: false
+                  });
+                }
+                
+                // 处理组内商品
                 if (group.quoteProductList && group.quoteProductList.length) {
-                  // 使用传统for循环替代for...of
                   for (let j = 0; j < group.quoteProductList.length; j++) {
                     const product = group.quoteProductList[j];
                     try {
                       const productData = product.productData ? JSON.parse(product.productData) : {};
-                      productList.push({
+                      const productItem = {
                         ...product,
                         ...productData,
-                        // 保留提交所需的核心字段
                         id: product.id,
                         productId: product.productId || product.id, // 确保有productId
                         name: productData.productName || product.name || '未知商品',
                         price: Number(product.unitPrice || 0),
                         unitPrice: Number(product.unitPrice || 0),
                         quantity: Number(product.quantity || 0),
-                        number: Number(product.quantity || 0), // 兼容number字段
+                        number: Number(product.quantity || 0),
                         calcPrice: Number(product.calcPrice || 0),
                         remark: product.remark || productData.remark || '',
-                        // 组合商品特殊处理
                         type: productData.type === 1 ? 'combinationProduct' : 
                                productData.type === 2 ? 'customProduct' : 'singleProduct',
-                        products: productData.products || [] // 保留组合内商品数据
-                      });
+                        products: productData.products || [], // 保留组合内商品数据
+                        select: false
+                      };
+                      
+                      // 如果是电脑端组合商品，添加到组合商品的子商品列表中
+                      if (isComputerCombination) {
+                        productList[productList.length - 1].products.push(productItem);
+                      } else {
+                        productList.push(productItem);
+                      }
                     } catch (e) {
                       console.error('解析商品数据失败:', e);
-                      // 解析失败时仍添加基础信息
-                      productList.push({
+                      const productItem = {
                         ...product,
                         productId: product.productId || product.id, // 确保有productId
                         name: product.name || '未知商品',
@@ -597,8 +678,15 @@ Page({
                         number: Number(product.quantity || 0),
                         calcPrice: Number(product.calcPrice || 0),
                         remark: product.remark || '',
-                        type: 'singleProduct'
-                      });
+                        type: 'singleProduct',
+                        select: false
+                      };
+                      
+                      if (isComputerCombination) {
+                        productList[productList.length - 1].products.push(productItem);
+                      } else {
+                        productList.push(productItem);
+                      }
                     }
                   }
                 }
@@ -1130,4 +1218,3 @@ Page({
       return postData;
     }
   });
-  
