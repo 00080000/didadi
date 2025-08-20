@@ -57,6 +57,7 @@ Page({
         app.globalData.shareSystemSelectedData = null;
         app.globalData.isCreateNewQuote = null;
         app.globalData.selectedProducts = []; // 清空商品全局数据
+        
       }
   
       // 初始化模式状态
@@ -80,6 +81,7 @@ Page({
   
         // 获取用户信息补全报价人信息
         const userInfo = app.globalData.userInfo || {};
+        console.log('app.globalData.submitData:',app.globalData.submitData)
         
         // 如果是复制模式，先加载原报价单数据再修改
         if (isCopy) {
@@ -101,9 +103,7 @@ Page({
               userId: userInfo.userId || '',
               enterpriseId: userInfo.enterpriseId || '',
               uname: userInfo.userName || '',
-              linkMan: userInfo.nickName || userInfo.userName || '',
-              linkTel: userInfo.phonenumber || '',
-              linkEmail: userInfo.email || ''
+              linkEmail: ''
             },
             time: currentTime, // 新建默认当前精确时间
             validityTime: validityTime, // 保存有效期到数据
@@ -121,20 +121,16 @@ Page({
             userId: userInfo.userId || '',
             enterpriseId: userInfo.enterpriseId || '',
             uname: userInfo.userName || '',
-            linkMan: userInfo.nickName || userInfo.userName || '',
-            linkTel: userInfo.phonenumber || '',
-            linkEmail: userInfo.email || ''
+            linkMan: '',
+            linkTel:  '',
+            linkEmail: ''
           };
         }
       }
     },
   
-    onShow(){
-        this.setData({
-            isShow: true
-        });
-    },
-    // 加载复制的数据 - 修复电脑端组合商品识别错误
+
+    // 加载复制的数据
     loadCopyData(originalId, currentTime, validityTime, userInfo) {
       wx.showLoading({ title: '复制中...' });
       wx.request({
@@ -162,20 +158,17 @@ Page({
               createBy: userInfo.userName || '',
               userId: userInfo.userId || '',
               enterpriseId: userInfo.enterpriseId || '',
-              uname: userInfo.userName || '',
-              linkMan: userInfo.nickName || userInfo.userName || '',
-              linkTel: userInfo.phonenumber || '',
-              linkEmail: userInfo.email || ''
+              uname: userInfo.userName || ''
             };
   
-            // 处理商品列表 - 修复电脑端组合商品识别错误
+            // 处理商品列表
             let productList = [];
             if (viewData.productGroupList && viewData.productGroupList.length) {
               // 使用传统for循环遍历所有商品组
               for (let i = 0; i < viewData.productGroupList.length; i++) {
                 const group = viewData.productGroupList[i];
                 
-                // 修复电脑端组合商品识别逻辑：必须同时存在productGroupName和id
+                // 必须同时存在productGroupName和id
                 const isComputerCombination = 
                   typeof group.productGroupName === 'string' && group.productGroupName.trim() !== '' &&
                   group.id !== null && group.id !== undefined;
@@ -373,7 +366,7 @@ Page({
           app.globalData.shareSystemSelectedData = null;
         }
   
-        // 处理商品选择返回数据（核心同步点）
+        // 处理商品选择返回数据
         if (app.globalData.selectedProducts) {
           console.log('===== 新建模式 - 同步商品数据开始 =====');
           console.log('全局商品数据:', app.globalData.selectedProducts);
@@ -906,7 +899,6 @@ Page({
       const { isNew, item, product, attachment } = this.data;
       
       console.log('当前商品列表:', product);
-      
       // 校验必填项
       if (!item.companyId || item.companyName === '请选择商家') {
         return wx.showToast({ title: '请选择商家', icon: 'none' });
@@ -925,8 +917,14 @@ Page({
       if (!item.validityTime) {
         return wx.showToast({ title: '请设置有效期', icon: 'none' });
       }
+      // 验证模板是否存在
       
-      // 验证临时商品的必填字段 - 修复类型错误
+      
+      if (!app.globalData.submitData.quote.headText) {
+        return wx.showToast({ title: '请选择商品模板', icon: 'none' });
+      }
+      
+      // 验证临时商品的必填字段
       // 先确保productId是字符串类型，再判断是否以'temp-'开头
       console.log('===== 开始验证临时商品 =====');
       const tempProducts = product.filter(p => {
@@ -943,15 +941,15 @@ Page({
           const p = tempProducts[i];
           console.log(`验证第 ${i + 1} 个临时商品:`, p);
           
-          // 修复临时商品名称验证逻辑 - 从多个可能的字段获取名称
+          // 从多个可能的字段获取名称
           const productName = p.productData?.productName || p.productName || p.name || '';
           const productCode = p.productData?.productCode || p.productCode || p.code || '';
           const remark = p.productData?.remark || p.remark || p.originalProductData?.remark || '';
           
-          // 修复单价获取逻辑 - 从多个可能的字段获取单价
+          // 从多个可能的字段获取单价
           const unitPrice = p.unitPrice || p.productData?.unitPrice || p.originalProductData?.unitPrice || p.price || '';
           
-          // 修复数量获取逻辑 - 从多个可能的字段获取数量
+          // 从多个可能的字段获取数量
           const quantity = p.quantity || p.productData?.quantity || p.originalProductData?.quantity || p.number || '';
           
           console.log(`临时商品名称来源: productData.productName=${p.productData?.productName}, productName=${p.productName}, name=${p.name}, 最终值=${productName}`);
