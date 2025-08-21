@@ -56,28 +56,27 @@
 
   <view class="cardList" wx:if="{{!isLoading}}">
     <view class="card" wx:for="{{filterQuotation}}" wx:key="id" wx:item="item">
-      <view class="cardLeft">
-        <view style="font-size: 22rpx;margin-top: 20rpx;">接收时间</view>
-        <view style="font-size: 20rpx;">{{item.quoteDate}}</view>
+        <view class="cardLeft">
+        <view style="font-size: 22rpx;margin-top: 20rpx;">报价时间</view>
+        <view style="font-size: 20rpx;">{{item.createTime}}</view>
         <view style="font-size: 20rpx;margin-bottom: 20rpx;">{{item.time}}</view>
       </view>
       <view class="cardRight">
         <view class="title">
-          <view style="font-weight: bolder;font-size: 30rpx;margin-left: 15rpx;">￥{{item.totalPrice || 0}} 元</view>
-          <view style="font-size: 23rpx; color: {{item.isExpired ? 'red' : 'blue'}};">
-            {{item.isExpired ? '已过期' : '正常'}}
-          </view>
+          <view style="font-weight: bolder;font-size: 28rpx;margin-left: 15rpx;">{{item.quoteName}} </view>
+          <view style="font-size: 23rpx; color: {{ item.type == 1 ? 'blue' : item.type == 0 ? 'red' : 'gray' }};">{{ item.type == 1 ? '有效' :  '已过期' }}
+</view>
         </view>
         <view class='quotationNumber'>
           {{item.name}}
-          <view style="font-size: 20rpx; margin-top: 5rpx;">供应商: {{item.companyName || '未知'}}</view>
+          <view style="font-size: 20rpx; margin-top: 5rpx;">供应商: {{item.outEnterpriseName || '未知'}}  联系人: {{item.outUname || '未知'}}</view>
         </view>
         <view class="operation">
           <button 
             class="notDisabledButton" 
             size="mini" 
             bind:tap="goToViewRecievedQuotation" 
-            data-id="{{item.id}}"
+            data-id="{{item.quoteId}}"
           >
             预览
           </button>
@@ -85,7 +84,7 @@
             class="disabledButton" 
             size="mini" 
             bind:tap="edit" 
-            data-id="{{item.id}}"
+            data-id="{{item.quoteId}}"
             disabled
           >
             编辑
@@ -94,7 +93,7 @@
             class="disabledButton" 
             size="mini" 
             bind:tap="copy" 
-            data-id="{{item.id}}"
+            data-id="{{item.quoteId}}"
             disabled
           >
             复制
@@ -103,14 +102,14 @@
             class="notDisabledButton" 
             size="mini" 
             bind:tap="share" 
-            data-id="{{item.id}}"
+            data-id="{{item.quoteId}}"
           >
             分享
           </button>
           <image 
             src="/static/delete.png" 
             bind:tap="confirmDelete" 
-            data-id="{{item.id}}"
+            data-id="{{item.quoteId}}"
             class="delete-icon"
           ></image>
         </view>

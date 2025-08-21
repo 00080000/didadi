@@ -58,7 +58,7 @@ Page({
       success: (res) => {
         if (res.statusCode === 200 && res.data.code === 200) {
           let quotation = res.data.rows || [];
-          
+          console.log('收到的：',quotation)
           // 处理过期状态
           quotation = quotation.map(item => {
             // 计算是否过期
@@ -210,7 +210,7 @@ Page({
                   wx.showToast({
                     title: '请点击右上角“···”分享到微信',
                     icon: 'none',
-                    duration: 3000
+                    duration: 1500
                   });
                 },
                 fail: (err) => {
@@ -272,7 +272,7 @@ Page({
           wx.showToast({
             title: '分享成功',
             icon: 'success',
-            duration: 2000
+            duration: 1000
           });
         },
         fail: (err) => {
@@ -292,6 +292,7 @@ Page({
   // 删除确认
   confirmDelete(e){
     const id = e.currentTarget.dataset.id;
+    console.log('id:',id)
     if(id != '') {
       wx.showModal({
         title: '确认',
@@ -299,7 +300,7 @@ Page({
         success (res) {
           if (res.confirm) {
             wx.request({
-              url: `${getApp().globalData.serverUrl}/diServer/quote/${id}`,
+              url: `${getApp().globalData.serverUrl}/diServer/quote/outQuote/${id}`,
               method: 'DELETE',
               header: {
                 'Authorization': `Bearer ${getApp().globalData.token}`
@@ -334,7 +335,7 @@ Page({
       wx.showToast({
         title: '未知错误',
         icon: 'none',
-        duration: 2000
+        duration: 1500
       });
     }
   },

@@ -143,7 +143,7 @@ Page({
       });
     },
   
-    // 复制功能 - 关键修改：添加copy=true参数
+    // 复制功能：添加copy=true参数
     copy(e) {
         const id = e.currentTarget.dataset.id;
         const app = getApp();
@@ -156,16 +156,16 @@ Page({
           selectedProducts: []
         };
         app.globalData.shareSystemSelectedData = null;
-        app.globalData.isCreateNewQuote = true; // 仍然是新建模式
+        app.globalData.isCreateNewQuote = true; // 新建模式
         app.globalData.copyFromId = id; // 记录复制源ID
         
         wx.navigateTo({
-          // 关键修改：添加copy=true参数标记为复制模式
+          // 添加copy=true参数标记为复制模式
           url: `/quotePackage/pages/addQuotation/addQuotation?id=${id}&copy=true`
         });
       },
   
-    // 分享功能 - 修改分享到微信的逻辑
+    // 分享功能
     share(e) {
       const id = e.currentTarget.dataset.id;
       // 获取当前报价单信息用于分享
