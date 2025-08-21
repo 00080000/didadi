@@ -219,7 +219,6 @@ Page({
             case 4: {
               // 分享至微信，先加密ID
               try {
-                const encryptedId = encryptId(id);
                 // 设置当前要分享的报价单ID
                 getApp().globalData.shareQuoteId = id;
                 
@@ -229,7 +228,7 @@ Page({
                     wx.showToast({
                       title: '请点击右上角“···”分享到微信',
                       icon: 'none',
-                      duration: 3000
+                      duration: 2000
                     });
                   },
                   fail: (err) => {
@@ -292,7 +291,7 @@ Page({
             wx.showToast({
               title: '分享成功',
               icon: 'success',
-              duration: 2000
+              duration: 1000
             });
           },
           fail: (err) => {
@@ -354,7 +353,7 @@ Page({
             wx.showToast({
                 title: '未知错误',
                 icon: 'none',
-                duration: 2000
+                duration: 1500
               });
         }
     

@@ -58,7 +58,6 @@ Page({
       success: (res) => {
         if (res.statusCode === 200 && res.data.code === 200) {
           let quotation = res.data.rows || [];
-          console.log('收到的：',quotation)
           // 处理过期状态
           quotation = quotation.map(item => {
             // 计算是否过期
