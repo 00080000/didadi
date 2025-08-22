@@ -31,7 +31,6 @@ Page({
         'Authorization': `Bearer ${getApp().globalData.token}`
       },
       success: (res) => {
-        console.log('Info:', res);
         if (res.statusCode === 200 && res.data.code === 200) {
           const userInfo = res.data.user || {}; 
           this.setData({
@@ -99,7 +98,6 @@ Page({
         'Authorization': `Bearer ${getApp().globalData.token}`
       },
       success: (res) => {
-        console.log('fetchKPI:statusCode:', res.statusCode, ' code:', res.data.code);
         if (res.statusCode === 200 && res.data.code === 200) {
           // 请求成功，更新数据
           const data = res.data.data || {};
@@ -124,7 +122,6 @@ Page({
             combinationGoodsSKU: data.productGroupCount || 0,
             quotationAmount: amountWithUnit // 赋值处理后的带单位字符串
           });
-          console.log('KPI：', res.data.data);
         } else {
           // 请求失败，使用本地默认数据
           this.setData({

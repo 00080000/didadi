@@ -75,6 +75,7 @@ Page({
             quotation,
             filterQuotation: quotation
           });
+          console.log('quotation:',quotation);
         } else {
           // 请求失败，使用本地静态数据
           this.setData({ 

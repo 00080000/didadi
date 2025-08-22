@@ -58,8 +58,8 @@
     <view class="card" wx:for="{{filterQuotation}}" wx:key="id" wx:for-item="item">
       <view class="cardLeft">
         <view style="font-size: 22rpx;margin-top: 20rpx;">接收时间</view>
-        <view style="font-size: 20rpx;">{{item.createTime | formatDate}}</view>
-        <view style="font-size: 20rpx;margin-bottom: 20rpx;">{{item.createTime | formatTime}}</view>
+        <view style="font-size: 20rpx;">{{item.createTime }}</view>
+        
       </view>
       <view class="cardRight">
         <view class="title">
@@ -70,8 +70,8 @@
           预览</button>
           <button class="disabledButton" size="mini">编辑</button>
           <button class="disabledButton" size="mini">复制</button>
-          <button class="disabledButton" size="mini">分享</button>
-          <image src="/static/delete.png" bind:tap="confirmDelete" data-id="{{item.id}}"></image>
+          <button class="notDisabledButton" bind:tap="share" data-id="{{item.id}}"  size="mini">分享</button>
+          <image src="/static/delete.png" bind:tap="confirmDelete" data-id="{{item.ID}}"></image>
         </view>
       </view>
     </view>

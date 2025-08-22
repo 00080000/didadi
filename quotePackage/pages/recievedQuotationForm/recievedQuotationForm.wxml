@@ -109,7 +109,7 @@
           <image 
             src="/static/delete.png" 
             bind:tap="confirmDelete" 
-            data-id="{{item.quoteId}}"
+            data-id="{{item.id}}"
             class="delete-icon"
           ></image>
         </view>

@@ -52,13 +52,15 @@ Page({
         // 接口成功返回
         if (res.data.code === 200) {
           // 格式化数据（适配页面显示）
+          console.log('收到的：',res.data.rows);
           const formattedList = (res.data.rows || []).map(item => ({
-            id: item.id,  // 询价单ID（用于预览、删除）
+            id: item.quoteId,  // 询价单ID（用于预览、删除）
             quoteName: item.quoteName,  // 询价单名称
             createTime: item.createTime,  // 创建时间
+            ID: item.id
             // 可补充其他需要的字段（如创建人、状态等）
           }));
-
+          console.log('formattedList:',formattedList)
           this.setData({
             quotation: formattedList,
             filterQuotation: formattedList  // 初始显示全部
@@ -108,21 +110,54 @@ Page({
     });
   },
 
-  /**
-   * 确认删除询价单
-   */
-  confirmDelete(e) {
-    const id = e.currentTarget.dataset.id;  // 获取询价单ID
-    wx.showModal({
-      title: '确认删除',
-      content: '确定要删除该询价单吗？',
-      success: (res) => {
-        if (res.confirm) {
-          // 调用删除接口（实际项目需补充）
-          this.deleteInquiry(id);
+  // 删除确认
+  confirmDelete(e){
+    const id = e.currentTarget.dataset.id;
+    if(id != '') {
+      wx.showModal({
+        title: '确认',
+        content: '确定要删除吗？',
+        success (res) {
+          if (res.confirm) {
+            wx.request({
+              url: `${getApp().globalData.serverUrl}/diServer/quote/outQuote/${id}`,
+              method: 'DELETE',
+              header: {
+                'Authorization': `Bearer ${getApp().globalData.token}`
+              },
+              success: (res) => {
+                console.log(res);
+                if (res.statusCode === 200 && res.data.code === 200) {
+                  // 刷新当前页面数据
+                  setTimeout(() => {
+                    const currentPage = getCurrentPages()[getCurrentPages().length - 1];
+                    currentPage.onLoad();
+                  }, 500);
+                } else {
+                  wx.showToast({
+                    title: res.data.message || '删除失败',
+                    icon: 'none'
+                  });
+                }
+              },
+              fail: (err) => {
+                wx.showToast({
+                  title: '网络请求失败',
+                  icon: 'none'
+                });
+                console.error(err);
+              },
+            });
+          }
         }
-      }
-    });
+      });
+    } else {
+      wx.showToast({
+        title: '未知错误',
+        icon: 'none',
+        duration: 1500
+      });
+    }
   },
 
   /**
@@ -156,11 +191,50 @@ Page({
   goToViewRecievedQuotation(e) {
     const id = e.currentTarget.dataset.id;  // 获取询价单ID
     wx.navigateTo({
-      url: `/inquiryPackage/pages/viewRecievedInquiry/viewRecievedInquiry?id=${id}`,
+      url: `/inquiryPackage/pages/viewInquiryTemplate/viewInquiryTemplate?id=${id}`,
+    });
+  },
+  share(e) {
+    const id = e.currentTarget.dataset.id;
+    wx.showActionSheet({
+      itemList: ['系统内发送', '生成二维码', '复制链接', '发送邮件', '分享至微信'],
+      success: (res) => {
+        switch (res.tapIndex) {
+          case 0: 
+            wx.navigateTo({ url: `/quotePackage/pages/shareWithSystem/shareWithSystem?id=${id}` });
+            break;
+          case 1: 
+            wx.navigateTo({ url: `/quotePackage/pages/shareWithCode/shareWithCode?id=${id}` });
+            break;
+          case 2: 
+            wx.showToast({ title: '复制成功', icon: 'none' });
+            break;
+          case 3: 
+            wx.navigateTo({ url: `/quotePackage/pages/shareWithEmail/shareWithEmail?id=${id}` });
+            break;
+          case 4: 
+            wx.updateShareMenu({
+              withShareTicket: true,
+              success: () => {
+                wx.showToast({
+                  title: '请点击右上角“···”分享到微信',
+                  icon: 'none',
+                  duration: 3000
+                });
+              },
+              fail: (err) => {
+                wx.showToast({ title: err.errMsg + '，请稍后重试', icon: 'none' });
+              }
+            });
+            break;
+        }
+      },
+      fail: (err) => {
+        wx.showToast({ title: err.errMsg + '，请稍后重试', icon: 'none' });
+      }
     });
   },
 
-  // 以下为原有导航方法（保持不变）
   goToQuote() {
     wx.redirectTo({
       url: '/quotePackage/pages/sendedQuotationForm/sendedQuotationForm',
