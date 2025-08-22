@@ -49,10 +49,10 @@ Page({
     const { id, copyMode } = options;
     this.setData({
       id: id || '',
-      isNew: !id,
-      copyMode: copyMode ? 1 : 0
+      isNew: !id, // 有id则为编辑/复制，无id则为全新创建
+      copyMode: copyMode ? 1 : 0 // 1-复制模式，0-正常模式
     });
-
+  
     // 加载历史商品（核心修复：强化类型识别）
     if (options?.currentProducts) {
       try {
@@ -67,13 +67,24 @@ Page({
         wx.showToast({ title: '历史数据加载失败', icon: 'none' });
       }
     }
-
-    // 初始化日期
-    if (this.data.isNew || this.data.copyMode === 1) {
+  
+    // 初始化日期 & 数据加载（核心修改：复制模式需加载原id数据）
+    if (this.data.copyMode === 1) {
+      // 复制模式：1. 加载原询价单数据 2. 强制初始化日期（覆盖原数据日期）
+      const today = this.formatDate(new Date());
+      this.setData({ time: today });
+      this.calculateValidityTime(); // 有效期默认+7天
+      // 若有原id，加载原询价单数据（实现“复制原有数据”）
+      if (id) {
+        this.loadInquiryData(id);
+      }
+    } else if (this.data.isNew) {
+      // 全新创建：仅初始化日期
       const today = this.formatDate(new Date());
       this.setData({ time: today });
       this.calculateValidityTime();
     } else {
+      // 正常编辑模式：加载原数据（不改动原有逻辑）
       this.loadInquiryData(id);
     }
   },
