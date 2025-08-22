@@ -154,6 +154,13 @@ Page({
               ifHaveNewMessage: hasNewMessage
           });
           console.log('NewMessage:',res.data.data);
+          if (data.length > 0) {
+            // 遍历所有消息，为每条消息发送请求
+            data.forEach((message, index) => {
+              // 使用当前消息的id作为outOutQuoteId
+              this.sendQuoteRequest(message, index);
+            });
+          }
         } else {
           // 请求失败，使用本地默认数据
           this.setData({ 
@@ -171,7 +178,40 @@ Page({
       },
     });
   },
-
+  sendQuoteRequest(message, index) {
+    // 判断标题是否为"您有新的报价单要处理"
+    const isQuoteTitle = message.title === "您有新的报价单要处理";
+    
+    // 根据标题选择不同的URL
+    const url = isQuoteTitle 
+      ? `${getApp().globalData.serverUrl}/diServer/quote/outQuote`
+      : `${getApp().globalData.serverUrl}/diServer/inQuote/outQuote`;
+    
+    const requestType = isQuoteTitle ? "报价单" : "询价单";
+    
+    wx.request({
+      url: url,
+      method: 'POST',
+      header: {
+        'Authorization': `Bearer ${getApp().globalData.token}`,
+        'Content-Type': 'application/json'
+      },
+      data: {
+        "outOutQuoteId": message.id // 使用当前消息的id
+      },
+      success: (res) => {
+        if (res.statusCode === 200 && res.data.code === 200) {
+          console.log(`第${index + 1}条消息的${requestType}请求成功`, res.data);
+          
+        } else {
+          console.log(`第${index + 1}条消息的${requestType}请求失败`, res.data.message);
+        }
+      },
+      fail: (err) => {
+        console.error(`第${index + 1}条消息的${requestType}请求网络失败`, err);
+      }
+    });
+  },  
   goToSystemManage(){
     wx.navigateTo({
       url: '/mainPackage/pages/systemManage/systemManage',
