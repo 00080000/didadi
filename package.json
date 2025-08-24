@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "weapp-qrcode": "^1.0.0"
+    "weapp-qrcode": "^1.0.0",
+    "xlsx": "^0.18.5"
   }
 }

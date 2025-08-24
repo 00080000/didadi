@@ -12,9 +12,9 @@
   <view class="fileList">
     <view class="fileCard" wx:for="{{downloadFormats}}" wx:for-item="item" wx:key="type" data-type="{{item.type}}" bindtap="downloadFile">
       <view class="fileInformation">
-        <image src="/static/word.png" wx:if="{{item.type=='doc'}}"></image>
+        <image src="/static/word.png" wx:if="{{item.type=='doc'||item.type=='docx'}}"></image>
         <image src="/static/PDF.png" wx:if="{{item.type=='pdf'}}"></image>
-        <image src="/static/Excel.png" wx:if="{{item.type=='xls'}}"></image>
+        <image src="/static/Excel.png" wx:if="{{item.type=='xls'||item.type=='csv' }}"></image>
         <view>{{item.name}}</view>
       </view>
       <image src="/static/download.png"></image>
