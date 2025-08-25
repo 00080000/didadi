@@ -1,6 +1,96 @@
 const app = getApp();
 const { numberToChinese } = require('../../../utils/util');
 
+// 引入pdf-lib并添加加载状态标记
+let PDFLib = null, PDFDocument = null, StandardFonts = null, rgb = null;
+let isPdfLibLoaded = false;
+let pdfLoadTimeout = null;
+
+// 先检查文件是否存在（关键步骤）
+const checkPdfFileExists = (filePath) => {
+  return new Promise((resolve) => {
+    const fs = wx.getFileSystemManager();
+    try {
+      // 尝试访问文件（仅检查是否存在）
+      fs.accessSync(filePath, fs.F_OK);
+      console.log(`文件存在: ${filePath}`);
+      resolve(true);
+    } catch (e) {
+      console.error(`文件不存在: ${filePath}`, e);
+      resolve(false);
+    }
+  });
+};
+
+// 主加载函数
+const loadPdfLib = async () => {
+  console.log('开始执行pdf-lib加载逻辑');
+
+  // 定义要检查的路径（请根据实际情况修改）
+  const targetPath = './pdf-lib/pdf-lib.min.js';
+  
+  // 先检查文件是否存在
+  const fileExists = await checkPdfFileExists(targetPath);
+  if (!fileExists) {
+    wx.showToast({ title: 'PDF文件不存在', icon: 'none' });
+    return;
+  }
+
+  // 添加超时监控
+  pdfLoadTimeout = setTimeout(() => {
+    if (!isPdfLibLoaded) {
+      console.error('pdf-lib加载超时（10秒）');
+      wx.showToast({ title: 'PDF加载超时', icon: 'none' });
+    }
+  }, 10000);
+
+  // 尝试加载
+  require.async(targetPath, 
+    (module) => {
+      clearTimeout(pdfLoadTimeout);
+      
+      console.log('pdf-lib模块加载成功，内容:', module);
+      if (!module) {
+        console.error('模块为空');
+        wx.showToast({ title: 'PDF模块异常', icon: 'none' });
+        return;
+      }
+      
+      // 验证核心功能
+      if (typeof module.PDFDocument !== 'function') {
+        console.error('PDFDocument不是函数');
+        wx.showToast({ title: 'PDF模块损坏', icon: 'none' });
+        return;
+      }
+      
+      PDFLib = module;
+      PDFDocument = module.PDFDocument;
+      StandardFonts = module.StandardFonts;
+      rgb = module.rgb;
+      isPdfLibLoaded = true;
+      
+      console.log('✅ pdf-lib完全加载成功');
+      wx.showToast({ title: 'PDF功能已就绪', icon: 'success' });
+    },
+    (err) => {
+      clearTimeout(pdfLoadTimeout);
+      console.error('❌ pdf-lib加载失败:', err);
+      wx.showToast({ title: 'PDF加载失败', icon: 'none' });
+    }
+  );
+};
+
+// 页面加载时执行检查和加载
+loadPdfLib();
+
+// 5秒后检查状态
+setTimeout(() => {
+  console.log('5秒后加载状态:', {
+    isPdfLibLoaded,
+    PDFLib: PDFLib ? '已定义' : '未定义'
+  });
+}, 5000);
+
 // 工具函数：数组包含检查
 function arrayIncludes(arr, item) {
   if (!arr || typeof arr !== 'object' || typeof arr.length !== 'number') {
@@ -114,11 +204,11 @@ function getSafeFileName(originalName, ext) {
   return `${safeName}.${ext}`;
 }
 
-// 生成CSV内容（修复格式问题）
+// 生成CSV内容
 function generateCSVContent(tableColumns, tableData, quote, amountChinese) {
   let csv = '';
   
-  // 添加BOM头解决中文乱码（关键修复）
+  // 添加BOM头解决中文乱码
   csv += '\ufeff';
   
   // 表头
@@ -149,7 +239,7 @@ function generateCSVContent(tableColumns, tableData, quote, amountChinese) {
     csv += rowData.join(',') + '\r\n';
   });
   
-  // 金额信息（修复列对齐问题）
+  // 金额信息
   csv += '\r\n'; // 空行分隔
   csv += `,,总金额,,,${quote.totalPrice ? quote.totalPrice.toFixed(2) : '0.00'},元\r\n`;
   csv += `,,币种,,,人民币\r\n`;
@@ -171,8 +261,8 @@ Page({
     ],
     loading: false,
     errorMsg: '',
-    // 新增：记录当前生成的文件路径，用于转发
-    currentFilePath: ''
+    currentFilePath: '',
+    pdfLoading: false // PDF专用加载状态
   },
 
   onLoad() {
@@ -319,97 +409,211 @@ Page({
     return cleanText(text, forPdf);
   },
 
-  // 生成PDF内容（修复格式问题）
-  generatePDFContent(filePath) {
-    const { quoteData, tableColumns, tableData, amountChinese } = this.data;
-    const { quote } = quoteData;
-    
-    const quoteName = cleanText(quote.name || '未命名报价单', true);
-    const headText = this.extractPlainText(quote.headText || '', true);
-    const footText = this.extractPlainText(quote.footText || '', true);
-    
-    // 优化PDF HTML结构，确保兼容性
-    const pdfHtml = `
-      <!DOCTYPE html>
-      <html lang="zh-CN">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${quoteName}</title>
-        <style>
-          @page { margin: 20mm; }
-          body { 
-            font-family: SimSun, "Microsoft YaHei", Arial Unicode MS, sans-serif; 
-            font-size: 12pt;
-            line-height: 1.5;
+  // 修复PDF生成功能：添加加载等待机制
+  async generatePDFContent(filePath) {
+    // 等待PDF库加载完成（最多等待5秒）
+    const waitPdfLibLoad = () => {
+      return new Promise((resolve, reject) => {
+        let waitTime = 0;
+        const checkInterval = setInterval(() => {
+          if (isPdfLibLoaded) {
+            clearInterval(checkInterval);
+            resolve(true);
+          } else if (waitTime >= 5000) { // 5秒超时
+            clearInterval(checkInterval);
+            reject(new Error('PDF库加载超时，请稍后重试'));
           }
-          .title { 
-            text-align: center; 
-            font-size: 16pt; 
-            margin: 15px 0 30px 0; 
-            font-weight: bold;
-          }
-          .section { margin: 20px 0; }
-          table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin: 20px 0;
-            page-break-inside: avoid; /* 避免表格跨页 */
-          }
-          th, td { 
-            border: 1px solid #333; 
-            padding: 8px 5px; 
-            text-align: center; 
-            font-size: 10pt;
-          }
-          th { 
-            background-color: #f0f0f0; 
-            font-weight: bold;
-          }
-          .summary { 
-            margin: 20px 0; 
-            padding: 10px; 
-            border: 1px dashed #666;
-          }
-          p { margin: 5px 0; }
-        </style>
-      </head>
-      <body>
-        <h1 class="title">${quoteName}</h1>
+          waitTime += 100;
+        }, 100);
+      });
+    };
+
+    try {
+      // 先等待库加载完成
+      await waitPdfLibLoad();
+      
+      const { quoteData, tableColumns, tableData, amountChinese } = this.data;
+      const { quote } = quoteData;
+      
+      const quoteName = cleanText(quote.name || '未命名报价单', true);
+      const headText = this.extractPlainText(quote.headText || '', true);
+      const footText = this.extractPlainText(quote.footText || '', true);
+
+      // 创建PDF文档
+      const pdfDoc = await PDFDocument.create();
+      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const page = pdfDoc.addPage([595.28, 841.89]); // A4尺寸
+      const { width, height } = page.getSize();
+      const margin = 50;
+      let y = height - margin;
+
+      // 添加标题
+      page.drawText(quoteName, {
+        x: width / 2,
+        y: y,
+        font: font,
+        size: 18,
+        color: rgb(0, 0, 0),
+        align: 'center'
+      });
+      y -= 40;
+
+      // 添加头部文本
+      if (headText) {
+        const headLines = headText.split('\n');
+        headLines.forEach(line => {
+          page.drawText(line, {
+            x: margin,
+            y: y,
+            font: font,
+            size: 12,
+            color: rgb(0, 0, 0),
+            maxWidth: width - margin * 2
+          });
+          y -= 20;
+        });
+        y -= 10;
+      }
+
+      // 计算表格尺寸
+      const tableWidth = width - margin * 2;
+      const rowHeight = 25;
+      const headerHeight = 30;
+      const colCount = tableColumns.length;
+      const colWidth = tableWidth / colCount;
+
+      // 绘制表头背景
+      page.drawRectangle({
+        x: margin,
+        y: y - headerHeight,
+        width: tableWidth,
+        height: headerHeight,
+        color: rgb(0.9, 0.9, 0.9)
+      });
+
+      // 绘制表头文字
+      tableColumns.forEach((col, i) => {
+        page.drawText(col.label, {
+          x: margin + colWidth * i + 5,
+          y: y - headerHeight + 8,
+          font: font,
+          size: 10,
+          color: rgb(0, 0, 0),
+          maxWidth: colWidth - 10
+        });
+      });
+      y -= headerHeight;
+
+      // 绘制表格内容
+      for (let rowIdx = 0; rowIdx < tableData.length; rowIdx++) {
+        const row = tableData[rowIdx];
         
-        ${headText ? `<div class="section">${headText.split('\n').map(p => `<p>${p}</p>`).join('')}</div>` : ''}
-        
-        <table>
-          <thead>
-            <tr>${tableColumns.map(col => `<th>${col.label}</th>`).join('')}</tr>
-          </thead>
-          <tbody>
-            ${tableData.map(row => `
-              <tr>
-                ${tableColumns.map(col => `
-                  <td>${row[col.code] !== undefined ? row[col.code] : (col.label === '序号' ? row.index : '')}</td>
-                `).join('')}
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-        
-        <div class="summary">
-          <p>总金额：${quote.totalPrice ? quote.totalPrice.toFixed(2) : '0.00'} 元</p>
-          <p>总计（大写）：${amountChinese}</p>
-        </div>
-        
-        ${footText ? `<div class="section">${footText.split('\n').map(p => `<p>${p}</p>`).join('')}</div>` : ''}
-      </body>
-      </html>
-    `;
-    
-    const fs = wx.getFileSystemManager();
-    fs.writeFileSync(filePath, pdfHtml, 'utf8');
-    return true;
+        // 隔行变色
+        if (rowIdx % 2 === 1) {
+          page.drawRectangle({
+            x: margin,
+            y: y - rowHeight,
+            width: tableWidth,
+            height: rowHeight,
+            color: rgb(0.95, 0.95, 0.95)
+          });
+        }
+
+        // 绘制单元格内容
+        tableColumns.forEach((col, colIdx) => {
+          const cellValue = row[col.code] !== undefined 
+            ? String(row[col.code]) 
+            : (col.label === '序号' ? String(row.index) : '');
+          
+          page.drawText(cellValue, {
+            x: margin + colWidth * colIdx + 5,
+            y: y - rowHeight + 8,
+            font: font,
+            size: 10,
+            color: rgb(0, 0, 0),
+            maxWidth: colWidth - 10
+          });
+        });
+
+        y -= rowHeight;
+
+        // 分页处理
+        if (y < margin + 100) {
+          const newPage = pdfDoc.addPage([width, height]);
+          page = newPage;
+          y = height - margin;
+        }
+      }
+
+      // 绘制表格边框
+      page.drawRectangle({
+        x: margin,
+        y: y,
+        width: tableWidth,
+        height: (tableData.length * rowHeight + headerHeight),
+        borderColor: rgb(0, 0, 0),
+        borderWidth: 1,
+        fillOpacity: 0
+      });
+
+      // 绘制列分隔线
+      for (let i = 1; i < colCount; i++) {
+        const lineX = margin + colWidth * i;
+        page.drawLine({
+          start: { x: lineX, y: y },
+          end: { x: lineX, y: y + (tableData.length * rowHeight + headerHeight) },
+          thickness: 1,
+          color: rgb(0, 0, 0)
+        });
+      }
+
+      // 添加金额信息
+      y -= 30;
+      page.drawText(`总金额：${quote.totalPrice ? quote.totalPrice.toFixed(2) : '0.00'} 元`, {
+        x: margin,
+        y: y,
+        font: font,
+        size: 12,
+        color: rgb(0, 0, 0)
+      });
+      y -= 25;
+      page.drawText(`总计（大写）：${amountChinese}`, {
+        x: margin,
+        y: y,
+        font: font,
+        size: 12,
+        color: rgb(0, 0, 0)
+      });
+      y -= 30;
+
+      // 添加底部文本
+      if (footText) {
+        const footLines = footText.split('\n');
+        footLines.forEach(line => {
+          page.drawText(line, {
+            x: margin,
+            y: y,
+            font: font,
+            size: 10,
+            color: rgb(0, 0, 0),
+            maxWidth: width - margin * 2
+          });
+          y -= 18;
+        });
+      }
+
+      // 保存PDF到文件
+      const pdfBytes = await pdfDoc.save();
+      const fs = wx.getFileSystemManager();
+      fs.writeFileSync(filePath, pdfBytes);
+      return true;
+    } catch (err) {
+      console.error('PDF生成失败:', err);
+      throw err; // 抛出错误让上层处理
+    }
   },
 
-  // 生成Word文件（保留原有正常逻辑）
+  // 生成Word文件
   generateDocContent(filePath) {
     const { quoteData, tableColumns, tableData, amountChinese } = this.data;
     const { quote } = quoteData;
@@ -494,7 +698,20 @@ Page({
       return;
     }
     
-    this.setData({ loading: true, errorMsg: '' });
+    // 对于PDF，先检查是否正在加载或未加载完成
+    if (type === 'pdf') {
+      if (this.data.pdfLoading) {
+        wx.showToast({ title: '正在准备PDF，请稍等', icon: 'none' });
+        return;
+      }
+      if (!isPdfLibLoaded) {
+        wx.showToast({ title: 'PDF库正在加载，请稍后', icon: 'none' });
+        return;
+      }
+      this.setData({ pdfLoading: true });
+    }
+    
+    this.setData({ errorMsg: '' });
     const { quote } = this.data.quoteData;
     const fileNameBase = quote.name || '未命名报价单';
     const that = this;
@@ -507,6 +724,12 @@ Page({
         console.warn('存储空间警告，继续下载', err);
         wx.showToast({ title: '继续下载...', icon: 'none', duration: 1000 });
         setTimeout(() => that.actualDownload(fileNameBase, type), 500);
+      })
+      .finally(() => {
+        // 无论成功失败，清除PDF加载状态
+        if (type === 'pdf') {
+          this.setData({ pdfLoading: false });
+        }
       });
   },
   
@@ -539,41 +762,18 @@ Page({
       
       // 保存当前文件路径，用于转发
       this.setData({ currentFilePath: filePath });
-      
-      // 先尝试预览，如果失败则提示转发
-      wx.openDocument({
-        filePath: filePath,
-        fileType: type,
-        showMenu: true, // 显示右上角菜单，支持转发
-        success: () => {
-          console.log(`${type}文件打开成功`);
-          wx.showToast({ 
-            title: '预览成功，可转发分享', 
-            icon: 'success',
-            duration: 2000
-          });
-        },
-        fail: (err) => {
-          console.error('打开文件失败', err);
-          // 预览失败直接提示转发
-          wx.showModal({
-            title: '提示',
-            content: '文件无法预览，是否直接转发？',
-            confirmText: '转发',
-            cancelText: '取消',
-            success: (res) => {
-              if (res.confirm) {
-                that.shareFile();
-              }
-            }
-          });
-        },
-        complete: () => {
-          // 延迟清理临时文件，确保转发可用
-          setTimeout(() => cleanTempFiles(filePath), 30000); // 延长到30秒
-          that.setData({ loading: false });
+      wx.showModal({
+        title: '提示',
+        content: '文件下载',
+        confirmText: '下载',
+        cancelText: '取消',
+        success: (res) => {
+          if (res.confirm) {
+            that.shareFile();
+          }
         }
       });
+      setTimeout(() => cleanTempFiles(filePath), 30000); // 延长到30秒
     } catch (err) {
       console.error('下载失败', err);
       that.setData({
@@ -584,7 +784,7 @@ Page({
     }
   },
 
-  // 新增：直接转发文件
+  // 直接转发文件
   shareFile() {
     const { currentFilePath } = this.data;
     if (!currentFilePath) {
@@ -620,4 +820,3 @@ Page({
     cleanTempFiles();
   }
 })
-    

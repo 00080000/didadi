@@ -20,7 +20,7 @@ Page({
           time: '20:09:45',
           totalPrice: '331.58',
           status: 0,
-          id: 1001 // 补充ID字段
+          id: 1001 
         },
         {
           name: '报价单2024040319008883',
@@ -28,7 +28,7 @@ Page({
           time: '20:09:45',
           totalPrice: '331.58',
           status: 1,
-          id: 1002 // 补充ID字段
+          id: 1002 
         },
         {
           name: '报价单2024040319008884',
@@ -36,23 +36,7 @@ Page({
           time: '20:09:45',
           totalPrice: '331.58',
           status: 1,
-          id: 1003 // 补充ID字段
-        },
-        {
-          name: '报价单2024040319008885',
-          quoteDate: '2024.04.13',
-          time: '20:09:45',
-          totalPrice: '331.58',
-          status: 0,
-          id: 1004 // 补充ID字段
-        },
-        {
-          name: '报价单2024040319008882',
-          quoteDate: '2024.04.13',
-          time: '20:09:45',
-          totalPrice: '331.58',
-          status: 1,
-          id: 1005 // 补充ID字段
+          id: 1003 
         }
       ]
     },
@@ -71,7 +55,6 @@ Page({
           'Authorization': `Bearer ${getApp().globalData.token}`
         },
         success: (res) => {
-            console.log('报价单:',res);
           if (res.statusCode === 200 && res.data.code === 200) {
             const quotation = res.data.rows || [];
             const hasMore = this.data.pageNum * this.data.pageSize < res.data.total;

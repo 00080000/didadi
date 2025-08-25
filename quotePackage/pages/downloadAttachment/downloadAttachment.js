@@ -39,7 +39,7 @@ Page({
           wx.showToast({
             title: '文件信息不完整',
             icon: 'none',
-            duration: 2000
+            duration: 1500
           });
           return;
         }
@@ -74,7 +74,7 @@ Page({
                   wx.showToast({
                     title: '文件打开失败',
                     icon: 'none',
-                    duration: 2000
+                    duration: 1500
                   });
                   console.error('打开文件错误：', openErr);
                 }
@@ -84,7 +84,7 @@ Page({
               wx.showToast({
                 title: '下载失败：系统内部异常',
                 icon: 'none',
-                duration: 2000
+                duration: 1500
               });
               console.error('下载失败，状态码：', res.statusCode);
             }
@@ -96,7 +96,7 @@ Page({
             wx.showToast({
               title: '下载失败，请稍后重试',
               icon: 'none',
-              duration: 2000
+              duration: 1500
             });
             console.error('下载接口调用失败：', err);
           }
