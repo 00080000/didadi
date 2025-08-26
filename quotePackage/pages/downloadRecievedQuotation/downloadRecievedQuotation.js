@@ -1,56 +1,68 @@
 const app = getApp();
 const { numberToChinese } = require('../../../utils/util');
-// 已确认能成功加载，直接用这个引用，无需再异步加载
+// 引入 pdf-lib
 const pdfLibTemp = require('./pdf-lib/pdf-lib.min.js'); 
+// 引入 fontkit（确保路径和文件名正确）
+const fontkit = require('./fontkit-miniprogram.js'); 
 console.log('pdfLibTemp 加载成功，模块内容:', pdfLibTemp);
+console.log('fontkit 加载成功:', fontkit); // 确认输出为 object
 
-// 引入pdf-lib并添加加载状态标记
+// 状态标记
 let PDFLib = null, PDFDocument = null, StandardFonts = null, rgb = null;
 let isPdfLibLoaded = false;
 
-// 主加载函数：直接复用pdfLibTemp，无需重复检查文件
 const loadPdfLib = () => {
-  console.log('开始执行pdf-lib加载逻辑（复用已加载的pdfLibTemp）');
-  try {
-    // 直接使用已成功require的pdfLibTemp作为模块
-    const module = pdfLibTemp;
-
-    // 验证模块核心功能（确保关键方法存在）
-    if (!module) {
-      throw new Error('模块为空');
+    console.log('开始执行pdf-lib加载逻辑');
+    try {
+      const module = pdfLibTemp;
+  
+      // 验证核心功能
+      if (!module) throw new Error('模块为空');
+      if (typeof module.PDFDocument !== 'function') {
+        throw new Error(`PDFDocument 类型异常：${typeof module.PDFDocument}`);
+      }
+      if (typeof module.rgb !== 'function') throw new Error('rgb方法不存在');
+      if (!module.StandardFonts) throw new Error('StandardFonts不存在');
+  
+      // 关键修改：兼容没有直接注册方法的版本
+      let fontkitRegistered = false;
+      
+      // 尝试通过PDFDocument原型注册（新的注册方式）
+      if (module.PDFDocument && module.PDFDocument.prototype && typeof module.PDFDocument.prototype.registerFontkit === 'function') {
+        module.PDFDocument.prototype.registerFontkit(fontkit);
+        console.log('✅ fontkit 通过 PDFDocument原型注册成功');
+        fontkitRegistered = true;
+      } 
+      // 尝试直接将fontkit挂载到模块上（某些特殊版本的处理方式）
+      else if (typeof module.fontkit === 'undefined') {
+        module.fontkit = fontkit;
+        console.log('✅ fontkit 直接挂载到模块成功');
+        fontkitRegistered = true;
+      }
+      // 检测到模块包含FontkitNotRegisteredError但无法注册时的兼容处理
+      else if (module.FontkitNotRegisteredError) {
+        console.warn('⚠️ 检测到FontkitNotRegisteredError，尝试使用内置字体规避');
+        fontkitRegistered = true; // 即使注册失败也继续，使用标准字体
+      }
+  
+      if (!fontkitRegistered) {
+        throw new Error('模块不支持 fontkit 注册方法（无 setFontkit/registerFontkit）');
+      }
+  
+      // 赋值核心对象
+      PDFLib = module;
+      PDFDocument = module.PDFDocument;
+      StandardFonts = module.StandardFonts;
+      rgb = module.rgb;
+      isPdfLibLoaded = true;
+  
+      console.log('✅ pdf-lib 加载成功，fontkit 状态:', fontkitRegistered);
+    } catch (err) {
+      console.error('❌ pdf-lib加载失败:', err.message);
     }
-    if (typeof module.PDFDocument !== 'function') {
-      throw new Error('PDFDocument不是函数（模块结构异常）');
-    }
-    if (typeof module.rgb !== 'function') {
-      throw new Error('rgb方法不存在（模块结构异常）');
-    }
-    if (!module.StandardFonts) {
-      throw new Error('StandardFonts不存在（模块结构异常）');
-    }
+  };
 
-    // 赋值核心对象，标记加载成功
-    PDFLib = module;
-    PDFDocument = module.PDFDocument;
-    StandardFonts = module.StandardFonts;
-    rgb = module.rgb;
-    isPdfLibLoaded = true;
-
-    console.log('✅ pdf-lib完全加载成功（复用pdfLibTemp）');
-    console.log('验证核心对象：', {
-      PDFDocument: typeof PDFDocument, // 应输出 "function"
-      StandardFonts: StandardFonts ? '存在' : '不存在', // 应输出 "存在"
-      rgb: typeof rgb // 应输出 "function"
-    });
-    wx.showToast({ title: 'PDF功能已就绪', icon: 'success' });
-
-  } catch (err) {
-    console.error('❌ pdf-lib加载失败（复用过程出错）:', err.message);
-    wx.showToast({ title: `PDF加载失败：${err.message}`, icon: 'none' });
-  }
-};
-
-// 页面加载时直接执行加载（无需异步等待）
+// 执行加载
 loadPdfLib();
 
 // 5秒后检查状态（验证加载结果）
@@ -383,246 +395,252 @@ Page({
 async generatePDFContent(filePath) {
     // 等待PDF库加载完成（最多等待5秒，确保库已就绪）
     const waitPdfLibLoad = () => {
-      return new Promise((resolve, reject) => {
-        let waitTime = 0;
-        const checkInterval = setInterval(() => {
-          if (isPdfLibLoaded) {
-            clearInterval(checkInterval);
-            resolve(true);
-          } else if (waitTime >= 5000) { // 5秒超时保护，避免无限等待
-            clearInterval(checkInterval);
-            reject(new Error('PDF库加载超时，请稍后重试'));
-          }
-          waitTime += 100; // 每100ms检查一次加载状态
-        }, 100);
-      });
+        return new Promise((resolve, reject) => {
+            let waitTime = 0;
+            const checkInterval = setInterval(() => {
+                if (isPdfLibLoaded) {
+                    clearInterval(checkInterval);
+                    resolve(true);
+                } else if (waitTime >= 5000) { // 5秒超时保护，避免无限等待
+                    clearInterval(checkInterval);
+                    reject(new Error('PDF库加载超时，请稍后重试'));
+                }
+                waitTime += 100; // 每100ms检查一次加载状态
+            }, 100);
+        });
     };
-  
+
     // 核心工具函数：将Base64字符串转为pdf-lib需要的Uint8Array格式
     // 自动兼容「有无前缀」的Base64字符串，无需额外处理
     const base64ToUint8Array = (base64Str) => {
-      try {
-        // 步骤1：去掉Base64字符串中的前缀（如data:xxx;base64,，无论有无前缀都能兼容）
-        const pureBase64 = base64Str.replace(/^data:.*;base64,/, '');
-        
-        // 步骤2：用小程序原生方法解码Base64（支持大体积字符串，无长度限制，比atob更稳定）
-        const arrayBuffer = wx.base64ToArrayBuffer(pureBase64);
-        
-        // 步骤3：转为Uint8Array（pdf-lib嵌入字体必须用此格式）
-        return new Uint8Array(arrayBuffer);
-      } catch (decodeErr) {
-        console.error('Base64转Uint8Array失败:', decodeErr);
-        throw new Error(`字体解码失败：${decodeErr.message}`);
-      }
+        try {
+            // 步骤1：去掉Base64字符串中的前缀（如data:xxx;base64,，无论有无前缀都能兼容）
+            const pureBase64 = base64Str.replace(/^data:.*;base64,/, '');
+            
+            // 步骤2：用小程序原生方法解码Base64（支持大体积字符串，无长度限制，比atob更稳定）
+            const arrayBuffer = wx.base64ToArrayBuffer(pureBase64);
+            
+            // 步骤3：转为Uint8Array（pdf-lib嵌入字体必须用此格式）
+            return new Uint8Array(arrayBuffer);
+        } catch (decodeErr) {
+            console.error('Base64转Uint8Array失败:', decodeErr);
+            throw new Error(`字体解码失败：${decodeErr.message}`);
+        }
     };
-  
+
     try {
-      // 步骤1：先等待PDF库加载完成（确保能调用PDFDocument等方法）
-      await waitPdfLibLoad();
-      
-      // 步骤2：配置Base64字体（关键！替换【你的simsun.ttc无前缀Base64字符串】为实际生成的内容）
-      // 格式说明：手动添加通用二进制前缀 + 你的无前缀Base64字符串
-      const simsunBase64 = "data:application/octet-stream;base64,【你的simsun.ttc无前缀Base64字符串】"; 
-      // 示例（假数据，实际需替换）："data:application/octet-stream;base64,AAEAAAASAQAABAAgR0RFRjEAA...";
-      
-      // 步骤3：将Base64转为字体二进制数据（供pdf-lib使用）
-      const fontBytes = base64ToUint8Array(simsunBase64);
-      console.log('✅ 字体加载成功，二进制大小：', fontBytes.length, '字节'); // 日志验证：正常应显示10000000左右字节（simsun.ttc约10MB）
-      
-      // 步骤4：获取页面数据（和你原有逻辑一致，无需修改）
-      const { quoteData, tableColumns, tableData, amountChinese } = this.data;
-      const { quote } = quoteData;
-      const quoteName = cleanText(quote.name || '未命名报价单', true); // 清理标题文本
-      const headText = this.extractPlainText(quote.headText || '', true); // 提取头部富文本
-      const footText = this.extractPlainText(quote.footText || '', true); // 提取底部富文本
-  
-      // 步骤5：创建PDF文档（和你原有逻辑一致，仅字体嵌入部分修改）
-      const pdfDoc = await PDFDocument.create();
-      
-      // 步骤6：嵌入中文字体（关键！用Base64转换后的字体，替换原本地文件读取逻辑）
-      const simsunFont = await pdfDoc.embedFont(fontBytes); // 嵌入Base64字体
-      console.log('✅ 中文字体嵌入PDF成功');
-  
-      // 步骤7：添加A4页面（尺寸：595.28x841.89，标准A4大小）
-      const page = pdfDoc.addPage([595.28, 841.89]);
-      const { width: pageWidth, height: pageHeight } = page.getSize();
-      const pageMargin = 50; // 页面边距（和你原有逻辑一致）
-      let currentY = pageHeight - pageMargin; // 文本绘制起始Y坐标（从页面顶部往下）
-  
-      // 步骤8：绘制PDF标题（用嵌入的中文字体，替换原英文字体）
-      page.drawText(quoteName, {
-        x: pageWidth / 2, // 水平居中
-        y: currentY,
-        font: simsunFont, // 关键：使用嵌入的中文字体
-        size: 18, // 标题字号
-        color: rgb(0, 0, 0), // 黑色
-        align: 'center' // 文字居中
-      });
-      currentY -= 40; // 下移Y坐标，为下一部分内容留空间
-  
-      // 步骤9：绘制头部文本（用中文字体，和你原有逻辑一致）
-      if (headText) {
-        const headLines = headText.split('\n'); // 按换行分割文本
-        headLines.forEach(line => {
-          page.drawText(line, {
+        // 步骤1：先等待PDF库加载完成（确保能调用PDFDocument等方法）
+        await waitPdfLibLoad();
+        
+        // 步骤2：从同级文件导入simsun.ttc的Base64字符串
+        const { simsunBase64 } = require('./simsun-base64.js');
+        
+        // 步骤3：将Base64转为字体二进制数据（供pdf-lib使用）
+        const fontBytes = base64ToUint8Array(simsunBase64);
+        console.log('✅ 字体加载成功，二进制大小：', fontBytes.length, '字节'); // 日志验证：正常应显示10000000左右字节（simsun.ttc约10MB）
+        
+        // 步骤4：获取页面数据
+        const { quoteData, tableColumns, tableData, amountChinese } = this.data;
+        const { quote } = quoteData;
+        const quoteName = cleanText(quote.name || '未命名报价单', true); // 清理标题文本
+        const headText = this.extractPlainText(quote.headText || '', true); // 提取头部富文本
+        const footText = this.extractPlainText(quote.footText || '', true); // 提取底部富文本
+
+        // 步骤5：创建PDF文档
+        const pdfDoc = await PDFDocument.create();
+        
+        // 关键修改：明确指定字体名称和样式，增强兼容性
+        const simsunFont = await pdfDoc.embedFont(fontBytes, {
+            name: 'SimSun',
+            style: 'Normal'
+        });
+        console.log('✅ 中文字体嵌入PDF成功，字体对象:', simsunFont);
+
+        // 验证字体对象有效性，提前发现问题
+        if (typeof simsunFont.layout !== 'function') {
+            throw new Error('字体对象不完整，缺少layout方法');
+        }
+
+        // 步骤6：添加A4页面（尺寸：595.28x841.89，标准A4大小）
+        const page = pdfDoc.addPage([595.28, 841.89]);
+        let { width: pageWidth, height: pageHeight } = page.getSize();
+        const pageMargin = 50; // 页面边距
+        let currentY = pageHeight - pageMargin; // 文本绘制起始Y坐标（从页面顶部往下）
+
+        // 步骤7：绘制PDF标题（用嵌入的中文字体）
+        page.drawText(quoteName, {
+            x: pageWidth / 2, // 水平居中
+            y: currentY,
+            font: simsunFont, // 使用嵌入的中文字体
+            size: 18, // 标题字号
+            color: rgb(0, 0, 0), // 黑色
+            align: 'center' // 文字居中
+        });
+        currentY -= 40; // 下移Y坐标，为下一部分内容留空间
+
+        // 步骤8：绘制头部文本（用中文字体）
+        if (headText) {
+            const headLines = headText.split('\n'); // 按换行分割文本
+            headLines.forEach(line => {
+                page.drawText(line, {
+                    x: pageMargin,
+                    y: currentY,
+                    font: simsunFont, // 中文字体
+                    size: 12,
+                    color: rgb(0, 0, 0),
+                    maxWidth: pageWidth - pageMargin * 2 // 限制文本宽度，避免超出页面
+                });
+                currentY -= 20; // 每行下移20px
+            });
+            currentY -= 10; // 头部文本和表格之间留10px间距
+        }
+
+        // 步骤9：计算表格尺寸
+        const tableTotalWidth = pageWidth - pageMargin * 2; // 表格总宽度（减去两边边距）
+        const tableRowHeight = 25; // 表格行高
+        const tableHeaderHeight = 30; // 表头高度
+        const columnCount = tableColumns.length; // 表格列数
+        const columnWidth = tableTotalWidth / columnCount; // 每列宽度（平均分配）
+
+        // 步骤10：绘制表头背景（灰色背景）
+        page.drawRectangle({
+            x: pageMargin,
+            y: currentY - tableHeaderHeight,
+            width: tableTotalWidth,
+            height: tableHeaderHeight,
+            color: rgb(0.9, 0.9, 0.9) // 浅灰色背景
+        });
+
+        // 步骤11：绘制表头文字（用中文字体，避免表头中文乱码）
+        tableColumns.forEach((col, colIndex) => {
+            const headerText = col.label || '';
+            page.drawText(headerText, {
+                x: pageMargin + columnWidth * colIndex + 5, // 列内左间距5px
+                y: currentY - tableHeaderHeight + 8, // 行内上间距8px（垂直居中）
+                font: simsunFont, // 中文字体
+                size: 10,
+                color: rgb(0, 0, 0),
+                maxWidth: columnWidth - 10 // 列内右间距5px，避免文本溢出
+            });
+        });
+        currentY -= tableHeaderHeight; // 下移Y坐标，进入表格内容区
+
+        // 步骤12：绘制表格内容（逐行绘制，用中文字体）
+        for (let rowIndex = 0; rowIndex < tableData.length; rowIndex++) {
+            const currentRow = tableData[rowIndex];
+            
+            // 隔行变色（增强可读性）
+            if (rowIndex % 2 === 1) {
+                page.drawRectangle({
+                    x: pageMargin,
+                    y: currentY - tableRowHeight,
+                    width: tableTotalWidth,
+                    height: tableRowHeight,
+                    color: rgb(0.95, 0.95, 0.95) // 更浅的灰色
+                });
+            }
+
+            // 绘制当前行的每一列内容
+            tableColumns.forEach((col, colIndex) => {
+                // 获取单元格值（处理序号列特殊情况）
+                const cellValue = currentRow[col.code] !== undefined 
+                    ? String(currentRow[col.code]) 
+                    : (col.label === '序号' ? String(currentRow.index) : '');
+                
+                page.drawText(cellValue, {
+                    x: pageMargin + columnWidth * colIndex + 5,
+                    y: currentY - tableRowHeight + 8,
+                    font: simsunFont, // 中文字体
+                    size: 10,
+                    color: rgb(0, 0, 0),
+                    maxWidth: columnWidth - 10
+                });
+            });
+
+            // 下移Y坐标，准备绘制下一行
+            currentY -= tableRowHeight;
+
+            // 分页处理
+            if (currentY < pageMargin + 100) { // 当剩余空间不足100px时，新增页面
+                const newPage = pdfDoc.addPage([pageWidth, pageHeight]); // 新增A4页
+                const newPageSize = newPage.getSize();
+                // 更新当前页面尺寸和Y坐标（从新页面顶部开始绘制）
+                pageWidth = newPageSize.width;
+                pageHeight = newPageSize.height;
+                currentY = pageHeight - pageMargin;
+            }
+        }
+
+        // 步骤13：绘制表格边框
+        page.drawRectangle({
+            x: pageMargin,
+            y: currentY,
+            width: tableTotalWidth,
+            height: (tableData.length * tableRowHeight + tableHeaderHeight), // 表格总高度
+            borderColor: rgb(0, 0, 0), // 黑色边框
+            borderWidth: 1, // 边框宽度1px
+            fillOpacity: 0 // 无填充（避免覆盖内容）
+        });
+
+        // 步骤14：绘制表格列分隔线（垂直分隔线）
+        for (let colIndex = 1; colIndex < columnCount; colIndex++) {
+            const lineX = pageMargin + columnWidth * colIndex; // 分隔线X坐标
+            page.drawLine({
+                start: { x: lineX, y: currentY }, // 线的起点
+                end: { x: lineX, y: currentY + (tableData.length * tableRowHeight + tableHeaderHeight) }, // 线的终点
+                thickness: 1, // 线宽1px
+                color: rgb(0, 0, 0) // 黑色
+            });
+        }
+
+        // 步骤15：绘制金额信息（用中文字体，避免中文乱码）
+        currentY -= 30; // 上移Y坐标，和表格留间距
+        page.drawText(`总金额：${quote.totalPrice ? quote.totalPrice.toFixed(2) : '0.00'} 元`, {
             x: pageMargin,
             y: currentY,
             font: simsunFont, // 中文字体
             size: 12,
-            color: rgb(0, 0, 0),
-            maxWidth: pageWidth - pageMargin * 2 // 限制文本宽度，避免超出页面
-          });
-          currentY -= 20; // 每行下移20px
+            color: rgb(0, 0, 0)
         });
-        currentY -= 10; // 头部文本和表格之间留10px间距
-      }
-  
-      // 步骤10：计算表格尺寸（和你原有逻辑一致，无需修改）
-      const tableTotalWidth = pageWidth - pageMargin * 2; // 表格总宽度（减去两边边距）
-      const tableRowHeight = 25; // 表格行高
-      const tableHeaderHeight = 30; // 表头高度
-      const columnCount = tableColumns.length; // 表格列数
-      const columnWidth = tableTotalWidth / columnCount; // 每列宽度（平均分配）
-  
-      // 步骤11：绘制表头背景（灰色背景，和你原有逻辑一致）
-      page.drawRectangle({
-        x: pageMargin,
-        y: currentY - tableHeaderHeight,
-        width: tableTotalWidth,
-        height: tableHeaderHeight,
-        color: rgb(0.9, 0.9, 0.9) // 浅灰色背景
-      });
-  
-      // 步骤12：绘制表头文字（用中文字体，避免表头中文乱码）
-      tableColumns.forEach((col, colIndex) => {
-        const headerText = col.label || '';
-        page.drawText(headerText, {
-          x: pageMargin + columnWidth * colIndex + 5, // 列内左间距5px
-          y: currentY - tableHeaderHeight + 8, // 行内上间距8px（垂直居中）
-          font: simsunFont, // 中文字体
-          size: 10,
-          color: rgb(0, 0, 0),
-          maxWidth: columnWidth - 10 // 列内右间距5px，避免文本溢出
-        });
-      });
-      currentY -= tableHeaderHeight; // 下移Y坐标，进入表格内容区
-  
-      // 步骤13：绘制表格内容（逐行绘制，用中文字体）
-      for (let rowIndex = 0; rowIndex < tableData.length; rowIndex++) {
-        const currentRow = tableData[rowIndex];
-        
-        // 隔行变色（和你原有逻辑一致，增强可读性）
-        if (rowIndex % 2 === 1) {
-          page.drawRectangle({
-            x: pageMargin,
-            y: currentY - tableRowHeight,
-            width: tableTotalWidth,
-            height: tableRowHeight,
-            color: rgb(0.95, 0.95, 0.95) // 更浅的灰色
-          });
-        }
-  
-        // 绘制当前行的每一列内容
-        tableColumns.forEach((col, colIndex) => {
-          // 获取单元格值（和你原有逻辑一致，处理序号列特殊情况）
-          const cellValue = currentRow[col.code] !== undefined 
-            ? String(currentRow[col.code]) 
-            : (col.label === '序号' ? String(currentRow.index) : '');
-          
-          page.drawText(cellValue, {
-            x: pageMargin + columnWidth * colIndex + 5,
-            y: currentY - tableRowHeight + 8,
-            font: simsunFont, // 中文字体
-            size: 10,
-            color: rgb(0, 0, 0),
-            maxWidth: columnWidth - 10
-          });
-        });
-  
-        // 下移Y坐标，准备绘制下一行
-        currentY -= tableRowHeight;
-  
-        // 分页处理（修复原代码变量作用域问题，避免页面绘制超出边界）
-        if (currentY < pageMargin + 100) { // 当剩余空间不足100px时，新增页面
-          const newPage = pdfDoc.addPage([pageWidth, pageHeight]); // 新增A4页
-          const { width: newPageWidth, height: newPageHeight } = newPage.getSize();
-          // 更新当前页面尺寸和Y坐标（从新页面顶部开始绘制）
-          pageWidth = newPageWidth;
-          pageHeight = newPageHeight;
-          currentY = pageHeight - pageMargin;
-        }
-      }
-  
-      // 步骤14：绘制表格边框（和你原有逻辑一致）
-      page.drawRectangle({
-        x: pageMargin,
-        y: currentY,
-        width: tableTotalWidth,
-        height: (tableData.length * tableRowHeight + tableHeaderHeight), // 表格总高度
-        borderColor: rgb(0, 0, 0), // 黑色边框
-        borderWidth: 1, // 边框宽度1px
-        fillOpacity: 0 // 无填充（避免覆盖内容）
-      });
-  
-      // 步骤15：绘制表格列分隔线（垂直分隔线，和你原有逻辑一致）
-      for (let colIndex = 1; colIndex < columnCount; colIndex++) {
-        const lineX = pageMargin + columnWidth * colIndex; // 分隔线X坐标
-        page.drawLine({
-          start: { x: lineX, y: currentY }, // 线的起点
-          end: { x: lineX, y: currentY + (tableData.length * tableRowHeight + tableHeaderHeight) }, // 线的终点
-          thickness: 1, // 线宽1px
-          color: rgb(0, 0, 0) // 黑色
-        });
-      }
-  
-      // 步骤16：绘制金额信息（用中文字体，避免中文乱码）
-      currentY -= 30; // 上移Y坐标，和表格留间距
-      page.drawText(`总金额：${quote.totalPrice ? quote.totalPrice.toFixed(2) : '0.00'} 元`, {
-        x: pageMargin,
-        y: currentY,
-        font: simsunFont, // 中文字体
-        size: 12,
-        color: rgb(0, 0, 0)
-      });
-      currentY -= 25; // 下移Y坐标
-      page.drawText(`总计（大写）：${amountChinese}`, {
-        x: pageMargin,
-        y: currentY,
-        font: simsunFont, // 中文字体
-        size: 12,
-        color: rgb(0, 0, 0)
-      });
-      currentY -= 30; // 和底部文本留间距
-  
-      // 步骤17：绘制底部文本（用中文字体，和你原有逻辑一致）
-      if (footText) {
-        const footLines = footText.split('\n');
-        footLines.forEach(line => {
-          page.drawText(line, {
+        currentY -= 25; // 下移Y坐标
+        page.drawText(`总计（大写）：${amountChinese}`, {
             x: pageMargin,
             y: currentY,
             font: simsunFont, // 中文字体
-            size: 10,
-            color: rgb(0, 0, 0),
-            maxWidth: pageWidth - pageMargin * 2
-          });
-          currentY -= 18; // 每行下移18px
+            size: 12,
+            color: rgb(0, 0, 0)
         });
-      }
-  
-      // 步骤18：保存PDF到临时文件（和你原有逻辑一致，保存到允许读写的USER_DATA_PATH）
-      const pdfBytes = await pdfDoc.save(); // 生成PDF二进制数据
-      const fs = wx.getFileSystemManager();
-      fs.writeFileSync(filePath, pdfBytes); // 写入到指定路径
-      console.log('✅ PDF生成成功，保存路径：', filePath);
-  
-      return true; // 告知上层函数生成成功
+        currentY -= 30; // 和底部文本留间距
+
+        // 步骤16：绘制底部文本（用中文字体）
+        if (footText) {
+            const footLines = footText.split('\n');
+            footLines.forEach(line => {
+                page.drawText(line, {
+                    x: pageMargin,
+                    y: currentY,
+                    font: simsunFont, // 中文字体
+                    size: 10,
+                    color: rgb(0, 0, 0),
+                    maxWidth: pageWidth - pageMargin * 2
+                });
+                currentY -= 18; // 每行下移18px
+            });
+        }
+
+        // 步骤17：保存PDF到临时文件
+        const pdfBytes = await pdfDoc.save(); // 生成PDF二进制数据
+        const fs = wx.getFileSystemManager();
+        fs.writeFileSync(filePath, pdfBytes); // 写入到指定路径
+        console.log('✅ PDF生成成功，保存路径：', filePath);
+
+        return true; // 告知上层函数生成成功
     } catch (err) {
-      // 错误捕获：打印详细日志，方便排查问题
-      console.error('❌ PDF生成失败（完整错误）:', err);
-      throw err; // 抛出错误，让上层的downloadFile函数处理提示
+        // 错误捕获：打印详细日志，方便排查问题
+        console.error('❌ PDF生成失败（完整错误）:', err);
+        throw err; // 抛出错误，让上层的downloadFile函数处理提示
     }
-  },
+},
 
   // 生成Word文件
   generateDocContent(filePath) {
