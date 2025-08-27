@@ -30,18 +30,18 @@ const loadPdfLib = () => {
       // 尝试通过PDFDocument原型注册（新的注册方式）
       if (module.PDFDocument && module.PDFDocument.prototype && typeof module.PDFDocument.prototype.registerFontkit === 'function') {
         module.PDFDocument.prototype.registerFontkit(fontkit);
-        console.log('✅ fontkit 通过 PDFDocument原型注册成功');
+        console.log(' fontkit 通过 PDFDocument原型注册成功');
         fontkitRegistered = true;
       } 
       // 尝试直接将fontkit挂载到模块上（某些特殊版本的处理方式）
       else if (typeof module.fontkit === 'undefined') {
         module.fontkit = fontkit;
-        console.log('✅ fontkit 直接挂载到模块成功');
+        console.log(' fontkit 直接挂载到模块成功');
         fontkitRegistered = true;
       }
       // 检测到模块包含FontkitNotRegisteredError但无法注册时的兼容处理
       else if (module.FontkitNotRegisteredError) {
-        console.warn('⚠️ 检测到FontkitNotRegisteredError，尝试使用内置字体规避');
+        console.warn(' 检测到FontkitNotRegisteredError，尝试使用内置字体规避');
         fontkitRegistered = true; // 即使注册失败也继续，使用标准字体
       }
   
@@ -56,9 +56,9 @@ const loadPdfLib = () => {
       rgb = module.rgb;
       isPdfLibLoaded = true;
   
-      console.log('✅ pdf-lib 加载成功，fontkit 状态:', fontkitRegistered);
+      console.log(' pdf-lib 加载成功，fontkit 状态:', fontkitRegistered);
     } catch (err) {
-      console.error('❌ pdf-lib加载失败:', err.message);
+      console.error(' pdf-lib加载失败:', err.message);
     }
   };
 
@@ -73,6 +73,7 @@ setTimeout(() => {
     PDFDocument: typeof PDFDocument === 'function' ? '正常（function）' : '异常'
   });
 }, 5000);
+
 // 工具函数：数组包含检查
 function arrayIncludes(arr, item) {
   if (!arr || typeof arr !== 'object' || typeof arr.length !== 'number') {
@@ -200,7 +201,7 @@ function generateCSVContent(tableColumns, tableData, quote, amountChinese) {
     return label.includes(',') || label.includes('"')
       ? `"${label.replace(/"/g, '""')}"`
       : label;
-  }).join(',') + '\r\n'; // 使用\r\n确保Windows和手机兼容性
+  }).join(',') + '\r\n'; // 使用\r\n确保兼容性
   csv += header;
   
   // 表格内容
@@ -229,6 +230,45 @@ function generateCSVContent(tableColumns, tableData, quote, amountChinese) {
   
   return csv;
 }
+
+// 从后端加载字体Base64数据
+const loadChineseFontBase64 = () => {
+  return new Promise((resolve, reject) => {
+    wx.showLoading({ title: '加载资源...' });
+    // 从后端下载字体Base64文件
+    const url = `${getApp().globalData.serverUrl}/diServer/common/download/resource?resource=/profile/upload/2025/08/26/ncwUJ7ZkUeLt613eb503c64219ae082197f91eed7923_20250826224252A054.txt`;
+    
+    wx.downloadFile({
+      url: url,
+      filePath: `${wx.env.USER_DATA_PATH}/simsun-base64.txt`,
+      success: (res) => {
+        if (res.statusCode === 200) {
+          const fs = wx.getFileSystemManager();
+          fs.readFile({
+            filePath: res.filePath,
+            encoding: 'utf8',
+            success: (readRes) => {
+              wx.hideLoading();
+              // 返回纯Base64字符串
+              resolve(readRes.data);
+            },
+            fail: (err) => {
+              wx.hideLoading();
+              reject(new Error(`读取字体文件失败: ${err.errMsg}`));
+            }
+          });
+        } else {
+          wx.hideLoading();
+          reject(new Error(`字体下载失败，状态码: ${res.statusCode}`));
+        }
+      },
+      fail: (err) => {
+        wx.hideLoading();
+        reject(new Error(`下载字体文件失败: ${err.errMsg}`));
+      }
+    });
+  });
+};
 
 Page({
   data: {
@@ -391,9 +431,8 @@ Page({
     return cleanText(text, forPdf);
   },
 
-// 修复PDF生成功能：手动补充Base64前缀（适配无前缀的转换结果，彻底解决权限问题）
-async generatePDFContent(filePath) {
-    // 等待PDF库加载完成（最多等待5秒，确保库已就绪）
+  async generatePDFContent(filePath) {
+    // 1. 等待PDF库加载完成（最多等待5秒，确保库就绪）
     const waitPdfLibLoad = () => {
         return new Promise((resolve, reject) => {
             let waitTime = 0;
@@ -401,26 +440,33 @@ async generatePDFContent(filePath) {
                 if (isPdfLibLoaded) {
                     clearInterval(checkInterval);
                     resolve(true);
-                } else if (waitTime >= 5000) { // 5秒超时保护，避免无限等待
+                } else if (waitTime >= 5000) {
                     clearInterval(checkInterval);
                     reject(new Error('PDF库加载超时，请稍后重试'));
                 }
-                waitTime += 100; // 每100ms检查一次加载状态
+                waitTime += 100;
             }, 100);
         });
     };
 
-    // 核心工具函数：将Base64字符串转为pdf-lib需要的Uint8Array格式
-    // 自动兼容「有无前缀」的Base64字符串，无需额外处理
+    // 2. Base64转Uint8Array（加载中文字体专用，兼容废弃API）
     const base64ToUint8Array = (base64Str) => {
         try {
-            // 步骤1：去掉Base64字符串中的前缀（如data:xxx;base64,，无论有无前缀都能兼容）
             const pureBase64 = base64Str.replace(/^data:.*;base64,/, '');
-            
-            // 步骤2：用小程序原生方法解码Base64（支持大体积字符串，无长度限制，比atob更稳定）
-            const arrayBuffer = wx.base64ToArrayBuffer(pureBase64);
-            
-            // 步骤3：转为Uint8Array（pdf-lib嵌入字体必须用此格式）
+            let arrayBuffer;
+
+            if (wx.base64ToArrayBuffer) {
+                arrayBuffer = wx.base64ToArrayBuffer(pureBase64);
+            } else {
+                const binaryStr = atob(pureBase64);
+                const len = binaryStr.length;
+                const uint8Arr = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    uint8Arr[i] = binaryStr.charCodeAt(i);
+                }
+                arrayBuffer = uint8Arr.buffer;
+            }
+
             return new Uint8Array(arrayBuffer);
         } catch (decodeErr) {
             console.error('Base64转Uint8Array失败:', decodeErr);
@@ -428,121 +474,121 @@ async generatePDFContent(filePath) {
         }
     };
 
+    // 3. Uint8Array转二进制字符串
+    const uint8ArrayToBinaryString = (uint8Array) => {
+        let binaryStr = '';
+        const len = uint8Array.length;
+        for (let i = 0; i < len; i++) {
+            binaryStr += String.fromCharCode(uint8Array[i]);
+        }
+        return binaryStr;
+    };
+
     try {
-        // 步骤1：先等待PDF库加载完成（确保能调用PDFDocument等方法）
+        // 步骤1：等待PDF库加载
         await waitPdfLibLoad();
-        
-        // 步骤2：从同级文件导入simsun.ttc的Base64字符串
-        const { simsunBase64 } = require('./simsun-base64.js');
-        
-        // 步骤3：将Base64转为字体二进制数据（供pdf-lib使用）
+        console.log('PDF库加载完成');
+
+        // 步骤2：加载中文字体
+        const simsunBase64 = await loadChineseFontBase64();
         const fontBytes = base64ToUint8Array(simsunBase64);
-        console.log('✅ 字体加载成功，二进制大小：', fontBytes.length, '字节'); // 日志验证：正常应显示10000000左右字节（simsun.ttc约10MB）
-        
-        // 步骤4：获取页面数据
+        console.log('字体加载成功，大小：', fontBytes.length, '字节');
+
+        // 步骤3：获取页面数据（报价单相关）
         const { quoteData, tableColumns, tableData, amountChinese } = this.data;
         const { quote } = quoteData;
-        const quoteName = cleanText(quote.name || '未命名报价单', true); // 清理标题文本
-        const headText = this.extractPlainText(quote.headText || '', true); // 提取头部富文本
-        const footText = this.extractPlainText(quote.footText || '', true); // 提取底部富文本
+        const quoteName = cleanText(quote.name || '未命名报价单', true);
+        const headText = this.extractPlainText(quote.headText || '', true);
+        const footText = this.extractPlainText(quote.footText || '', true);
 
-        // 步骤5：创建PDF文档
+        // 步骤4：创建PDF文档实例
         const pdfDoc = await PDFDocument.create();
-        
-        // 关键修改：明确指定字体名称和样式，增强兼容性
-        const simsunFont = await pdfDoc.embedFont(fontBytes, {
-            name: 'SimSun',
-            style: 'Normal'
-        });
-        console.log('✅ 中文字体嵌入PDF成功，字体对象:', simsunFont);
 
-        // 验证字体对象有效性，提前发现问题
-        if (typeof simsunFont.layout !== 'function') {
-            throw new Error('字体对象不完整，缺少layout方法');
-        }
+        // 步骤5：嵌入中文字体
+        const simsunFont = await pdfDoc.embedFont(fontBytes);
+        console.log('中文字体嵌入成功');
 
-        // 步骤6：添加A4页面（尺寸：595.28x841.89，标准A4大小）
-        const page = pdfDoc.addPage([595.28, 841.89]);
+        // 步骤6：添加A4页面（595.28x841.89pt = 210x297mm）
+        let page = pdfDoc.addPage([595.28, 841.89]);
         let { width: pageWidth, height: pageHeight } = page.getSize();
-        const pageMargin = 50; // 页面边距
-        let currentY = pageHeight - pageMargin; // 文本绘制起始Y坐标（从页面顶部往下）
+        const pageMargin = 50;
+        let currentY = pageHeight - pageMargin;
 
-        // 步骤7：绘制PDF标题（用嵌入的中文字体）
+        // 步骤7：绘制报价单标题（居中）
         page.drawText(quoteName, {
-            x: pageWidth / 2, // 水平居中
+            x: pageWidth / 2,
             y: currentY,
-            font: simsunFont, // 使用嵌入的中文字体
-            size: 18, // 标题字号
-            color: rgb(0, 0, 0), // 黑色
-            align: 'center' // 文字居中
+            font: simsunFont,
+            size: 18,
+            color: rgb(0, 0, 0),
+            align: 'center'
         });
-        currentY -= 40; // 下移Y坐标，为下一部分内容留空间
+        currentY -= 40;
 
-        // 步骤8：绘制头部文本（用中文字体）
+        // 步骤8：绘制头部文本（如客户信息、说明）
         if (headText) {
-            const headLines = headText.split('\n'); // 按换行分割文本
+            const headLines = headText.split('\n');
             headLines.forEach(line => {
                 page.drawText(line, {
                     x: pageMargin,
                     y: currentY,
-                    font: simsunFont, // 中文字体
+                    font: simsunFont,
                     size: 12,
                     color: rgb(0, 0, 0),
-                    maxWidth: pageWidth - pageMargin * 2 // 限制文本宽度，避免超出页面
+                    maxWidth: pageWidth - pageMargin * 2
                 });
-                currentY -= 20; // 每行下移20px
+                currentY -= 20;
             });
-            currentY -= 10; // 头部文本和表格之间留10px间距
+            currentY -= 10;
         }
 
-        // 步骤9：计算表格尺寸
-        const tableTotalWidth = pageWidth - pageMargin * 2; // 表格总宽度（减去两边边距）
-        const tableRowHeight = 25; // 表格行高
-        const tableHeaderHeight = 30; // 表头高度
-        const columnCount = tableColumns.length; // 表格列数
-        const columnWidth = tableTotalWidth / columnCount; // 每列宽度（平均分配）
+        // 步骤9：绘制表格（表头+内容+边框）
+        const tableTotalWidth = pageWidth - pageMargin * 2;
+        const tableRowHeight = 25;
+        const tableHeaderHeight = 30;
+        const columnCount = tableColumns.length;
+        const columnWidth = tableTotalWidth / columnCount;
 
-        // 步骤10：绘制表头背景（灰色背景）
+        // 9.1 表头背景（浅灰色）
         page.drawRectangle({
             x: pageMargin,
             y: currentY - tableHeaderHeight,
             width: tableTotalWidth,
             height: tableHeaderHeight,
-            color: rgb(0.9, 0.9, 0.9) // 浅灰色背景
+            color: rgb(0.9, 0.9, 0.9)
         });
 
-        // 步骤11：绘制表头文字（用中文字体，避免表头中文乱码）
+        // 9.2 表头文字
         tableColumns.forEach((col, colIndex) => {
             const headerText = col.label || '';
             page.drawText(headerText, {
-                x: pageMargin + columnWidth * colIndex + 5, // 列内左间距5px
-                y: currentY - tableHeaderHeight + 8, // 行内上间距8px（垂直居中）
-                font: simsunFont, // 中文字体
+                x: pageMargin + columnWidth * colIndex + 5,
+                y: currentY - tableHeaderHeight + 8,
+                font: simsunFont,
                 size: 10,
                 color: rgb(0, 0, 0),
-                maxWidth: columnWidth - 10 // 列内右间距5px，避免文本溢出
+                maxWidth: columnWidth - 10
             });
         });
-        currentY -= tableHeaderHeight; // 下移Y坐标，进入表格内容区
+        currentY -= tableHeaderHeight;
 
-        // 步骤12：绘制表格内容（逐行绘制，用中文字体）
+        // 9.3 表格内容（逐行绘制，斑马纹）
         for (let rowIndex = 0; rowIndex < tableData.length; rowIndex++) {
             const currentRow = tableData[rowIndex];
-            
-            // 隔行变色（增强可读性）
+
+            // 隔行添加背景（浅灰）
             if (rowIndex % 2 === 1) {
                 page.drawRectangle({
                     x: pageMargin,
                     y: currentY - tableRowHeight,
                     width: tableTotalWidth,
                     height: tableRowHeight,
-                    color: rgb(0.95, 0.95, 0.95) // 更浅的灰色
+                    color: rgb(0.95, 0.95, 0.95)
                 });
             }
 
-            // 绘制当前行的每一列内容
+            // 绘制单元格内容
             tableColumns.forEach((col, colIndex) => {
-                // 获取单元格值（处理序号列特殊情况）
                 const cellValue = currentRow[col.code] !== undefined 
                     ? String(currentRow[col.code]) 
                     : (col.label === '序号' ? String(currentRow.index) : '');
@@ -550,95 +596,97 @@ async generatePDFContent(filePath) {
                 page.drawText(cellValue, {
                     x: pageMargin + columnWidth * colIndex + 5,
                     y: currentY - tableRowHeight + 8,
-                    font: simsunFont, // 中文字体
+                    font: simsunFont,
                     size: 10,
                     color: rgb(0, 0, 0),
                     maxWidth: columnWidth - 10
                 });
             });
 
-            // 下移Y坐标，准备绘制下一行
             currentY -= tableRowHeight;
 
-            // 分页处理
-            if (currentY < pageMargin + 100) { // 当剩余空间不足100px时，新增页面
-                const newPage = pdfDoc.addPage([pageWidth, pageHeight]); // 新增A4页
-                const newPageSize = newPage.getSize();
-                // 更新当前页面尺寸和Y坐标（从新页面顶部开始绘制）
+            // 分页处理：剩余高度不足时新增页面
+            if (currentY < pageMargin + 100) {
+                page = pdfDoc.addPage([pageWidth, pageHeight]);
+                const newPageSize = page.getSize();
                 pageWidth = newPageSize.width;
                 pageHeight = newPageSize.height;
                 currentY = pageHeight - pageMargin;
+                console.log(`PDF分页，当前页数：${pdfDoc.getPageCount()}`);
             }
         }
 
-        // 步骤13：绘制表格边框
+        // 9.4 表格外边框
         page.drawRectangle({
             x: pageMargin,
             y: currentY,
             width: tableTotalWidth,
-            height: (tableData.length * tableRowHeight + tableHeaderHeight), // 表格总高度
-            borderColor: rgb(0, 0, 0), // 黑色边框
-            borderWidth: 1, // 边框宽度1px
-            fillOpacity: 0 // 无填充（避免覆盖内容）
+            height: (tableData.length * tableRowHeight + tableHeaderHeight),
+            borderColor: rgb(0, 0, 0),
+            borderWidth: 1,
+            fillOpacity: 0
         });
 
-        // 步骤14：绘制表格列分隔线（垂直分隔线）
+        // 9.5 表格列分隔线（内边框）
         for (let colIndex = 1; colIndex < columnCount; colIndex++) {
-            const lineX = pageMargin + columnWidth * colIndex; // 分隔线X坐标
+            const lineX = pageMargin + columnWidth * colIndex;
             page.drawLine({
-                start: { x: lineX, y: currentY }, // 线的起点
-                end: { x: lineX, y: currentY + (tableData.length * tableRowHeight + tableHeaderHeight) }, // 线的终点
-                thickness: 1, // 线宽1px
-                color: rgb(0, 0, 0) // 黑色
+                start: { x: lineX, y: currentY },
+                end: { x: lineX, y: currentY + (tableData.length * tableRowHeight + tableHeaderHeight) },
+                thickness: 1,
+                color: rgb(0, 0, 0)
             });
         }
 
-        // 步骤15：绘制金额信息（用中文字体，避免中文乱码）
-        currentY -= 30; // 上移Y坐标，和表格留间距
+        // 步骤10：绘制金额信息（总金额+大写金额）
+        currentY -= 30;
         page.drawText(`总金额：${quote.totalPrice ? quote.totalPrice.toFixed(2) : '0.00'} 元`, {
             x: pageMargin,
             y: currentY,
-            font: simsunFont, // 中文字体
+            font: simsunFont,
             size: 12,
             color: rgb(0, 0, 0)
         });
-        currentY -= 25; // 下移Y坐标
+        currentY -= 25;
         page.drawText(`总计（大写）：${amountChinese}`, {
             x: pageMargin,
             y: currentY,
-            font: simsunFont, // 中文字体
+            font: simsunFont,
             size: 12,
             color: rgb(0, 0, 0)
         });
-        currentY -= 30; // 和底部文本留间距
+        currentY -= 30;
 
-        // 步骤16：绘制底部文本（用中文字体）
+        // 步骤11：绘制底部文本（备注、签字栏）
         if (footText) {
             const footLines = footText.split('\n');
             footLines.forEach(line => {
                 page.drawText(line, {
                     x: pageMargin,
                     y: currentY,
-                    font: simsunFont, // 中文字体
+                    font: simsunFont,
                     size: 10,
                     color: rgb(0, 0, 0),
                     maxWidth: pageWidth - pageMargin * 2
                 });
-                currentY -= 18; // 每行下移18px
+                currentY -= 18;
             });
         }
 
-        // 步骤17：保存PDF到临时文件
-        const pdfBytes = await pdfDoc.save(); // 生成PDF二进制数据
-        const fs = wx.getFileSystemManager();
-        fs.writeFileSync(filePath, pdfBytes); // 写入到指定路径
-        console.log('✅ PDF生成成功，保存路径：', filePath);
+        // 步骤12：生成PDF二进制数据并转二进制字符串
+        const pdfUint8Array = await pdfDoc.save();
+        const pdfBinaryStr = uint8ArrayToBinaryString(pdfUint8Array);
+        console.log('PDF二进制字符串转换成功，长度：', pdfBinaryStr.length);
 
-        return true; // 告知上层函数生成成功
+        // 步骤13：写入文件（指定binary编码，避免类型报错）
+        const fs = wx.getFileSystemManager();
+        fs.writeFileSync(filePath, pdfBinaryStr, 'binary');
+        console.log(' PDF生成成功，保存路径：', filePath);
+
+        return true;
     } catch (err) {
-        // 错误捕获：打印详细日志，方便排查问题
-        console.error('❌ PDF生成失败（完整错误）:', err);
-        throw err; // 抛出错误，让上层的downloadFile函数处理提示
+        console.error('PDF生成失败（完整错误）:', err);
+        throw err;
     }
 },
 
@@ -762,55 +810,61 @@ async generatePDFContent(filePath) {
       });
   },
   
-  // 实际执行下载
-  actualDownload(fileNameBase, type) {
-    const that = this;
-    const fs = wx.getFileSystemManager();
-    const ext = type;
-    const fileName = getSafeFileName(fileNameBase, ext);
-    const filePath = `${wx.env.USER_DATA_PATH}/${fileName}`;
-    
-    try {
-      // 根据文件类型生成内容
-      let generateSuccess = false;
-      switch(type) {
-        case 'pdf':
-          generateSuccess = this.generatePDFContent(filePath);
-          break;
-        case 'doc':
-          generateSuccess = this.generateDocContent(filePath);
-          break;
-        case 'csv':
-          generateSuccess = this.generateCSVContentFile(filePath);
-          break;
-      }
+// 实际执行下载
+actualDownload(fileNameBase, type) {
+    //添加async关键字，支持await
+    return new Promise(async (resolve, reject) => {
+      const that = this;
+      const fs = wx.getFileSystemManager();
+      const ext = type;
+      const fileName = getSafeFileName(fileNameBase, ext);
+      const filePath = `${wx.env.USER_DATA_PATH}/${fileName}`;
       
-      if (!generateSuccess) {
-        throw new Error('文件生成失败');
-      }
-      
-      // 保存当前文件路径，用于转发
-      this.setData({ currentFilePath: filePath });
-      wx.showModal({
-        title: '提示',
-        content: '文件下载',
-        confirmText: '下载',
-        cancelText: '取消',
-        success: (res) => {
-          if (res.confirm) {
-            that.shareFile();
-          }
+      try {
+        // 根据文件类型生成内容
+        let generateSuccess = false;
+        switch(type) {
+          case 'pdf':
+            // 添加await，等待PDF生成完成
+            generateSuccess = await this.generatePDFContent(filePath);
+            break;
+          case 'doc':
+            generateSuccess = this.generateDocContent(filePath);
+            break;
+          case 'csv':
+            generateSuccess = this.generateCSVContentFile(filePath);
+            break;
         }
-      });
-      setTimeout(() => cleanTempFiles(filePath), 30000); // 延长到30秒
-    } catch (err) {
-      console.error('下载失败', err);
-      that.setData({
-        loading: false,
-        errorMsg: err.message || '下载文件失败'
-      });
-      wx.showToast({ title: err.message || '下载失败', icon: 'none' });
-    }
+        
+        if (!generateSuccess) {
+          throw new Error('文件生成失败');
+        }
+        
+        // 保存当前文件路径，用于转发
+        this.setData({ currentFilePath: filePath });
+        wx.showModal({
+          title: '提示',
+          content: '文件下载成功，是否转发？',
+          confirmText: '转发',
+          cancelText: '取消',
+          success: (res) => {
+            if (res.confirm) {
+              that.shareFile();
+            }
+            resolve(true);
+          }
+        });
+        setTimeout(() => cleanTempFiles(filePath), 30000); // 延长到30秒
+      } catch (err) {
+        console.error('下载失败', err);
+        that.setData({
+          loading: false,
+          errorMsg: err.message || '下载文件失败'
+        });
+        wx.showToast({ title: err.message || '下载失败', icon: 'none' });
+        reject(err);
+      }
+    });
   },
 
   // 直接转发文件

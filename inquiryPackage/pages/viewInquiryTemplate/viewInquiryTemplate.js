@@ -78,6 +78,7 @@ Page({
    */
   renderInquiryData(fullData) {
     app.globalData.inquiryData = fullData;
+    app.globalData.quoteData = fullData;
     const { quote, productGroupList } = fullData;
     let tableData = [];
     let index = 1;
@@ -302,7 +303,8 @@ Page({
     };
 
     wx.navigateTo({
-      url: '/inquiryPackage/pages/downloadRecievedInquiry/downloadRecievedInquiry'
+      //url: '/inquiryPackage/pages/downloadRecievedInquiry/downloadRecievedInquiry'
+      url: '/quotePackage/pages/downloadRecievedQuotation/downloadRecievedQuotation'
     });
   },
 
