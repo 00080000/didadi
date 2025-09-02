@@ -9,24 +9,6 @@ Page({
         firm:'小喇叭信息科技有限公司',
         number:'202404170000612766',
         showDetail:true
-      },
-      {
-        city:'长沙',
-        firm:'小喇叭信息科技有限公司',
-        number:'202404170000612767',
-        showDetail:true
-      },
-      {
-        city:'上海',
-        firm:'小喇叭信息科技有限公司',
-        number:'20202404170000612768',
-        showDetail:false
-      },    
-      {
-        city:'深圳',
-        firm:'小喇叭信息科技有限公司',
-        number:'20202404170000612768',
-        showDetail:false
       }
     ]
   },

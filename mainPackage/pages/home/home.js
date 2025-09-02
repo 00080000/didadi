@@ -3,16 +3,16 @@ Page({
   data: {
     nickName:"用户",
     phonenumber:11111111111,
-    firm:'长沙颂融信息科技有限公司',
+    firm:'加载中...',
     enterpriseId:'',
     ifHaveNewMessage:true,
-    quotationAmount:670.10,
-    quotationQuantity:45,
-    inquiryQuantity:12,
-    purchaserQuantity:24,
-    supplierQuantity:5,
-    singleGoodsSKU:135,
-    combinationGoodsSKU:36,
+    quotationAmount:0.0,
+    quotationQuantity:0,
+    inquiryQuantity:0,
+    purchaserQuantity:0,
+    supplierQuantity:0,
+    singleGoodsSKU:0,
+    combinationGoodsSKU:0,
     ifShow:false
   },
   onLoad() {
@@ -102,7 +102,7 @@ Page({
           // 请求成功，更新数据
           const data = res.data.data || {};
           
-          // 重点：处理quotationAmount的单位转换
+          // 处理quotationAmount的单位转换
           let amount = data.quoteTotalPirce || 0;
           let amountWithUnit;
           if (amount >= 10000) {

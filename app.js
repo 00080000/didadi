@@ -119,7 +119,7 @@ App({
     globalData: {
       userInfo: null,
       authenticated: false,
-      serverUrl: 'http://121.199.52.199:8080',
+      serverUrl: 'https://app.didadi.vip/',
       webUrl: 'https://121.199.52.199',
       token: 'eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6Ijk1NmIzOTBkLTg0NjgtNGE1Yi1iYmE3LWNmOTg1ZjQ1YjEwMSJ9.aonr8clJip0zItLW4Vm20eiZqE8q_L5o3utU2ZNlVRnbtFc4FqHw8BGCCq1ctoGx60XxJ9V2x1pI6Ne7vhjWVQ' // 存储认证 token
 

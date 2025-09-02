@@ -3,7 +3,7 @@ Page({
   data: {
     nickName:"用户",
     phonenumber:11111111111,
-    newMessageAmount:3
+    newMessageAmount:1
   },
   onLoad() {
       this.loadUserInfo();

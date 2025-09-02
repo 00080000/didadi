@@ -6,31 +6,13 @@ Page({
     filterQuotation: [], // 过滤后的报价单数据
     staticQuotation: [
       {
-        name: '报价单2024040319008882',
+        name: '报价单模板',
         quoteDate: '2024.04.13',
         time: '20:09:45',
         totalPrice: '331.58',
         isExpired: false,
         id: 1001,
         companyName: '供应商A'
-      },
-      {
-        name: '报价单2024040319008883',
-        quoteDate: '2024.04.13',
-        time: '20:09:45',
-        totalPrice: '331.58',
-        isExpired: true,
-        id: 1002,
-        companyName: '供应商B'
-      },
-      {
-        name: '报价单2024040319008884',
-        quoteDate: '2024.04.13',
-        time: '20:09:45',
-        totalPrice: '331.58',
-        isExpired: false,
-        id: 1003,
-        companyName: '供应商C'
       }
     ],
     ifShowSearch: false,

@@ -15,28 +15,12 @@ Page({
       // 原始静态数据
       staticQuotation: [
         {
-          name: '报价单2024040319008882',
+          name: '报价单模板1',
           quoteDate: '2024.04.13',
           time: '20:09:45',
           totalPrice: '331.58',
           status: 0,
           id: 1001 
-        },
-        {
-          name: '报价单2024040319008883',
-          quoteDate: '2024.04.13',
-          time: '20:09:45',
-          totalPrice: '331.58',
-          status: 1,
-          id: 1002 
-        },
-        {
-          name: '报价单2024040319008884',
-          quoteDate: '2024.04.13',
-          time: '20:09:45',
-          totalPrice: '331.58',
-          status: 1,
-          id: 1003 
         }
       ]
     },
